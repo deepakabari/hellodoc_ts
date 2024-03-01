@@ -7,8 +7,10 @@ import { Controller } from "../interfaces";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import { Op } from "sequelize";
-import {User} from "../db/models/index";
+import { User } from "../db/models/index";
 import dotenv from "dotenv";
+import loginSchema from "../validations/login.valid";
+import resetSchema from "../validations/reset.valid";
 dotenv.config();
 
 const SECRET = process.env.SECRET;
@@ -19,6 +21,13 @@ const RANDOMBYTES = process.env.RANDOMBYTES;
 
 export const login: Controller = async (req, res) => {
     try {
+        const { error } = loginSchema.validate(req.body);
+        if (error) {
+            return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
+                status: httpCode.UNPROCESSABLE_CONTENT,
+                message: error.details[0].message,
+            });
+        }
         // Extract email and password from request body
         const { email, password } = req.body;
 
@@ -40,9 +49,19 @@ export const login: Controller = async (req, res) => {
 
         // if password matches with the password stored in the database then generate a new access token
         if (isPasswordMatch) {
-            const token = jwt.sign({ user }, SECRET as string, {
-                expiresIn: EXPIRESIN,
-            });
+            const token = jwt.sign(
+                {
+                    userName: user.userName,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    phoneNumber: user.phoneNumber,
+                },
+                SECRET as string,
+                {
+                    expiresIn: EXPIRESIN,
+                }
+            );
 
             return res.json({
                 status: httpCode.OK,
@@ -56,8 +75,7 @@ export const login: Controller = async (req, res) => {
             });
         }
     } catch (error: any) {
-        console.log(error);
-        return AppError(error, req, res);
+        throw error;
     }
 };
 
@@ -130,14 +148,21 @@ export const forgotPassword: Controller = async (req, res) => {
             }
         });
     } catch (error: any) {
-        return AppError(error, req, res);
+        throw error;
     }
 };
 
 export const resetPassword: Controller = async (req, res) => {
     try {
+        const { error } = resetSchema.validate(req.body);
+        if (error) {
+            return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
+                status: httpCode.UNPROCESSABLE_CONTENT,
+                message: error.details[0].message,
+            });
+        }
         // Extract email, new password, and confirm password from request body
-        const { newPassword, confirmPassword } = req.body;
+        const { newPassword } = req.body;
         const { hash } = req.params;
 
         // Find user in database with matching email and reset token
@@ -153,14 +178,6 @@ export const resetPassword: Controller = async (req, res) => {
             return res.status(httpCode.UNAUTHORIZED).json({
                 status: httpCode.UNAUTHORIZED,
                 message: messageConstant.INVALID_RESET_TOKEN,
-            });
-        }
-
-        // Check if newPassword matches confirmPassword
-        if (newPassword.localeCompare(confirmPassword) != 0) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.PASSWORD_NOT_MATCH,
             });
         }
 
@@ -186,6 +203,6 @@ export const resetPassword: Controller = async (req, res) => {
             message: messageConstant.PASSWORD_RESET,
         });
     } catch (error: any) {
-        return AppError(error, req, res);
+        throw error;
     }
 };

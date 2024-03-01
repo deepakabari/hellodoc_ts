@@ -37,8 +37,8 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            status: {
-                type: Sequelize.INTEGER,
+            requestStatus: {
+                type: Sequelize.STRING,
                 allowNull: false,
             },
             street: {

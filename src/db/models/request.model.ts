@@ -66,9 +66,9 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
 
     @Column({
         allowNull: false,
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
     })
-    status: number;
+    requestStatus: string;
 
     @Column({
         allowNull: false,

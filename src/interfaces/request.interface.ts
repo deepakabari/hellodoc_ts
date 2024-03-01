@@ -9,7 +9,7 @@ interface RequestAttributes {
     patientPhoneNumber: string;
     dob: Date;
     patientEmail: string;
-    status: string;
+    requestStatus: string;
     street: string;
     city: string;
     state: string;

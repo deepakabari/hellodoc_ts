@@ -11,6 +11,15 @@ export enum AccountType {
     User = "User",
 }
 
+export enum CaseTag {
+    New = "New",
+    Pending = "Pending",
+    Active = "Active",
+    Conclude = "Conclude",
+    Close = "Close",
+    UnPaid = "UnPaid",
+}
+
 export enum ProfileStatus {
     Pending = "Pending",
     Active = "Active",
@@ -27,7 +36,7 @@ export enum RequestStatus {
     MDOnSite = "MDOnSite",
     FollowUp = "FollowUp",
     Closed = "Closed",
-    Locked  = "Locked",
+    Locked = "Locked",
     Declined = "Declined",
     Consult = "Consult",
     Clear = "Clear",
@@ -45,5 +54,5 @@ export enum OnCallStatus {
 
 export enum CallType {
     HouseCall = "HouseCall",
-    Consult = "Consult"
+    Consult = "Consult",
 }

@@ -51,6 +51,7 @@ export const getNewPatient: Controller = async (req, res) => {
                 ["patientNote", "Notes"],
             ],
             where: {
+                caseTag: "New",
                 deletedAt: null,
             },
         });
@@ -61,6 +62,6 @@ export const getNewPatient: Controller = async (req, res) => {
             data: newPatient,
         });
     } catch (error: any) {
-        return AppError(error, req, res);
+        throw error;
     }
 };

@@ -4,26 +4,25 @@ import messageConstant from "../constants/message.constant";
 import { User, Request } from "../db/models/index";
 import { Controller } from "../interfaces";
 import bcrypt from "bcrypt";
-import {
-    AccountType,
-    ProfileStatus,
-    RequestType,
-} from "../utils/enum.constant";
+import { AccountType } from "../utils/enum.constant";
 import userSchema from "../validations/user.valid";
 import dotenv from "dotenv";
+import requestSchema from "../validations/request.valid";
+import { CaseTag } from "../utils/enum.constant";
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
-
-export const createUser: Controller = async (req, res) => {
+// 
+const createUser: Controller =  async (req, res) => {
     try {
         // check the given data is valid
         const { error } = userSchema.validate(req.body);
         if (error) {
-            return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
-                status: httpCode.UNPROCESSABLE_CONTENT,
-                message: error,
-            });
+        return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
+            status: httpCode.UNPROCESSABLE_CONTENT,
+            message: error,
+        });
+        // throw new Error("Tst");
         }
 
         const {
@@ -78,22 +77,34 @@ export const createUser: Controller = async (req, res) => {
 
         // if newUser successfully created then give success message
         if (newUser) {
+            // Omit the sensitive information from response
+            const {
+                password,
+                street,
+                city,
+                state,
+                zipCode,
+                dob,
+                ...userResponse
+            } = newUser.get({ plain: true });
+
             return res.json({
                 status: httpCode.OK,
                 message: messageConstant.USER_CREATED,
-                data: newUser,
+                data: userResponse,
             });
             // otherwise give error message
         } else {
-            throw new Error("Failed to create user account.");
+            throw new Error(messageConstant.USER_CREATION_FAILED);
         }
         // any error generated above then give error message
-    } catch (error: any) {
-        return AppError(error, req, res);
+    } catch (error) {
+        console.log("Catch:", error);
+        throw error;
     }
 };
 
-export const isEmailFound: Controller = async (req, res) => {
+const isEmailFound: Controller = async (req, res) => {
     try {
         // get patient email from request body
         const { patientEmail } = req.body;
@@ -106,13 +117,23 @@ export const isEmailFound: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({ data: !!existingUser });
         // any error generated then give error message
     } catch (error: any) {
-        return AppError(error, req, res);
+        throw error;
     }
 };
 
-export const createRequest: Controller = async (req, res) => {
+const createRequest: Controller = async (req, res) => {
     try {
+        // check the given data is valid
+        const { error } = requestSchema.validate(req.body);
+        if (error) {
+            return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
+                status: httpCode.UNPROCESSABLE_CONTENT,
+                message: error,
+            });
+        }
         const {
+            requestType, // value comes from the frontend
+            requestStatus,
             requestorFirstName,
             requestorLastName,
             requestorPhoneNumber,
@@ -121,76 +142,50 @@ export const createRequest: Controller = async (req, res) => {
             patientFirstName,
             patientLastName,
             patientEmail,
+            password,
             patientPhoneNumber,
+            status,
             street,
             dob,
             city,
             state,
             zipCode,
+            roomNumber,
         } = req.body;
 
-        const existingUser = await User.findOne({
-            where: { email: patientEmail },
-        });
-        
-        let requestType = RequestType.Family;
-        let status = ProfileStatus.Active;
-        
-        // if email is not found then create a new user
-        if (!existingUser) {
-            const { password } = req.body;
-            const hashedPassword = await bcrypt.hash(
-                password,
-                Number(ITERATION)
-            );
+        // hash the password
+        const hashedPassword = await bcrypt.hash(password, Number(ITERATION));
 
-            const newUser = await User.create({
+        // find or create a user with the given email
+        const [user, created] = await User.findOrCreate({
+            where: { email: patientEmail },
+            defaults: {
+                ...req.body,
                 userName: patientFirstName,
-                password: hashedPassword,
-                firstName: patientFirstName,
-                lastName: patientLastName,
                 email: patientEmail,
+                firstName: patientFirstName,
                 phoneNumber: patientPhoneNumber,
-                street,
-                city,
-                state,
-                zipCode,
-                dob,
+                password: hashedPassword,
                 accountType: AccountType.User,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-            });
-            // if user is successfully created then give success message
-            if (newUser) {
-                return res.json({
-                    status: httpCode.OK,
-                    message: messageConstant.USER_CREATED,
-                    data: newUser,
-                });
-                // otherwise give error message
-            } else {
-                throw new Error("Failed to create account.");
-            }
+            },
+        });
+
+        // get the user id from the user object
+        const userId = user.id;
+
+        // if user is created, send a success message
+        if (!created) {
+            throw new Error(messageConstant.USER_CREATION_FAILED);
         }
+        let caseTag = CaseTag.New;
+
         // create a new patient request
         const newRequest = await Request.create({
-            requestType,
-            userId: 1,
-            requestorFirstName,
-            requestorLastName,
-            requestorPhoneNumber,
-            requestorEmail,
-            relationName,
-            patientFirstName,
-            patientLastName,
-            patientEmail,
-            patientPhoneNumber,
-            status,
-            dob,
-            street,
-            city,
-            state,
-            zipCode,
+            userId,
+            caseTag,
+            ...req.body,
             createdAt: new Date(),
             updatedAt: new Date(),
         });
@@ -203,6 +198,12 @@ export const createRequest: Controller = async (req, res) => {
         });
         // any error generated then give error message
     } catch (error: any) {
-        return AppError(error, req, res);
+        throw error;
     }
+};
+
+export default {
+    createUser,
+    createRequest,
+    isEmailFound,
 };
