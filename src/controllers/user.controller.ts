@@ -12,17 +12,16 @@ import { CaseTag } from "../utils/enum.constant";
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
-// 
-const createUser: Controller =  async (req, res) => {
+//
+const createUser: Controller = async (req, res) => {
     try {
         // check the given data is valid
         const { error } = userSchema.validate(req.body);
         if (error) {
-        return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
-            status: httpCode.UNPROCESSABLE_CONTENT,
-            message: error,
-        });
-        // throw new Error("Tst");
+            return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
+                status: httpCode.UNPROCESSABLE_CONTENT,
+                message: error,
+            });
         }
 
         const {

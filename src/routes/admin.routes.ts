@@ -3,6 +3,6 @@ import express from "express";
 
 const router = express.Router();
 
-router.get("/new", adminController.getNewPatient);
+router.get("/:state", adminController.getNewPatient);
 
 export default router;

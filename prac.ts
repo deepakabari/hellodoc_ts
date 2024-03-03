@@ -1,94 +1,276 @@
-// validation middleware
-const validateRequest = (req, res, next) => {
-    // check the given data is valid
-    const { error } = requestSchema.validate(req.body);
-    if (error) {
-      return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
-        status: httpCode.UNPROCESSABLE_CONTENT,
-        message: error,
-      });
-    }
-    // pass the validation, call the next middleware
-    next();
-  };
-  
-  // controller function
-  export const createRequest: Controller = async (req, res) => {
+// import the Sequelize operators
+const { Op } = require("sequelize");
+
+export const getNewPatient: Controller = async (req, res) => {
     try {
-      // get the common attributes from the req.body
-      const {
-        requestType, // value comes from the frontend
-        requestStatus,
-        requestorFirstName,
-        requestorLastName,
-        requestorPhoneNumber,
-        requestorEmail,
-        relationName,
-        patientFirstName,
-        patientLastName,
-        patientEmail,
-        patientPhoneNumber,
-        status,
-        street,
-        dob,
-        city,
-        state,
-        zipCode,
-        roomNumber,
-      } = req.body;
-  
-      // get the password from the req.body
-      const { password } = req.body;
-  
-      // hash the password
-      const hashedPassword = await bcrypt.hash(password, Number(ITERATION));
-  
-      // find or create a user with the given email
-      const [user, created] = await User.findOrCreate({
-        where: { email: patientEmail },
-        defaults: {
-          // use the spread operator to assign the common attributes
-          ...req.body,
-          userName: patientFirstName,
-          password: hashedPassword,
-          accountType: AccountType.User,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      });
-  
-      // get the user id from the user object
-      const userId = user.id;
-  
-      // if user is created, send a success message
-      if (created) {
-        res.json({
-          status: httpCode.OK,
-          message: messageConstant.USER_CREATED,
-          data: user,
+        // get the state parameter from the route
+        const state = req.params.state;
+
+        // define an object to store the attributes and the where clause for each state
+        const stateOptions = {
+            new: {
+                attributes: [
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("patientFirstName"),
+                            " ",
+                            sequelize.col("patientLastName")
+                        ),
+                        "Name",
+                    ],
+                    ["dob", "Date Of Birth"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("requestType"),
+                            " ",
+                            sequelize.col("requestorFirstName"),
+                            " ",
+                            sequelize.col("requestorLastName")
+                        ),
+                        "Requestor",
+                    ],
+                    ["createdAt", "Requested Date"],
+                    ["patientPhoneNumber", "Phone"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("street"),
+                            ", ",
+                            sequelize.col("city"),
+                            ", ",
+                            sequelize.col("state"),
+                            ", ",
+                            sequelize.col("zipCode")
+                        ),
+                        "Address",
+                    ],
+                    ["patientNote", "Notes"],
+                ],
+                where: {
+                    caseTag: "New",
+                    deletedAt: null,
+                },
+            },
+            pending: {
+                attributes: [
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("patientFirstName"),
+                            " ",
+                            sequelize.col("patientLastName")
+                        ),
+                        "Name",
+                    ],
+                    ["dob", "Date Of Birth"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("requestType"),
+                            " ",
+                            sequelize.col("requestorFirstName"),
+                            " ",
+                            sequelize.col("requestorLastName")
+                        ),
+                        "Requestor",
+                    ],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("User.firstName"),
+                            " ",
+                            sequelize.col("User.lastName")
+                        ),
+                        "Physician Name",
+                    ],
+                    ["updatedAt", "Date Of Service"],
+                    ["patientPhoneNumber", "Phone"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("street"),
+                            ", ",
+                            sequelize.col("city"),
+                            ", ",
+                            sequelize.col("state"),
+                            ", ",
+                            sequelize.col("zipCode")
+                        ),
+                        "Address",
+                    ],
+                ],
+                where: {
+                    physicianId: {
+                        [Op.not]: null,
+                    },
+                    deletedAt: null,
+                },
+            },
+            active: {
+                attributes: [
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("patientFirstName"),
+                            " ",
+                            sequelize.col("patientLastName")
+                        ),
+                        "Name",
+                    ],
+                    ["dob", "Date Of Birth"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("requestType"),
+                            " ",
+                            sequelize.col("requestorFirstName"),
+                            " ",
+                            sequelize.col("requestorLastName")
+                        ),
+                        "Requestor",
+                    ],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("User.firstName"),
+                            " ",
+                            sequelize.col("User.lastName")
+                        ),
+                        "Physician Name",
+                    ],
+                    ["updatedAt", "Date Of Service"],
+                    ["patientPhoneNumber", "Phone"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("street"),
+                            ", ",
+                            sequelize.col("city"),
+                            ", ",
+                            sequelize.col("state"),
+                            ", ",
+                            sequelize.col("zipCode")
+                        ),
+                        "Address",
+                    ],
+                ],
+                where: {
+                    isAgreementSent: true,
+                    physicianId: {
+                        [Op.not]: null,
+                    },
+                    deletedAt: null,
+                },
+            },
+            conclude: {
+                attributes: [
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("patientFirstName"),
+                            " ",
+                            sequelize.col("patientLastName")
+                        ),
+                        "Name",
+                    ],
+                    ["dob", "Date Of Birth"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("User.firstName"),
+                            " ",
+                            sequelize.col("User.lastName")
+                        ),
+                        "Physician Name",
+                    ],
+                    ["updatedAt", "Date Of Service"],
+                    ["patientPhoneNumber", "Phone"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("street"),
+                            ", ",
+                            sequelize.col("city"),
+                            ", ",
+                            sequelize.col("state"),
+                            ", ",
+                            sequelize.col("zipCode")
+                        ),
+                        "Address",
+                    ],
+                ],
+                where: {
+                    completedByPhysician: true,
+                    deletedAt: null,
+                },
+            },
+            toClose: {
+                attributes: [
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("patientFirstName"),
+                            " ",
+                            sequelize.col("patientLastName")
+                        ),
+                        "Name",
+                    ],
+                    ["dob", "Date Of Birth"],
+                    ["regionName", "Region"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("User.firstName"),
+                            " ",
+                            sequelize.col("User.lastName")
+                        ),
+                        "Physician Name",
+                    ],
+                    ["updatedAt", "Date Of Service"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("street"),
+                            ", ",
+                            sequelize.col("city"),
+                            ", ",
+                            sequelize.col("state"),
+                            ", ",
+                            sequelize.col("zipCode")
+                        ),
+                        "Address",
+                    ],
+                    ["patientNote", "Notes"],
+                ],
+                where: {
+                    caseTagPhysician: "Completed",
+                    deletedAt: null,
+                },
+            },
+        };
+
+        // get the options for the given state, or use the default options for "new" state
+        const options = stateOptions[state] || stateOptions["new"];
+
+        // sequelize query to get patient information
+        const newPatient = await Request.findAll({
+            ...options, // spread the options object to get the attributes and the where clause
+            include: [
+                {
+                    model: User,
+                    attributes: [], // exclude the User attributes, only use them for joining
+                },
+            ],
         });
-      }
-  
-      // create a new patient request with the user id and the common attributes
-      const newRequest = await Request.create({
-        // use the spread operator to assign the common attributes
-        ...req.body,
-        userId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-  
-      // if request successfully created then give success message
-      return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.REQUEST_CREATED,
-        data: newRequest,
-      });
+
+        return res.json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: newPatient,
+        });
     } catch (error: any) {
-      return AppError(error, req, res);
+        throw error;
     }
-  };
-  
-  // in your server.js, use the validation middleware before the controller function
-  app.post("/api/exercise/new-user", validateRequest, UserController.addUser);
-  
+};
