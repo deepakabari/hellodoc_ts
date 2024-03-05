@@ -1,14 +1,15 @@
-import AppError from "../utils/errorHandler";
 import httpCode from "../constants/http.constant";
 import messageConstant from "../constants/message.constant";
 import { User, Request } from "../db/models/index";
 import { Controller } from "../interfaces";
 import bcrypt from "bcrypt";
-import { AccountType } from "../utils/enum.constant";
+import { AccountType, ProfileStatus, RegionAbbreviation } from "../utils/enum.constant";
 import userSchema from "../validations/user.valid";
 import dotenv from "dotenv";
 import requestSchema from "../validations/request.valid";
 import { CaseTag } from "../utils/enum.constant";
+import { Op } from "sequelize";
+
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
@@ -39,6 +40,7 @@ const createUser: Controller = async (req, res) => {
         } = req.body;
 
         let accountType = AccountType.User;
+        let status = ProfileStatus.Active;
 
         // check if user is exists in the database
         const existingUser = await User.findOne({
@@ -64,6 +66,7 @@ const createUser: Controller = async (req, res) => {
             lastName,
             email,
             phoneNumber,
+            status,
             street,
             city,
             state,
@@ -152,11 +155,16 @@ const createRequest: Controller = async (req, res) => {
             roomNumber,
         } = req.body;
 
+        if (!req.file) {
+            throw new Error(messageConstant.IMAGE_NOT_UPLOADED)
+        }
+        const documentPhoto: string | undefined = req.file?.path;
+
         // hash the password
         const hashedPassword = await bcrypt.hash(password, Number(ITERATION));
 
         // find or create a user with the given email
-        const [user, created] = await User.findOrCreate({
+        const [user] = await User.findOrCreate({
             where: { email: patientEmail },
             defaults: {
                 ...req.body,
@@ -174,16 +182,49 @@ const createRequest: Controller = async (req, res) => {
         // get the user id from the user object
         const userId = user.id;
 
-        // if user is created, send a success message
-        if (!created) {
-            throw new Error(messageConstant.USER_CREATION_FAILED);
-        }
         let caseTag = CaseTag.New;
+
+        // Get the current date
+        const currentDate = new Date();
+
+        // const createAbbreviation = (cityName: string): string => {
+        //     return cityName.slice(0, 2).toUpperCase();
+        // };
+
+        function getAbbreviation(
+            state: keyof typeof RegionAbbreviation
+        ): string | undefined {
+            return RegionAbbreviation[state];
+        }
+
+        const regionAbbreviation = getAbbreviation(state);
+        const day = String(currentDate.getDate()).padStart(2, "0");
+        const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        let requestCount = await Request.count({
+            where: {
+                createdAt: {
+                    [Op.between]: [startOfDay, endOfDay],
+                },
+            },
+        });
+        let requestCountStr = String(requestCount + 1).padStart(4, "0");
+
+        // Generate the confirmation number
+        const confirmationNumber = `${regionAbbreviation}${day + month}${patientLastName.slice(0, 2).toUpperCase()}${patientFirstName.slice(0, 2).toUpperCase()}${requestCountStr}`;
 
         // create a new patient request
         const newRequest = await Request.create({
             userId,
             caseTag,
+            documentPhoto,
+            confirmationNumber,
             ...req.body,
             createdAt: new Date(),
             updatedAt: new Date(),

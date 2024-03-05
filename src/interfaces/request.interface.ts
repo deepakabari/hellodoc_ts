@@ -35,6 +35,9 @@ interface RequestAttributes {
     caseNumber?: string;
     caseTag?: string;
     caseTagPhysician?: string;
+    adminNotes?: string
+    physicianNotes?: string
+    reasonForCancellation?: string
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

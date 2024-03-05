@@ -3,7 +3,9 @@ import {
     User,
     Role,
     Request,
-    UserRole
+    UserRole,
+    Region,
+    UserRegion
 } from "../models/index";
 
 import dotenv from "dotenv";
@@ -24,7 +26,9 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
         User,
         Role,
         Request,
-        UserRole
+        UserRole,
+        Region,
+        UserRegion
     ],
 });
 

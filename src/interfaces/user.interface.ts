@@ -18,7 +18,6 @@ interface UserAttributes {
     altPhone?: string;
     status?: string;
     accountType: string;
-    roleId?: number;
     medicalLicense?: string;
     photo?: string;
     signature?: string;

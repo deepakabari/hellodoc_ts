@@ -1,4 +1,3 @@
-import AppError from "../utils/errorHandler";
 import httpCode from "../constants/http.constant";
 import messageConstant from "../constants/message.constant";
 import jwt from "jsonwebtoken";
@@ -79,7 +78,12 @@ export const login: Controller = async (req, res) => {
     }
 };
 
-// Function to handle forgotPassword
+/**
+ * Function to handle forgotPassword
+ * @param req 
+ * @param res 
+ * @returns 
+ */
 export const forgotPassword: Controller = async (req, res) => {
     try {
         // Extract email from request body
@@ -137,7 +141,7 @@ export const forgotPassword: Controller = async (req, res) => {
 
         return transporter.sendMail(mailOptions, (error: Error) => {
             if (error) {
-                return AppError(error, req, res);
+                throw error;
             } else {
                 console.log("Email sent: " + resetLink);
                 return res.json({

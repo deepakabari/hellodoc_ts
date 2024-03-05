@@ -1,14 +1,21 @@
-import { Table, Column, Model, ForeignKey } from "sequelize-typescript";
+import { Table, Column, Model } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
-import { User, Role } from "./index";
+import { UserRoleAttributes } from "../../interfaces";
 
-@Table
-class UserRole extends Model {
-    @ForeignKey(() => User)
+@Table({
+    timestamps: true,
+    paranoid: true,
+    indexes: [
+        {
+            unique: true,
+            fields: ["userId", "roleId"],
+        },
+    ],
+})
+class UserRole extends Model<UserRoleAttributes> {
     @Column({ type: DataTypes.INTEGER, allowNull: false })
     userId: number;
 
-    @ForeignKey(() => Role)
     @Column({ type: DataTypes.INTEGER, allowNull: false })
     roleId: number;
 }

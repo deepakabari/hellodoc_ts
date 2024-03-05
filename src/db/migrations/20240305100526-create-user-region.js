@@ -2,20 +2,20 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable("UserRoleMap", {
+        await queryInterface.createTable("UserRegion", {
             userId: {
-                type: Sequelize.INTEGER,
                 allowNull: false,
+                type: Sequelize.INTEGER,
                 references: {
-                    model: "User", // name of your User table
+                    model: "User",
                     key: "id",
                 },
             },
-            roleId: {
+            regionId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "Role", // name of your Role table
+                    model: "Region",
                     key: "id",
                 },
             },
@@ -33,14 +33,14 @@ module.exports = {
             },
         });
 
-        // Adding unique constraint on userId and roleId
-        await queryInterface.addConstraint("UserRoleMap", {
-            fields: ["userId", "roleId"],
+        // Adding unique constraint on userId and regionId
+        await queryInterface.addConstraint("UserRegion", {
+            fields: ["userId", "regionId"],
             type: "unique",
-            name: "user_role_unique_constraint",
+            name: "user_region_unique_constraint",
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable("UserRoleMap");
+        await queryInterface.dropTable("UserRegion");
     },
 };

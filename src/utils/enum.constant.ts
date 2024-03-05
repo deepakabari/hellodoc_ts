@@ -16,8 +16,15 @@ export enum CaseTag {
     Pending = "Pending",
     Active = "Active",
     Conclude = "Conclude",
-    Close = "Close",
+    Close = "To Close",
     UnPaid = "UnPaid",
+}
+
+export enum RegionAbbreviation {
+    District_Of_Columbia = "DC",
+    Maryland = "MD",
+    NewYork = "NY",
+    Virginia = "VA",
 }
 
 export enum ProfileStatus {
@@ -28,6 +35,7 @@ export enum ProfileStatus {
 
 export enum RequestStatus {
     Unassigned = "Unassigned",
+    Processing = "Processing",
     Accepted = "Accepted",
     Cancelled = "Cancelled",
     Reserving = "Reserving",
@@ -39,7 +47,8 @@ export enum RequestStatus {
     Locked = "Locked",
     Declined = "Declined",
     Consult = "Consult",
-    Clear = "Clear",
+    Cleared = "Cleared",
+    Blocked = "Blocked",
     CancelledByProvider = "CancelledByProvider",
     CancelledByAdmin = "CancelledByAdmin",
     CCUploadedByClient = "CCUploadedByClient",

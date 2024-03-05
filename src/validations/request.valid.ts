@@ -20,5 +20,6 @@ const requestSchema = Joi.object({
     state: Joi.string().required(),
     zipCode: Joi.string().required(),
     roomNumber: Joi.string().optional(),
+    documentPhoto: Joi.string().optional()
 }).unknown(true);
 export default requestSchema;

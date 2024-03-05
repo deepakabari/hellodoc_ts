@@ -2,3 +2,7 @@ export * from "./common.interface";
 export * from './role.interface';
 export * from './request.interface'
 export * from './user.interface'
+export * from './region.interface'
+export * from './userRegion.interface'
+export * from './userRoleMap.interface'
+export * from './requestWiseFiles.interface'

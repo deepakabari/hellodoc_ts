@@ -1,13 +1,10 @@
-import {
-    Table,
-    Column,
-    Model
-} from "sequelize-typescript";
+import { Table, Column, Model, BelongsTo } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import {
     RequestAttributes,
     RequestCreationAttributes,
 } from "../../interfaces/";
+import { User } from "../models/index";
 
 @Table({
     timestamps: true,
@@ -98,7 +95,7 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
         allowNull: true,
         type: DataTypes.STRING,
     })
-    roomNumber: string
+    roomNumber: string;
 
     @Column({
         allowNull: true,
@@ -110,7 +107,7 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
         allowNull: true,
         type: DataTypes.STRING,
     })
-    documentPhoto: string
+    documentPhoto: string;
 
     @Column({
         allowNull: true,
@@ -123,7 +120,7 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
         type: DataTypes.STRING,
     })
     requestorFirstName?: string;
-    
+
     @Column({
         allowNull: true,
         type: DataTypes.STRING,
@@ -219,6 +216,38 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
         type: DataTypes.STRING,
     })
     caseTagPhysician?: string;
+
+    @Column({
+        allowNull: true,
+        type: DataTypes.STRING,
+    })
+    adminNotes: string
+
+    @Column({
+        allowNull: true,
+        type: DataTypes.STRING,
+    })
+    physicianNotes: string
+
+    @Column({
+        allowNull: true,
+        type: DataTypes.STRING,
+    })
+    reasonForCancellation: string
+
+    @BelongsTo(() => User, {
+        foreignKey: "userId",
+        targetKey: "id",
+        as: "user",
+    })
+    user: User;
+
+    @BelongsTo(() => User, {
+        foreignKey: "physicianId",
+        targetKey: "id",
+        as: "physician",
+    })
+    physician: User;
 }
 
 export default Request;

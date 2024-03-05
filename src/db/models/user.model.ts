@@ -3,10 +3,11 @@ import {
     Column,
     Model,
     BelongsToMany,
+    HasMany,
 } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { UserAttributes, UserCreationAttributes } from "../../interfaces";
-import { Role, UserRole } from "./index";
+import { Role, UserRole, Request, Region, UserRegion } from "./index";
 
 @Table({
     timestamps: true,
@@ -72,9 +73,6 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     @Column({ type: DataTypes.STRING, allowNull: true })
     medicalLicense: string;
 
-    @Column({ type: DataTypes.INTEGER, allowNull: true })
-    roleId: number;
-
     @Column({ type: DataTypes.STRING, allowNull: true })
     photo: string;
 
@@ -110,5 +108,14 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
 
     @BelongsToMany(() => Role, () => UserRole, "userId", "roleId")
     roles: Role[];
+
+    @HasMany(() => Request, { foreignKey: "userId", sourceKey: "id", as: "userRequest"})
+    userRequests: Request[];
+
+    @HasMany(() => Request, { foreignKey: "physicianId", sourceKey: "id", as: "physicianRequest"})
+    physicianRequests: Request[];
+
+    @BelongsToMany(() => Region, () => UserRegion, "userId", "regionId")
+    regions: Region[];
 }
 export default User;

@@ -73,10 +73,6 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            roleId: {
-                type: Sequelize.INTEGER,
-                allowNull: true,
-            },
             medicalLicense: {
                 type: Sequelize.STRING,
                 allowNull: true,

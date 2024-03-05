@@ -141,6 +141,18 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: true,
             },
+            reasonForCancellation: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            adminNotes: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            physicianNotes: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,

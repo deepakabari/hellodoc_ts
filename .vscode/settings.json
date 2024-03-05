@@ -7,8 +7,11 @@
         "codepaths",
         "DATEONLY",
         "hallodoc",
+        "Includeable",
+        "Maidaan",
         "requeststatuslog",
         "requesttype",
+        "splitdata",
         "tsbuildinfo"
     ],
     "cSpell.language": "en,en-GB,en-US,lorem"
