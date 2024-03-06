@@ -10,12 +10,25 @@ const userSchema = Joi.object({
     lastName: Joi.string().optional(),
     email: Joi.string().email(),
     phoneNumber: Joi.string().min(10).max(10).required(),
-    street: Joi.string().required(),
+    address1: Joi.string().optional(),
+    address2: Joi.string().optional(),
+    street: Joi.string().optional(),
     city: Joi.string().required(),
     state: Joi.string().required(),
     zipCode: Joi.string().required(),
-    dob: Joi.date().required(),
-    status: Joi.number().optional(),
-});
+    dob: Joi.date().optional(),
+    status: Joi.string().optional(),
+    altPhone: Joi.string().optional().min(10).max(10),
+    medicalLicense: Joi.string().optional(),
+    photo: Joi.string().optional(),
+    signature: Joi.string().optional(),
+    isAgreementDoc: Joi.boolean().optional(),
+    isBackgroundDoc: Joi.boolean().optional(),
+    isTrainingDoc: Joi.boolean().optional(),
+    isNonDisclosureDoc: Joi.boolean().optional(),
+    isLicenseDoc: Joi.boolean().optional(),
+    NPINumber: Joi.string().optional(),
+    syncEmailAddress: Joi.string().optional(),
+}).unknown(true);
 
-export default userSchema;
+export { userSchema };

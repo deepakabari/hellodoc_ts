@@ -25,7 +25,7 @@ class Role extends Model<RoleAttributes, RoleCreationAttributes> {
         type: DataTypes.STRING,
         allowNull: false,
     })
-    name: string;
+    Name: string;
 
     @Column({
         type: DataTypes.STRING,
@@ -35,7 +35,7 @@ class Role extends Model<RoleAttributes, RoleCreationAttributes> {
 
     @Column({
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
     })
     isDeleted: boolean;
 

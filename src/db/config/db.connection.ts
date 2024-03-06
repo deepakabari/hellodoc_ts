@@ -5,7 +5,8 @@ import {
     Request,
     UserRole,
     Region,
-    UserRegion
+    UserRegion,
+    RequestWiseFiles
 } from "../models/index";
 
 import dotenv from "dotenv";
@@ -28,7 +29,8 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
         Request,
         UserRole,
         Region,
-        UserRegion
+        UserRegion,
+        RequestWiseFiles
     ],
 });
 

@@ -1,13 +1,12 @@
-import { RequestStatus } from "../utils/enum.constant";
+import { AccountType, RequestStatus } from "../utils/enum.constant";
 import httpCode from "../constants/http.constant";
 import messageConstant from "../constants/message.constant";
-import { Region, Request, User } from "../db/models/index";
+import { Region, Request, Role, User } from "../db/models/index";
 import { Controller } from "../interfaces";
 import transporter from "../utils/email";
 import dotenv from "dotenv";
 import sequelize, { FindAttributeOptions, Includeable } from "sequelize";
 import twilio from "twilio";
-import { fileStorage } from "../utils/multerConfig";
 dotenv.config();
 
 type AdditionalConditionsType = {
@@ -142,7 +141,7 @@ export const viewCase: Controller = async (req, res) => {
                 ["dob", "Date Of Birth"],
                 ["patientPhoneNumber", "Phone Number"],
                 ["patientEmail", "Email"],
-                ["city", "Region"],
+                ["state", "Region"],
                 [
                     sequelize.fn(
                         "CONCAT",
@@ -323,12 +322,57 @@ export const sendAgreement: Controller = async (req, res) => {
 
 export const getRegions: Controller = async (req, res) => {
     try {
-        const getRegions = await Region.findAll();
+        const getRegions = await Region.findAll({
+            attributes: ["id", "name"],
+        });
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: getRegions,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getPhysicianByRegion: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const getPhysicianByRegion = await User.findAll({
+            where: {
+                accountType: AccountType.Physician,
+            },
+            include: [
+                {
+                    model: Region,
+                    as: "regions",
+                    where: { id: id },
+                    through: {
+                        attributes: [],
+                    },
+                    attributes: [],
+                },
+            ],
+            attributes: ["id", "firstName", "lastName"],
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: getPhysicianByRegion,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const assignCase: Controller = async (req, res) => {
+    try {
+        const { transferNote } = req.body;
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
         });
     } catch (error) {
         throw error;
@@ -453,7 +497,7 @@ export const adminProfile: Controller = async (req, res) => {
             include: [
                 {
                     model: Region,
-                    attributes: ["id", "name", "abbreviation"],
+                    attributes: ["id", "name"],
                     through: { attributes: [] }, // This will exclude the join table attributes
                 },
             ],
@@ -463,6 +507,91 @@ export const adminProfile: Controller = async (req, res) => {
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: adminProfile,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+// export const downloadDocument: Controller = async (req, res) => {
+
+// };
+export const requestSupport: Controller = async (req, res) => {
+    try {
+        const unScheduledPhysician = await User.findAll({
+            where: { accountType: "Physician", onCallStatus: "UnScheduled" },
+        });
+
+        for (const physician of unScheduledPhysician) {
+            console.log(`Sending message to ${physician.firstName}`);
+        }
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.MESSAGE_SENT_SUCCESSFULLY,
+        });
+    } catch (error) {
+        throw new Error(messageConstant.ERROR_SEND_MESSAGE);
+    }
+};
+
+interface RoleGroup {
+    [key: string]: string[];
+}
+
+export const accountAccess: Controller = async (req, res) => {
+    try {
+        const roles = await Role.findAll({
+            attributes: ["accountType", "Name"],
+            order: ["accountType"],
+        });
+
+        const groupedRoles: RoleGroup = roles.reduce(
+            (result: RoleGroup, role) => {
+                const key = role.accountType;
+                if (!result[key]) {
+                    result[key] = [];
+                }
+                result[key].push(role.Name);
+                return result;
+            },
+            {} as RoleGroup
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: groupedRoles,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const createRole: Controller = async (req, res) => {
+    try {
+        const { roleName, accountType } = req.body;
+
+        const existingRole = await Role.findOne({ where: { Name: roleName } });
+
+        if (existingRole) {
+            return res.status(httpCode.CONFLICT).json({
+                status: httpCode.CONFLICT,
+                message: messageConstant.ROLE_ALREADY_EXISTS,
+            });
+        }
+
+        const createRole = await Role.create({
+            Name: roleName,
+            accountType,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: createRole,
         });
     } catch (error) {
         throw error;

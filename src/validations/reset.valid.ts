@@ -5,7 +5,7 @@ const passRegex =
 
 const resetSchema = Joi.object({
     newPassword: Joi.string().required().regex(RegExp(passRegex)),
-    confirmPassword: Joi.string().required().valid(Joi.ref("newPassword")),
+    confirmPassword: Joi.string().required().regex(RegExp(passRegex)),
 });
 
-export default resetSchema;
+export { resetSchema };

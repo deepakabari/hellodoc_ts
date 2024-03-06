@@ -1,6 +1,6 @@
 import { Table, Column, Model } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
-import { UserRegionAttributes } from "../../interfaces/";
+import { UserRegionAttributes } from "../../interfaces";
 
 @Table({
     timestamps: true,
@@ -8,21 +8,21 @@ import { UserRegionAttributes } from "../../interfaces/";
     indexes: [
         {
             unique: true,
-            fields: ['userId', 'regionId']
-        }
-    ]
+            fields: ["userId", "regionId"],
+        },
+    ],
 })
 class UserRegion extends Model<UserRegionAttributes> {
     @Column({
         type: DataTypes.INTEGER,
         allowNull: false,
     })
-    userId: number
+    userId: number;
 
     @Column({
         type: DataTypes.INTEGER,
         allowNull: false,
     })
-    regionId: number
+    regionId: number;
 }
 export default UserRegion;

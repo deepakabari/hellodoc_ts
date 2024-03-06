@@ -3,6 +3,7 @@ import { DataTypes } from "sequelize";
 import {
     RequestWiseFilesAttributes, RequestWiseFilesCreationAttributes
 } from "../../interfaces";
+import { Request } from './index'
 
 @Table({
     timestamps: true,
@@ -19,7 +20,7 @@ class RequestWiseFiles extends Model<RequestWiseFilesAttributes, RequestWiseFile
 
     @Column({
         allowNull: false,
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
     })
     requestId: number
 
@@ -34,6 +35,9 @@ class RequestWiseFiles extends Model<RequestWiseFilesAttributes, RequestWiseFile
         type: DataTypes.STRING,
     })
     docType: string
+
+    @BelongsTo(() => Request, { foreignKey: "requestId", targetKey: "id"})
+    request: Request
 }
 
 export default RequestWiseFiles;

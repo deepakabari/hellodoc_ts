@@ -1,10 +1,11 @@
-import { Table, Column, Model, BelongsTo } from "sequelize-typescript";
+import { Table, Column, Model, BelongsTo, HasMany } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import {
     RequestAttributes,
     RequestCreationAttributes,
 } from "../../interfaces/";
 import { User } from "../models/index";
+import {RequestWiseFiles} from "./index";
 
 @Table({
     timestamps: true,
@@ -248,6 +249,9 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
         as: "physician",
     })
     physician: User;
+
+    @HasMany(() => RequestWiseFiles, { foreignKey: "requestId", sourceKey: "id"})
+    requestWiseFiles: RequestWiseFiles[];
 }
 
 export default Request;

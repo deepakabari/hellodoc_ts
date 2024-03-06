@@ -58,7 +58,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     @Column({ type: DataTypes.STRING, allowNull: false })
     zipCode: string;
 
-    @Column({ type: DataTypes.DATEONLY, allowNull: false })
+    @Column({ type: DataTypes.DATEONLY, allowNull: true })
     dob: Date;
 
     @Column({ type: DataTypes.STRING, allowNull: true })
@@ -106,13 +106,24 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     @Column({ type: DataTypes.DATE, allowNull: true })
     expireToken: Date;
 
+    @Column({ type: DataTypes.STRING, allowNull: true })
+    onCallStatus: string;
+
     @BelongsToMany(() => Role, () => UserRole, "userId", "roleId")
     roles: Role[];
 
-    @HasMany(() => Request, { foreignKey: "userId", sourceKey: "id", as: "userRequest"})
+    @HasMany(() => Request, {
+        foreignKey: "userId",
+        sourceKey: "id",
+        as: "userRequest",
+    })
     userRequests: Request[];
 
-    @HasMany(() => Request, { foreignKey: "physicianId", sourceKey: "id", as: "physicianRequest"})
+    @HasMany(() => Request, {
+        foreignKey: "physicianId",
+        sourceKey: "id",
+        as: "physicianRequest",
+    })
     physicianRequests: Request[];
 
     @BelongsToMany(() => Region, () => UserRegion, "userId", "regionId")

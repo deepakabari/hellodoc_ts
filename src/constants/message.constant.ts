@@ -25,6 +25,11 @@ const messageConstant = {
     PASSWORD_NOT_MATCH: 'Password and Confirm Password are not the same',
     NOT_GET_HASHED_TOKEN: 'Hashed token cannot get, please try again',
     REQUEST_CREATED: "Request Created Successfully",
+    FILE_NOT_FOUND: "File not found",
+    ERROR_DOWNLOAD_FILE: "Error when downloading file",
+    MESSAGE_SENT_SUCCESSFULLY: "Message sent successfully",
+    ERROR_SEND_MESSAGE: "Error while sending message",
+    ROLE_ALREADY_EXISTS: "Role already exists"
 };
 
 export default messageConstant;

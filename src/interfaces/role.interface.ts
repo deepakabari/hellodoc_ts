@@ -2,11 +2,11 @@ import { Optional } from "sequelize";
 
 interface RoleAttributes {
     id: number;
-    name: string;
+    Name: string;
     accountType: string;
     createdAt: Date;
     updatedAt: Date;
-    isDeleted: boolean;
+    isDeleted?: boolean;
     deletedAt?: Date;
 }
 

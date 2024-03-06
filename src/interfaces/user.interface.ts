@@ -14,7 +14,7 @@ interface UserAttributes {
     city?: string;
     state?: string;
     zipCode: string;
-    dob: Date;
+    dob?: Date;
     altPhone?: string;
     status?: string;
     accountType: string;
@@ -30,6 +30,7 @@ interface UserAttributes {
     syncEmailAddress?: string;
     resetToken?: string | null
     expireToken?: Date | null
+    onCallStatus?: string
     createdAt?: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

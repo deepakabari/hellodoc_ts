@@ -5,6 +5,6 @@ export const fileStorage: StorageEngine = multer.diskStorage({
         cb(null, "./src/public/images");
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
+        cb(null, file.originalname);
     },
 });

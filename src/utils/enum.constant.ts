@@ -56,6 +56,8 @@ export enum RequestStatus {
 }
 
 export enum OnCallStatus {
+    UnScheduled = "UnScheduled",
+    Available = "Available",
     UnAvailable = "Unavailable",
     OnCall = "OnCall",
     Busy = "Busy",

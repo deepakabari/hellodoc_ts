@@ -1,12 +1,20 @@
 import httpCode from "../constants/http.constant";
 import messageConstant from "../constants/message.constant";
-import { User, Request } from "../db/models/index";
+import {
+    User,
+    Request,
+    UserRegion,
+    RequestWiseFiles,
+} from "../db/models/index";
 import { Controller } from "../interfaces";
 import bcrypt from "bcrypt";
-import { AccountType, ProfileStatus, RegionAbbreviation } from "../utils/enum.constant";
-import userSchema from "../validations/user.valid";
+import {
+    AccountType,
+    ProfileStatus,
+    RegionAbbreviation,
+} from "../utils/enum.constant";
+import { userSchema, requestSchema } from "../validations/index";
 import dotenv from "dotenv";
-import requestSchema from "../validations/request.valid";
 import { CaseTag } from "../utils/enum.constant";
 import { Op } from "sequelize";
 
@@ -34,12 +42,18 @@ const createUser: Controller = async (req, res) => {
             phoneNumber,
             street,
             city,
+            address1,
+            medicalLicense,
+            NPINumber,
+            address2,
+            altPhone,
             state,
+            accountType,
             zipCode,
             dob,
         } = req.body;
 
-        let accountType = AccountType.User;
+        // let accountType = AccountType.User;
         let status = ProfileStatus.Active;
 
         // check if user is exists in the database
@@ -68,17 +82,40 @@ const createUser: Controller = async (req, res) => {
             phoneNumber,
             status,
             street,
+            address1,
+            address2,
             city,
             state,
             zipCode,
             dob,
             accountType,
+            altPhone,
+            medicalLicense,
+            NPINumber,
             createdAt: new Date(),
             updatedAt: new Date(),
         });
 
         // if newUser successfully created then give success message
         if (newUser) {
+            // If the accountType is admin or physician, associate regions
+            if (
+                accountType === AccountType.Admin ||
+                accountType === AccountType.Physician
+            ) {
+                // Assuming req.body.regions is an array of region IDs
+                const { regions } = req.body;
+
+                // Create UserRegion instances for each region
+                for (const regionId of regions) {
+                    await UserRegion.create({
+                        userId: newUser.id,
+                        regionId,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    });
+                }
+            }
             // Omit the sensitive information from response
             const {
                 password,
@@ -156,7 +193,7 @@ const createRequest: Controller = async (req, res) => {
         } = req.body;
 
         if (!req.file) {
-            throw new Error(messageConstant.IMAGE_NOT_UPLOADED)
+            throw new Error(messageConstant.IMAGE_NOT_UPLOADED);
         }
         const documentPhoto: string | undefined = req.file?.path;
 
@@ -187,10 +224,7 @@ const createRequest: Controller = async (req, res) => {
         // Get the current date
         const currentDate = new Date();
 
-        // const createAbbreviation = (cityName: string): string => {
-        //     return cityName.slice(0, 2).toUpperCase();
-        // };
-
+        // generate the abbreviation of given state for confirmation number
         function getAbbreviation(
             state: keyof typeof RegionAbbreviation
         ): string | undefined {
@@ -198,8 +232,8 @@ const createRequest: Controller = async (req, res) => {
         }
 
         const regionAbbreviation = getAbbreviation(state);
-        const day = String(currentDate.getDate()).padStart(2, "0");
-        const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+        const day = String(currentDate.getDate()).padStart(2, "0"); // display the date in 2 digit format
+        const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // display the month in 2 digit format
 
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
@@ -223,9 +257,16 @@ const createRequest: Controller = async (req, res) => {
         const newRequest = await Request.create({
             userId,
             caseTag,
-            documentPhoto,
             confirmationNumber,
             ...req.body,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+
+        const documentUpload = await RequestWiseFiles.create({
+            requestId: newRequest.id,
+            fileName: req.file.originalname,
+            docType: "MedicalReport",
             createdAt: new Date(),
             updatedAt: new Date(),
         });
@@ -234,7 +275,7 @@ const createRequest: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_CREATED,
-            data: newRequest,
+            data: { newRequest, documentUpload },
         });
         // any error generated then give error message
     } catch (error: any) {

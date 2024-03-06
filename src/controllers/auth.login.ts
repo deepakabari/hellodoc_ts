@@ -4,12 +4,14 @@ import jwt from "jsonwebtoken";
 import transporter from "../utils/email";
 import { Controller } from "../interfaces";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 import bcrypt from "bcrypt";
 import { Op } from "sequelize";
 import { User } from "../db/models/index";
+import exphbs from "express-handlebars";
+import { loginSchema, resetSchema } from "../validations/index";
 import dotenv from "dotenv";
-import loginSchema from "../validations/login.valid";
-import resetSchema from "../validations/reset.valid";
 dotenv.config();
 
 const SECRET = process.env.SECRET;
@@ -80,9 +82,9 @@ export const login: Controller = async (req, res) => {
 
 /**
  * Function to handle forgotPassword
- * @param req 
- * @param res 
- * @returns 
+ * @param req
+ * @param res
+ * @returns
  */
 export const forgotPassword: Controller = async (req, res) => {
     try {
@@ -130,13 +132,40 @@ export const forgotPassword: Controller = async (req, res) => {
             { where: { email } }
         );
 
-        const resetLink = `http://localhost:3000/admin/resetPassword/${hashedToken}`;
+        // const resetLink = `http://localhost:3000/admin/resetPassword/${hashedToken}`;
+        const resetLink = `http://localhost:3000/resetPassword`;
+
+        // Read template file
+        const data = await new Promise((resolve) => {
+            fs.readFile(
+                path.join(__dirname, "..", "..", "templates", "index.hbs"),
+                "utf8",
+                (err, hbsFile) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    const hbs = exphbs.create({
+                        extname: "hbs",
+                        defaultLayout: false,
+                    }).handlebars;
+
+                    // Compile template with reset link
+                    const template = hbs.compile(hbsFile, {});
+
+                    const htmlToSend = template({
+                        reset_url: resetLink,
+                    });
+                    resolve(htmlToSend);
+                }
+            );
+        });
 
         const mailOptions = {
             from: EMAIL_FROM,
             to: email,
             subject: "Password Reset Email",
-            text: resetLink,
+            text: data,
         };
 
         return transporter.sendMail(mailOptions, (error: Error) => {
@@ -166,7 +195,7 @@ export const resetPassword: Controller = async (req, res) => {
             });
         }
         // Extract email, new password, and confirm password from request body
-        const { newPassword } = req.body;
+        const { newPassword, confirmPassword } = req.body;
         const { hash } = req.params;
 
         // Find user in database with matching email and reset token
@@ -182,6 +211,14 @@ export const resetPassword: Controller = async (req, res) => {
             return res.status(httpCode.UNAUTHORIZED).json({
                 status: httpCode.UNAUTHORIZED,
                 message: messageConstant.INVALID_RESET_TOKEN,
+            });
+        }
+
+        // Check if newPassword matches confirmPassword
+        if (newPassword.localeCompare(confirmPassword) != 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.PASSWORD_NOT_MATCH,
             });
         }
 
