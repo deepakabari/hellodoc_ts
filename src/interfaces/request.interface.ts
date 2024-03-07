@@ -37,6 +37,7 @@ interface RequestAttributes {
     caseTagPhysician?: string;
     adminNotes?: string
     physicianNotes?: string
+    transferNote?: string
     reasonForCancellation?: string
     createdAt: Date;
     updatedAt: Date;

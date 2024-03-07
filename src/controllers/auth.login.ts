@@ -20,6 +20,14 @@ const ITERATION = process.env.ITERATION;
 const EMAIL_FROM = process.env.EMAIL_FROM;
 const RANDOMBYTES = process.env.RANDOMBYTES;
 
+/**
+ * @function login
+ * @param req - Express request object, expects `email` and `password` in the body.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and a token if the login is successful. If the login is not successful, it returns an error message.
+ * @throws - Throws an error if there's an issue in the execution of the function.
+ * @description This function is an Express controller that handles user login. It validates the request body, checks if the user exists, verifies the password, and if everything is valid, it generates a JWT token and sends it in the response.
+ */
 export const login: Controller = async (req, res) => {
     try {
         const { error } = loginSchema.validate(req.body);
@@ -81,10 +89,12 @@ export const login: Controller = async (req, res) => {
 };
 
 /**
- * Function to handle forgotPassword
- * @param req
- * @param res
- * @returns
+ * @function forgotPassword
+ * @param req - Express request object, expects `email` in the body.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and a token if the password reset email is successfully sent. If the email is not sent, it returns an error message.
+ * @throws - Throws an error if there's an issue in the execution of the function.
+ * @description This function is an Express controller that handles the password reset process. It validates the request body, checks if the user exists, generates a reset token, sends a password reset email to the user, and sends a success response with the reset token.
  */
 export const forgotPassword: Controller = async (req, res) => {
     try {
@@ -136,8 +146,9 @@ export const forgotPassword: Controller = async (req, res) => {
 
         // Read template file
         const data = await new Promise((resolve) => {
+            console.log(__dirname);
             fs.readFile(
-                path.join(__dirname, "..", "..", "templates", "index.hbs"),
+                path.join(__dirname, "..", "public", "templates", "resetEmail.hbs"),
                 "utf8",
                 (err, hbsFile) => {
                     if (err) {
@@ -174,7 +185,7 @@ export const forgotPassword: Controller = async (req, res) => {
                 return res.json({
                     status: httpCode.OK,
                     message: messageConstant.RESET_EMAIL_SENT,
-                    data: { token: hashedToken },
+                    data: { token: hashedToken }, // it is only for testing purpose
                 });
             }
         });
@@ -183,6 +194,14 @@ export const forgotPassword: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function resetPassword
+ * @param req - Express request object, expects `newPassword` and `confirmPassword` in the body, and `hash` in the parameters.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code and a success message if the password is successfully reset. If the password is not reset, it returns an error message.
+ * @throws - Throws an error if there's an issue in the execution of the function.
+ * @description This function is an Express controller that handles password reset. It validates the request body, checks if the user exists and the reset token is valid, and if everything is valid, it resets the user's password and sends a success response.
+ */
 export const resetPassword: Controller = async (req, res) => {
     try {
         const { error } = resetSchema.validate(req.body);

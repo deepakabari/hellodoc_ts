@@ -21,7 +21,15 @@ import { Op } from "sequelize";
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
-//
+
+/**
+ * @function createUser
+ * @param req - Express request object, expects user details in the body.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the created user data if the user is successfully created. If the user is not created, it returns an error message.
+ * @throws - Throws an error if there's an issue in the execution of the function.
+ * @description This function is an Express controller that handles user registration. It validates the request body, checks if the user already exists, hashes the password, creates the user, associates the user with regions if the account type is admin or physician, and sends the created user data in the response.
+ */
 const createUser: Controller = async (req, res) => {
     try {
         // check the given data is valid
@@ -143,6 +151,14 @@ const createUser: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function isEmailFound
+ * @param req - Express request object, expects `patientEmail` in the body.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code and a boolean indicating whether the email exists in the database.
+ * @throws - Throws an error if there's an issue in the execution of the function.
+ * @description This function is an Express controller that checks if a patient's email exists in the database. It sends a boolean in the response indicating whether the email exists.
+ */
 const isEmailFound: Controller = async (req, res) => {
     try {
         // get patient email from request body
@@ -160,6 +176,14 @@ const isEmailFound: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function createRequest
+ * @param req - Express request object, expects user details and a file in the body.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the created request data if the request is successfully created. If the request is not created, it returns an error message.
+ * @throws - Throws an error if there's an issue in the execution of the function.
+ * @description This function is an Express controller that handles request creation. It validates the request body, checks if the user already exists, hashes the password, creates the user if they don't exist, generates a confirmation number, creates the request, uploads the document, and sends the created request data in the response.
+ */
 const createRequest: Controller = async (req, res) => {
     try {
         // check the given data is valid

@@ -236,6 +236,12 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
     })
     reasonForCancellation: string
 
+    @Column({
+        allowNull: true,
+        type: DataTypes.STRING,
+    })
+    transferNote: string
+
     @BelongsTo(() => User, {
         foreignKey: "userId",
         targetKey: "id",

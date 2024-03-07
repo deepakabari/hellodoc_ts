@@ -39,4 +39,8 @@ router.get("/accountAccess", adminController.accountAccess)
 
 router.post("/createRole", adminController.createRole)
 
+router.post('/assignCase/:id', adminController.assignCase)
+
+router.post('/transferRequest/:id', adminController.transferRequest)
+
 export default router;

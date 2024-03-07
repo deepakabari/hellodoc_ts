@@ -1,17 +1,17 @@
 import Joi from "joi";
 
 const passRegex =
-    "(?=.*[a-z])(?=.*[A-Z])(?=.*d)(?=.*[$@$!#.])[A-Za-zd$@$!%*?&.]{8,20}";
+    "^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,16}$";
 
 const requestSchema = Joi.object({
     patientFirstName: Joi.string().required(),
     patientLastName: Joi.string().required(),
-    patientEmail: Joi.string().required(),
-    patientPhoneNumber: Joi.string().required(),
+    patientEmail: Joi.string().required().email(),
+    patientPhoneNumber: Joi.string().required().min(10).max(10),
     requestorFirstName: Joi.string().optional(),
     requestorLastName: Joi.string().optional(),
-    requestorPhoneNumber: Joi.string().optional(),
-    requestorEmail: Joi.string().optional(),
+    requestorPhoneNumber: Joi.string().optional().min(10).max(10),
+    requestorEmail: Joi.string().optional().email(),
     password: Joi.string().required().regex(RegExp(passRegex)),
     relationName: Joi.string().optional(),
     street: Joi.string().required(),
