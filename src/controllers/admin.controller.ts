@@ -9,72 +9,71 @@ import sequelize, { FindAttributeOptions, Includeable } from "sequelize";
 import twilio from "twilio";
 dotenv.config();
 
-type AdditionalConditionsType = {
-    caseTag?: string;
-    deletedAt?: null;
-    completedByPhysician?: boolean;
-};
-
 export const getPatientByState: Controller = async (req, res) => {
     try {
         const { state } = req.query;
-
-        let attributes = [
-            "id",
-            [
-                sequelize.fn(
-                    "CONCAT",
-                    sequelize.col("patientFirstName"),
-                    " ",
-                    sequelize.col("patientLastName")
-                ),
-                "Name",
-            ],
-            ["dob", "Date Of Birth"],
-            ["patientPhoneNumber", "Phone"],
-            [
-                sequelize.fn(
-                    "CONCAT",
-                    sequelize.col("Request.street"),
-                    ", ",
-                    sequelize.col("Request.city"),
-                    ", ",
-                    sequelize.col("Request.state"),
-                    ", ",
-                    sequelize.col("Request.zipCode")
-                ),
-                "Address",
-            ],
-        ];
-
-        let additionalConditions: AdditionalConditionsType = {};
-        let includeModels = [
-            {
-                model: User,
-                as: "physician",
-                attributes: [
+        console.log(state);
+        let attributes;
+        let condition;
+        let includeModels;
+        switch (state) {
+            case "new":
+                attributes = [
+                    "id",
                     [
                         sequelize.fn(
                             "CONCAT",
-                            sequelize.col("firstName"),
+                            sequelize.col("patientFirstName"),
                             " ",
-                            sequelize.col("lastName")
+                            sequelize.col("patientLastName")
                         ),
-                        "Physician Name",
+                        "Name",
                     ],
-                ],
-                where: {
-                    id: sequelize.col("Request.physicianId"),
-                },
-            },
-        ];
+                    ["dob", "Date Of Birth"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("requestType"),
+                            " ",
+                            sequelize.col("requestorFirstName"),
+                            " ",
+                            sequelize.col("requestorLastName")
+                        ),
+                        "Requestor",
+                    ],
+                    ["createdAt", "Date Of Service"],
+                    ["patientPhoneNumber", "Phone"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("Request.street"),
+                            ", ",
+                            sequelize.col("Request.city"),
+                            ", ",
+                            sequelize.col("Request.state"),
+                            ", ",
+                            sequelize.col("Request.zipCode")
+                        ),
+                        "Address",
+                    ],
+                    ["patientNote", "Notes"],
+                ];
 
-        switch (state) {
-            case "new":
-                additionalConditions = { caseTag: "New", deletedAt: null };
+                condition = { caseTag: "New", deletedAt: null };
                 break;
             case "pending":
-                attributes.push(
+                attributes = [
+                    "id",
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("patientFirstName"),
+                            " ",
+                            sequelize.col("patientLastName")
+                        ),
+                        "Name",
+                    ],
+                    ["dob", "Date Of Birth"],
                     [
                         sequelize.fn(
                             "CONCAT",
@@ -87,36 +86,282 @@ export const getPatientByState: Controller = async (req, res) => {
                         "Requestor",
                     ],
                     ["updatedAt", "Date Of Service"],
-                    ["patientNote", "Notes"]
-                );
-                additionalConditions = { caseTag: "Pending", deletedAt: null };
+                    ["patientPhoneNumber", "Phone"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("Request.street"),
+                            ", ",
+                            sequelize.col("Request.city"),
+                            ", ",
+                            sequelize.col("Request.state"),
+                            ", ",
+                            sequelize.col("Request.zipCode")
+                        ),
+                        "Address",
+                    ],
+                    ["transferNote", "Notes"],
+                ];
+                condition = { caseTag: "Pending", deletedAt: null };
+                includeModels = [
+                    {
+                        model: User,
+                        as: "physician",
+                        attributes: [
+                            [
+                                sequelize.fn(
+                                    "CONCAT",
+                                    sequelize.col("firstName"),
+                                    " ",
+                                    sequelize.col("lastName")
+                                ),
+                                "Physician Name",
+                            ],
+                        ],
+                        where: {
+                            id: sequelize.col("Request.physicianId"),
+                        },
+                    },
+                ];
                 break;
-
-            case "conclude":
-            case "toClose":
-            case "unPaid":
-                attributes.push(
+            case "active":
+                attributes = [
+                    "id",
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("patientFirstName"),
+                            " ",
+                            sequelize.col("patientLastName")
+                        ),
+                        "Name",
+                    ],
+                    ["dob", "Date Of Birth"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("requestType"),
+                            " ",
+                            sequelize.col("requestorFirstName"),
+                            " ",
+                            sequelize.col("requestorLastName")
+                        ),
+                        "Requestor",
+                    ],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("requestType"),
+                            " ",
+                            sequelize.col("requestorFirstName"),
+                            " ",
+                            sequelize.col("requestorLastName")
+                        ),
+                        "Requestor",
+                    ],
                     ["updatedAt", "Date Of Service"],
-                    ["patientNote", "Notes"]
-                );
-                additionalConditions = { caseTag: state, deletedAt: null };
-                // Specific condition for 'Conclude'
-                if (state === "conclude") {
-                    additionalConditions.completedByPhysician = true;
-                }
+                    ["patientPhoneNumber", "Phone"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("Request.street"),
+                            ", ",
+                            sequelize.col("Request.city"),
+                            ", ",
+                            sequelize.col("Request.state"),
+                            ", ",
+                            sequelize.col("Request.zipCode")
+                        ),
+                        "Address",
+                    ],
+                    ["transferNote", "Notes"],
+                ];
+                condition = { caseTag: "Active", deletedAt: null };
+                includeModels = [
+                    {
+                        model: User,
+                        as: "physician",
+                        attributes: [
+                            [
+                                sequelize.fn(
+                                    "CONCAT",
+                                    sequelize.col("firstName"),
+                                    " ",
+                                    sequelize.col("lastName")
+                                ),
+                                "Physician Name",
+                            ],
+                        ],
+                        where: {
+                            id: sequelize.col("Request.physicianId"),
+                        },
+                    },
+                ];
+                break;     
+            case "conclude":
+                attributes = [
+                    "id",
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("patientFirstName"),
+                            " ",
+                            sequelize.col("patientLastName")
+                        ),
+                        "Name",
+                    ],
+                    ["dob", "Date Of Birth"],
+                    ["updatedAt", "Date Of Service"],
+                    ["patientPhoneNumber", "Phone"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("Request.street"),
+                            ", ",
+                            sequelize.col("Request.city"),
+                            ", ",
+                            sequelize.col("Request.state"),
+                            ", ",
+                            sequelize.col("Request.zipCode")
+                        ),
+                        "Address",
+                    ],
+                ]
+                condition = { caseTag: "Conclude", deletedAt: null };
+                includeModels = [
+                    {
+                        model: User,
+                        as: "physician",
+                        attributes: [
+                            [
+                                sequelize.fn(
+                                    "CONCAT",
+                                    sequelize.col("firstName"),
+                                    " ",
+                                    sequelize.col("lastName")
+                                ),
+                                "Physician Name",
+                            ],
+                        ],
+                        where: {
+                            id: sequelize.col("Request.physicianId"),
+                        },
+                    },
+                ];
                 break;
-
+            case 'toClose':
+                attributes = [
+                    "id",
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("patientFirstName"),
+                            " ",
+                            sequelize.col("patientLastName")
+                        ),
+                        "Name",
+                    ],
+                    ["dob", "Date Of Birth"],
+                    ["state", "Region"],
+                    ["updatedAt", "Date Of Service"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("Request.street"),
+                            ", ",
+                            sequelize.col("Request.city"),
+                            ", ",
+                            sequelize.col("Request.state"),
+                            ", ",
+                            sequelize.col("Request.zipCode")
+                        ),
+                        "Address",
+                    ],
+                    ["transferNote", "Notes"],
+                ]
+                condition = { caseTag: "To Close", deletedAt: null };
+                includeModels = [
+                    {
+                        model: User,
+                        as: "physician",
+                        attributes: [
+                            [
+                                sequelize.fn(
+                                    "CONCAT",
+                                    sequelize.col("firstName"),
+                                    " ",
+                                    sequelize.col("lastName")
+                                ),
+                                "Physician Name",
+                            ],
+                        ],
+                        where: {
+                            id: sequelize.col("Request.physicianId"),
+                        },
+                    },
+                ];
+                break;
+            case "unPaid":
+                attributes = [
+                    "id",
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("patientFirstName"),
+                            " ",
+                            sequelize.col("patientLastName")
+                        ),
+                        "Name",
+                    ],
+                    ["updatedAt", "Date Of Service"],
+                    ["patientPhoneNumber", "Phone"],
+                    [
+                        sequelize.fn(
+                            "CONCAT",
+                            sequelize.col("Request.street"),
+                            ", ",
+                            sequelize.col("Request.city"),
+                            ", ",
+                            sequelize.col("Request.state"),
+                            ", ",
+                            sequelize.col("Request.zipCode")
+                        ),
+                        "Address",
+                    ],
+                ]
+                condition = { caseTag: "UnPaid", deletedAt: null };
+                includeModels = [
+                    {
+                        model: User,
+                        as: "physician",
+                        attributes: [
+                            [
+                                sequelize.fn(
+                                    "CONCAT",
+                                    sequelize.col("firstName"),
+                                    " ",
+                                    sequelize.col("lastName")
+                                ),
+                                "Physician Name",
+                            ],
+                        ],
+                        where: {
+                            id: sequelize.col("Request.physicianId"),
+                        },
+                    },
+                ];
+                break;
             default:
-                return res.status(httpCode.BAD_REQUEST).json({
-                    status: httpCode.BAD_REQUEST,
-                    message: messageConstant.BAD_REQUEST,
-                });
+                return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
+                    status: httpCode.INTERNAL_SERVER_ERROR,
+                    message: messageConstant.INTERNAL_SERVER_ERROR
+                })
         }
 
         const patients = await Request.findAll({
             attributes: attributes as FindAttributeOptions,
-            where: additionalConditions,
-            include: includeModels as Includeable,
+            where: condition,
+            include: includeModels as unknown as Includeable[],
         });
 
         return res.json({

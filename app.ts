@@ -43,7 +43,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(router);
 
 app.get("/", (req: Request, res: Response) => {
-    res.send("Hello World!");
+    res.send("API is working...");
 });
 
 app.use(errorHandler);

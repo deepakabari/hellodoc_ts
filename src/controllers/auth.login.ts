@@ -9,7 +9,7 @@ import path from "path";
 import bcrypt from "bcrypt";
 import { Op } from "sequelize";
 import { User } from "../db/models/index";
-import exphbs from "express-handlebars";
+import * as exphbs from "express-handlebars";
 import { loginSchema, resetSchema } from "../validations/index";
 import dotenv from "dotenv";
 dotenv.config();
@@ -132,8 +132,7 @@ export const forgotPassword: Controller = async (req, res) => {
             { where: { email } }
         );
 
-        // const resetLink = `http://localhost:3000/admin/resetPassword/${hashedToken}`;
-        const resetLink = `http://localhost:3000/resetPassword`;
+        const resetLink = `http://localhost:3000/auth/resetPassword/${hashedToken}`;
 
         // Read template file
         const data = await new Promise((resolve) => {
@@ -152,7 +151,6 @@ export const forgotPassword: Controller = async (req, res) => {
 
                     // Compile template with reset link
                     const template = hbs.compile(hbsFile, {});
-
                     const htmlToSend = template({
                         reset_url: resetLink,
                     });
@@ -165,7 +163,7 @@ export const forgotPassword: Controller = async (req, res) => {
             from: EMAIL_FROM,
             to: email,
             subject: "Password Reset Email",
-            text: data,
+            html: data,
         };
 
         return transporter.sendMail(mailOptions, (error: Error) => {
