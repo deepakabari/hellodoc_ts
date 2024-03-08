@@ -1,6 +1,6 @@
 export enum RequestType {
     Patient = "Patient",
-    Family = "Relative/Family",
+    Family = "Family/Friend",
     Concierge = "Concierge",
     BusinessPartner = "BusinessPartner",
 }

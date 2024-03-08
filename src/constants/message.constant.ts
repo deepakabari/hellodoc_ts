@@ -29,7 +29,9 @@ const messageConstant = {
     ERROR_DOWNLOAD_FILE: "Error when downloading file",
     MESSAGE_SENT_SUCCESSFULLY: "Message sent successfully",
     ERROR_SEND_MESSAGE: "Error while sending message",
-    ROLE_ALREADY_EXISTS: "Role already exists"
+    ROLE_ALREADY_EXISTS: "Role already exists",
+    REQUEST_EMAIL_SMS_SENT: "Request email and sms sent successfully",
+    MISSING_SECTION_OR_UPDATED_DATA: "Missing section or updates data"
 };
 
 export default messageConstant;

@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { AccountType, CaseTag, RequestStatus } from "../utils/enum.constant";
 import httpCode from "../constants/http.constant";
 import messageConstant from "../constants/message.constant";
@@ -10,10 +12,16 @@ import {
 } from "../db/models/index";
 import { Controller } from "../interfaces";
 import transporter from "../utils/email";
-import dotenv from "dotenv";
 import sequelize, { FindAttributeOptions, Includeable } from "sequelize";
 import twilio from "twilio";
-import { cancelCaseSchema, assignSchema, editCloseSchema, roleSchema } from "../validations";
+import * as exphbs from "express-handlebars";
+import {
+    cancelCaseSchema,
+    assignSchema,
+    editCloseSchema,
+    roleSchema,
+} from "../validations";
+import dotenv from "dotenv";
 dotenv.config();
 
 interface RoleGroup {
@@ -59,7 +67,7 @@ export const getPatientByState: Controller = async (req, res) => {
                         ),
                         "Requestor",
                     ],
-                    ["createdAt", "Date Of Service"],
+                    ["createdAt", "Requested Date"],
                     ["patientPhoneNumber", "Phone"],
                     [
                         sequelize.fn(
@@ -244,6 +252,7 @@ export const getPatientByState: Controller = async (req, res) => {
                         ),
                         "Address",
                     ],
+                    ["requestType", "Requestor Type"],
                 ];
                 condition = { caseTag: "Conclude", deletedAt: null };
                 includeModels = [
@@ -267,7 +276,7 @@ export const getPatientByState: Controller = async (req, res) => {
                     },
                 ];
                 break;
-            case "toClose":
+            case "to close":
                 attributes = [
                     "id",
                     [
@@ -296,6 +305,7 @@ export const getPatientByState: Controller = async (req, res) => {
                         "Address",
                     ],
                     ["transferNote", "Notes"],
+                    ["requestType", "Requestor Type"],
                 ];
                 condition = { caseTag: "To Close", deletedAt: null };
                 includeModels = [
@@ -319,7 +329,7 @@ export const getPatientByState: Controller = async (req, res) => {
                     },
                 ];
                 break;
-            case "unPaid":
+            case "unpaid":
                 attributes = [
                     "id",
                     [
@@ -346,6 +356,7 @@ export const getPatientByState: Controller = async (req, res) => {
                         ),
                         "Address",
                     ],
+                    ["requestType", "Requestor Type"],
                 ];
                 condition = { caseTag: "UnPaid", deletedAt: null };
                 includeModels = [
@@ -498,11 +509,12 @@ export const cancelCase: Controller = async (req, res) => {
             });
         }
         const { adminNotes, reasonForCancellation } = req.body;
-        const cancelCase = await Request.update(
+        await Request.update(
             {
                 adminNotes,
                 reasonForCancellation,
                 requestStatus: RequestStatus.CancelledByAdmin,
+                deletedAt: new Date(),
             },
             {
                 where: {
@@ -514,7 +526,6 @@ export const cancelCase: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: cancelCase,
         });
     } catch (error) {
         throw error;
@@ -526,15 +537,16 @@ export const cancelCase: Controller = async (req, res) => {
  * @param req - Express request object, expects `id` in the parameters and `description` in the body.
  * @param res - Express response object used to send the response.
  * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the updated case data.
- * @description This function is an Express controller that updates a case with the provided description, changes the status of the case to 'Blocked', and sends the updated case data in the response.
+ * @description This function is an Express controller that updates a case with the provided description, changes the status of the case to 'Blocked'.
  */
 export const blockCase: Controller = async (req, res) => {
     try {
         const { description } = req.body;
-        const blockCase = await Request.update(
+        await Request.update(
             {
                 reasonForCancellation: description,
                 requestStatus: RequestStatus.Blocked,
+                deletedAt: new Date(),
             },
             { where: { id: req.params.id } }
         );
@@ -542,7 +554,6 @@ export const blockCase: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: blockCase,
         });
     } catch (error) {
         throw error;
@@ -554,13 +565,14 @@ export const blockCase: Controller = async (req, res) => {
  * @param req - Express request object, expects `id` in the parameters.
  * @param res - Express response object used to send the response.
  * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the updated case data.
- * @description This function is an Express controller that updates the status of a case to 'Cleared' and sends the updated case data in the response.
+ * @description This function is an Express controller that updates the status of a case to 'Cleared'.
  */
 export const clearCase: Controller = async (req, res) => {
     try {
-        const clearCase = await Request.update(
+        Request.update(
             {
                 requestStatus: RequestStatus.Cleared,
+                deletedAt: new Date(),
             },
             {
                 where: { id: req.params.id },
@@ -569,7 +581,6 @@ export const clearCase: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: clearCase,
         });
     } catch (error) {
         throw error;
@@ -609,18 +620,18 @@ export const sendAgreement: Controller = async (req, res) => {
             if (error) throw new Error(error.message);
             console.log("Email Sent Successfully");
 
-            const client = twilio(
-                process.env.TWILIO_ACCOUNT_SID,
-                process.env.TWILIO_AUTH_TOKEN
-            );
+            // const client = twilio(
+            //     process.env.TWILIO_ACCOUNT_SID,
+            //     process.env.TWILIO_AUTH_TOKEN
+            // );
 
-            client.messages
-                .create({
-                    body: "Here you are selected for Maidaan. accept it otherwise we will see you.",
-                    to: phoneNumber,
-                    from: process.env.TWILIO_PHONE_NUMBER,
-                })
-                .then((message) => console.log(message.sid));
+            // client.messages
+            //     .create({
+            //         body: "Here you are selected for Maidaan. accept it otherwise we will see you.",
+            //         to: phoneNumber,
+            //         from: process.env.TWILIO_PHONE_NUMBER,
+            //     })
+            //     .then((message) => console.log(message.sid));
 
             return res.json({
                 status: httpCode.OK,
@@ -698,7 +709,7 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
  * @param req - Express request object, expects `transferNote` in the body.
  * @param res - Express response object used to send the response.
  * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code and a success message.
- * @description This function is an Express controller that assigns a case based on the provided physicianId, admin note and update physicianId and adminNotes and caseTag: Pending and sends a success response.
+ * @description This function is an Express controller that assigns a case based on the provided physicianId, admin note and update physicianId and adminNotes and caseTag: Pending.
  */
 export const assignCase: Controller = async (req, res) => {
     try {
@@ -811,7 +822,7 @@ export const closeCase: Controller = async (req, res) => {
  * @param req - Express request object, expects `patientPhoneNumber` and `patientEmail` in the body.
  * @param res - Express response object used to send the response.
  * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the updated case data.
- * @description This function is an Express controller that updates the phone number and email of a patient in a case and sends the updated case data in the response.
+ * @description This function is an Express controller that updates the phone number and email of a patient in a case.
  */
 export const editCloseCase: Controller = async (req, res) => {
     try {
@@ -824,7 +835,7 @@ export const editCloseCase: Controller = async (req, res) => {
         }
         const { patientPhoneNumber, patientEmail } = req.body;
 
-        const editCloseCase = await Request.update(
+        await Request.update(
             {
                 patientPhoneNumber,
                 patientEmail,
@@ -839,7 +850,6 @@ export const editCloseCase: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: editCloseCase,
         });
     } catch (error) {
         throw error;
@@ -893,9 +903,44 @@ export const adminProfile: Controller = async (req, res) => {
     }
 };
 
-// export const downloadDocument: Controller = async (req, res) => {
+/**
+ * 
+ * @param req - Express request object.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code and a success message.
+ * @description - This function is an Express controller that updates the  administration or Billing information of admin profile.
+ */
+export const editAdminProfile: Controller = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { section, updatedData } = req.body;
 
-// };
+        if (!section || !updatedData) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.MISSING_SECTION_OR_UPDATED_DATA,
+            });
+        }
+
+        switch (section) {
+            case "administration":
+                const adminFields = [
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "confirmEmail",
+                    "phoneNumber",
+                ];
+        }
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
 
 /**
  * @function requestSupport
@@ -924,13 +969,35 @@ export const requestSupport: Controller = async (req, res) => {
 };
 
 /**
+ * Handles the HTTP request to retrieve account access roles.
+ * @param req - The Express Request object containing the incoming request data.
+ * @param res - The Express Response object used to send back the desired HTTP response.
+ * @returns - A promise that resolves to the Express Response object, which sends a JSON response containing the status code, success message, and the retrieved account access data.
+ */
+export const accountAccess: Controller = async (req, res) => {
+    try {
+        const accountAccess = await Role.findAll({
+            attributes: ["id", "Name", ["accountType", "Account Type"]],
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: accountAccess,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
  * @function accountAccess
  * @param req - Express request object.
  * @param res - Express response object used to send the response.
  * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the grouped roles data.
  * @description This function is an Express controller that retrieves all roles, groups them by account type, and sends the grouped roles data in the response.
  */
-export const accountAccess: Controller = async (req, res) => {
+export const accountAccessByAccountType: Controller = async (req, res) => {
     try {
         const roles = await Role.findAll({
             attributes: ["accountType", "Name"],
@@ -1026,6 +1093,163 @@ export const transferRequest: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * Sends an email to a patient with a link to create a request on the HalloDoc platform.
+ * @param req - The Express Request object containing the incoming request data, including the patient's first name, last name, phone number, and email.
+ * @param res - The Express Response object used to send back the desired HTTP response.
+ * @returns - A promise that resolves to the Express Response object, which sends a JSON response containing the status code and message indicating the result of the email sending operation.
+ */
+export const sendPatientRequest: Controller = async (req, res) => {
+    try {
+        const { firstName, lastName, phoneNumber, email } = req.body;
+
+        const createRequestLink = "http://localhost:3000/createRequest";
+
+        const data = await new Promise((resolve) => {
+            console.log(__dirname);
+            fs.readFile(
+                path.join(
+                    __dirname,
+                    "..",
+                    "public",
+                    "templates",
+                    "sendRequestEmail.hbs"
+                ),
+                "utf8",
+                (err, hbsFile) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    const hbs = exphbs.create({
+                        extname: "hbs",
+                        defaultLayout: false,
+                    }).handlebars;
+
+                    // Compile template with reset link
+                    const template = hbs.compile(hbsFile, {});
+                    const htmlToSend = template({
+                        patientName: firstName + lastName,
+                        createRequestLink,
+                    });
+                    resolve(htmlToSend);
+                }
+            );
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: email,
+            subject: "Create your account at HalloDoc Platform",
+            html: data,
+        };
+
+        return transporter.sendMail(mailOptions, (error: Error) => {
+            if (error) {
+                throw error;
+            } else {
+                // const client = twilio(
+                //     process.env.TWILIO_ACCOUNT_SID,
+                //     process.env.TWILIO_AUTH_TOKEN
+                // );
+
+                // client.messages
+                //     .create({
+                //         body: "Here you are selected for Maidaan. accept it otherwise we will see you.",
+                //         to: "+18777804236",
+                //         from: process.env.TWILIO_PHONE_NUMBER,
+                //     })
+                //     .then((message) => console.log(message.sid));
+                return res.json({
+                    status: httpCode.OK,
+                    message: messageConstant.REQUEST_EMAIL_SMS_SENT,
+                });
+            }
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * Retrieves the history of patient requests from the database.
+ * @param req - The Express Request object containing the incoming request data.
+ * @param res - The Express Response object used to send back the desired HTTP response.
+ * @returns - A promise that resolves to the Express Response object, which sends a JSON response containing the status code, success message, and the retrieved patients' history data.
+ */
+export const getPatientHistory: Controller = async (req, res) => {
+    try {
+        const patientsHistory = await Request.findAll({
+            attributes: [
+                "id",
+                ["patientFirstName", "First Name"],
+                ["patientLastName", "Last Name"],
+                ["patientEmail", "Email"],
+                ["patientPhoneNumber", "Phone"],
+                [
+                    sequelize.fn(
+                        "CONCAT",
+                        sequelize.col("Request.street"),
+                        ", ",
+                        sequelize.col("Request.city"),
+                        ", ",
+                        sequelize.col("Request.state"),
+                        ", ",
+                        sequelize.col("Request.zipCode")
+                    ),
+                    "Address",
+                ],
+            ],
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: patientsHistory,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * Retrieves a list of blocked requests from the database.
+ * @param req - The Express Request object containing the incoming request data.
+ * @param res - The Express Response object used to send back the desired HTTP response.
+ * @returns - A promise that resolves to the Express Response object, which sends a JSON response containing the status code, success message, and the data of blocked requests.
+ */
+export const blockHistory: Controller = async (req, res) => {
+    try {
+        const blockRequests = await Request.findAll({
+            attributes: [
+                "id",
+                [
+                    sequelize.fn(
+                        "CONCAT",
+                        sequelize.col("patientFirstName"),
+                        " ",
+                        sequelize.col("patientLastName")
+                    ),
+                    "Name",
+                ],
+                ["patientPhoneNumber", "Phone Number"],
+                ["patientEmail", "Email"],
+                ["createdAt", "Created Date"],
+                ["patientNote", "Notes"],
+            ],
+            where: { requestStatus: RequestStatus.Blocked },
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: blockRequests,
         });
     } catch (error) {
         throw error;

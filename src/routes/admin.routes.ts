@@ -9,9 +9,9 @@ router.get("/viewCase/:id", adminController.viewCase);
 
 router.get("/viewNotes/:id", adminController.viewNotes);
 
-router.post("/cancelCase/:id", adminController.cancelCase);
+router.patch("/cancelCase/:id", adminController.cancelCase);
 
-router.post("/blockCase/:id", adminController.blockCase);
+router.patch("/blockCase/:id", adminController.blockCase);
 
 router.post("/clearCase/:id", adminController.clearCase);
 
@@ -31,16 +31,22 @@ router.get("/physicianByRegion/:id", adminController.getPhysicianByRegion);
 
 router.post("/assignCase", adminController.assignCase);
 
-// router.get("/download/:file(*)", adminController.downloadDocument);
+router.get("/requestSupport", adminController.requestSupport);
 
-router.get("/requestSupport", adminController.requestSupport)
+router.get("/accountAccess", adminController.accountAccess);
 
-router.get("/accountAccess", adminController.accountAccess)
+router.get("/accountAccessByAccountType", adminController.accountAccessByAccountType);
 
-router.post("/createRole", adminController.createRole)
+router.post("/createRole", adminController.createRole);
 
-router.post('/assignCase/:id', adminController.assignCase)
+router.post("/assignCase/:id", adminController.assignCase);
 
-router.post('/transferRequest/:id', adminController.transferRequest)
+router.post("/transferRequest/:id", adminController.transferRequest);
+
+router.post("/sendPatientRequest", adminController.sendPatientRequest);
+
+router.get("/patientHistory", adminController.getPatientHistory);
+
+router.get("/blockHistory", adminController.blockHistory)
 
 export default router;

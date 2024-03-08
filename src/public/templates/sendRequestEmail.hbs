@@ -1,8 +1,35 @@
-<!-- The create-account.hbs file in views folder -->
-<p>Hi {{patientName}},</p>
-<p>Thank you for choosing Hospital/Clinic Name for your health care needs. We are glad to have you as our valued patient.</p>
-<p>To access your medical records, test results, appointment reminders, and other health information, you need to create an account on our secure online portal. Please click on the link below to create your account:</p>
-<p><a href="{{createAccountLink}}">Create Account</a></p>
-<p>Once you create your account, you can log in anytime using your email and password.</p>
-<p>Thank you,</p>
-<p>Hospital/Clinic Name</p>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create your first Request in HalloDoc platform</title>
+    <style type="text/css">
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+        <p>Hi {{patientName}},</p>
+        <p>Thank you for choosing HalloDoc for your health care needs. We are glad to have you as our valued patient.
+        </p>
+        <p>To access your medical records, test results, appointment reminders, and other health information, you need
+            to create an account on our secure online portal. Please click on the button below to create your account:
+        </p>
+        <button><a href="{{createRequestLink}}">Create Account</a></button>
+        <p>Once you create your account, you can log in anytime using your email and password.</p>
+        <p>Thank you,</p>
+        <p>HalloDoc Team</p>
+    </div>
+
+</body>
+
+</html>
