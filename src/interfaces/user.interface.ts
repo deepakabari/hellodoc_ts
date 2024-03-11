@@ -31,6 +31,7 @@ interface UserAttributes {
     resetToken?: string | null
     expireToken?: Date | null
     onCallStatus?: string
+    isDeleted?: boolean
     createdAt?: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

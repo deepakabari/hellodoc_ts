@@ -18,9 +18,9 @@ export default (req: Request, res: Response, next: NextFunction): void => {
         }
 
         const token = authHeader.split(" ")[1];
-
+        
         const decodedToken = jwt.verify(token, SECRET) as jwt.JwtPayload;
-        console.log(decodedToken);
+        
         if (!decodedToken) {
             const error: any = messageConstant.NOT_AUTHORIZED;
             error.statusCode = httpCode.UNAUTHORIZED;

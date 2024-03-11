@@ -36,6 +36,18 @@ class RequestWiseFiles extends Model<RequestWiseFilesAttributes, RequestWiseFile
     })
     docType: string
 
+    @Column({
+        allowNull: true,
+        type: DataTypes.BOOLEAN,
+    })
+    isDeleted?: boolean;
+
+    @Column({
+        allowNull: true,
+        type: DataTypes.STRING,
+    })
+    documentPath?: string;
+
     @BelongsTo(() => Request, { foreignKey: "requestId", targetKey: "id"})
     request: Request
 }

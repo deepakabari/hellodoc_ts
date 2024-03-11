@@ -60,6 +60,7 @@ export const login: Controller = async (req, res) => {
         if (isPasswordMatch) {
             const token = jwt.sign(
                 {
+                    id: user.id,
                     userName: user.userName,
                     email: user.email,
                     firstName: user.firstName,
@@ -130,8 +131,8 @@ export const forgotPassword: Controller = async (req, res) => {
         // create an instance of expireToken
         let expireToken = new Date();
 
-        // set the expire token time to 15 minutes
-        expireToken.setMinutes(expireToken.getMinutes() + 15);
+        // set the expire token time to 60 minutes
+        expireToken.setMinutes(expireToken.getMinutes() + 60);
 
         // update the resetToken and expireToken to the Admin table
         await User.update(

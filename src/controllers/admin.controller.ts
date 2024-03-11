@@ -28,6 +28,23 @@ interface RoleGroup {
     [key: string]: string[];
 }
 
+type AdminUpdates = {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    confirmEmail?: string;
+    phoneNumber?: string;
+};
+
+type BillingUpdates = {
+    address1?: string;
+    address2?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    altPhone?: string;
+};
+
 /**
  * @function getPatientByState
  * @param req - Express request object, expects `state` in the query parameters.
@@ -437,6 +454,7 @@ export const viewCase: Controller = async (req, res) => {
                     "Address",
                 ],
                 ["roomNumber", "Room"],
+                ["caseTag", "Case Tag"],
             ],
             where: {
                 id: req.params.id,
@@ -458,34 +476,58 @@ export const viewCase: Controller = async (req, res) => {
  * @param req - Express request object, expects `id` in the parameters and `adminNotes` in the body.
  * @param res - Express response object used to send the response.
  * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the notes data along with the updated admin notes.
- * @description This function is an Express controller that retrieves the transfer and physician notes of a case by its ID, updates the admin notes of the case, and sends the notes data and the updated admin notes in the response.
+ * @description This function is an Express controller that retrieves the transfer and physician notes of a case by its ID, and sends the notes data.
  */
 export const viewNotes: Controller = async (req, res) => {
     try {
+        const { id } = req.params;
         const notes = await Request.findAll({
             attributes: [
                 ["transferNote", "Transfer Notes"],
                 ["physicianNotes", "Physician Notes"],
+                ["adminNotes", "Admin Notes"],
+                ["patientNote", "Patient Note"],
             ],
             where: {
-                id: req.params.id,
+                id,
             },
         });
-        const { adminNotes } = req.body;
-        const updateAdminNotes = Request.update(
-            {
-                adminNotes,
-            },
-            { where: { id: req.params.id } }
-        );
 
         return res.json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: {
                 notes,
-                updateAdminNotes,
             },
+        });
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+/**
+ * @function updateNotes
+ * @param req - Express request object, expects `id` in the parameters and `adminNotes` in the body.
+ * @param res - Express response object used to send back the HTTP response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the HTTP status code and a success message.
+ * @description This controller function updates the `adminNotes` field for a specific request identified by `id`. It uses the `Request.update` method to apply the changes to the database. Upon successful update, it sends back a response with a status code and a success message.
+ */
+export const updateNotes: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { adminNotes } = req.body;
+
+        await Request.update(
+            {
+                adminNotes,
+            },
+            { where: { id } }
+        );
+
+        return res.json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
         });
     } catch (error) {
         throw error;
@@ -514,6 +556,7 @@ export const cancelCase: Controller = async (req, res) => {
                 adminNotes,
                 reasonForCancellation,
                 requestStatus: RequestStatus.CancelledByAdmin,
+                caseTag: CaseTag.Close,
                 deletedAt: new Date(),
             },
             {
@@ -569,9 +612,10 @@ export const blockCase: Controller = async (req, res) => {
  */
 export const clearCase: Controller = async (req, res) => {
     try {
-        Request.update(
+        await Request.update(
             {
                 requestStatus: RequestStatus.Cleared,
+                isDeleted: true,
                 deletedAt: new Date(),
             },
             {
@@ -602,23 +646,55 @@ export const sendAgreement: Controller = async (req, res) => {
             return res.status(httpCode.NOT_FOUND).json({
                 status: httpCode.NOT_FOUND,
                 message: messageConstant.USER_NOT_EXIST,
-                data: null,
             });
         }
 
         const phoneNumber = user.patientPhoneNumber;
         const email = user.patientEmail;
 
+        const agreementLink = "http://localhost:3000/agreement";
+
+        const data = await new Promise((resolve) => {
+            fs.readFile(
+                path.join(
+                    __dirname,
+                    "..",
+                    "public",
+                    "templates",
+                    "sendAgreementEmail.hbs"
+                ),
+                "utf8",
+                (err, hbsFile) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    const hbs = exphbs.create({
+                        extname: "hbs",
+                        defaultLayout: false,
+                    }).handlebars;
+
+                    // Compile template with reset link
+                    const template = hbs.compile(hbsFile, {});
+                    const htmlToSend = template({
+                        recipientName: user.patientFirstName,
+                        agreementLink,
+                    });
+                    resolve(htmlToSend);
+                }
+            );
+        });
+
         let mailOptions = {
             from: process.env.EMAIL,
             to: email,
             subject: "Agreement",
-            text: "Here is the agreement.",
+            html: data,
         };
 
         return transporter.sendMail(mailOptions, (error: Error) => {
             if (error) throw new Error(error.message);
-            console.log("Email Sent Successfully");
+            console.log("Agreement email Sent Successfully");
 
             // const client = twilio(
             //     process.env.TWILIO_ACCOUNT_SID,
@@ -635,7 +711,7 @@ export const sendAgreement: Controller = async (req, res) => {
 
             return res.json({
                 status: httpCode.OK,
-                message: messageConstant.RESET_EMAIL_SENT,
+                message: messageConstant.AGREEMENT_EMAIL_SENT,
             });
         });
     } catch (error) {
@@ -783,7 +859,7 @@ export const viewUploads: Controller = async (req, res) => {
  * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the case data.
  * @description This function is an Express controller that retrieves a case by its ID and sends the case data in the response.
  */
-export const closeCase: Controller = async (req, res) => {
+export const closeCaseView: Controller = async (req, res) => {
     try {
         const closeCase = await Request.findAll({
             attributes: [
@@ -803,7 +879,16 @@ export const closeCase: Controller = async (req, res) => {
                 ["dob", "Date Of Birth"],
                 ["patientPhoneNumber", "Phone Number"],
                 ["patientEmail", "Email"],
-                ["documentPhoto", "Documents"],
+            ],
+            include: [
+                {
+                    model: RequestWiseFiles,
+                    attributes: [
+                        "fileName",
+                        "documentPath",
+                        ["createdAt", "Upload Date"],
+                    ],
+                },
             ],
             where: { id: req.params.id },
         });
@@ -812,6 +897,31 @@ export const closeCase: Controller = async (req, res) => {
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: closeCase,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * @function closeCase
+ * @param req - Express request object. Expects a parameter `id` representing the case ID.
+ * @param res - Express response object used to send back the HTTP response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the HTTP status code and a success message.
+ * @description This controller function updates the status of a case to 'Closed' and its case tag to 'UnPaid'. It is triggered when a case with the tag 'Close' needs to be updated to reflect its closure. The function responds with a success message upon successful update.
+ */
+export const closeCase: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await Request.update(
+            { requestStatus: RequestStatus.Closed, caseTag: CaseTag.UnPaid },
+            { where: { id, caseTag: CaseTag.Close } }
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
         });
     } catch (error) {
         throw error;
@@ -904,7 +1014,6 @@ export const adminProfile: Controller = async (req, res) => {
 };
 
 /**
- * 
  * @param req - Express request object.
  * @param res - Express response object used to send the response.
  * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code and a success message.
@@ -912,7 +1021,7 @@ export const adminProfile: Controller = async (req, res) => {
  */
 export const editAdminProfile: Controller = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const { id } = req.params;
         const { section, updatedData } = req.body;
 
         if (!section || !updatedData) {
@@ -922,6 +1031,21 @@ export const editAdminProfile: Controller = async (req, res) => {
             });
         }
 
+        const updateAdminDetails = async (
+            userId: string,
+            updates: AdminUpdates | BillingUpdates
+        ) => {
+            try {
+                await User.update(updates, {
+                    where: { id },
+                });
+                return true;
+            } catch (error) {
+                return false;
+            }
+        };
+
+        let updateResult = false;
         switch (section) {
             case "administration":
                 const adminFields = [
@@ -931,6 +1055,39 @@ export const editAdminProfile: Controller = async (req, res) => {
                     "confirmEmail",
                     "phoneNumber",
                 ];
+                let adminUpdates: any = {};
+                adminFields.forEach((field) => {
+                    if (updatedData[field] != undefined) {
+                        adminUpdates[field] = updatedData[field];
+                    }
+                });
+                updateResult = await updateAdminDetails(id, adminUpdates);
+                break;
+
+            case "billing":
+                const billingFields = [
+                    "address1",
+                    "address2",
+                    "city",
+                    "state",
+                    "zipCode",
+                    "altPhone",
+                ];
+                let billingUpdates: any = {};
+                billingFields.forEach((field) => {
+                    if (updatedData[field] !== undefined) {
+                        billingUpdates[field] = updatedData[field];
+                    }
+                });
+                updateResult = await updateAdminDetails(id, billingUpdates);
+                break;
+        }
+
+        if (!updateResult) {
+            return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
+                status: httpCode.INTERNAL_SERVER_ERROR,
+                message: messageConstant.UPDATE_FAILED,
+            });
         }
 
         return res.status(httpCode.OK).json({
@@ -1070,6 +1227,44 @@ export const createRole: Controller = async (req, res) => {
 };
 
 /**
+ * @function userAccess
+ * @param req - Express request object.
+ * @param res - Express response object used to send back the HTTP response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the HTTP status code, a success message, and an array of user data.
+ * @description This controller function retrieves a list of users from the database using the `User.findAll` method. It selects specific attributes for each user, including the user's ID, account type, point of contact (POC) name, phone number, status, and region. The function then sends this data back to the client in the response body along with a success message.
+ */
+export const userAccess: Controller = async (req, res) => {
+    try {
+        const users = await User.findAll({
+            attributes: [
+                "id",
+                ["accountType", "Account Type"],
+                [
+                    sequelize.fn(
+                        "CONCAT",
+                        sequelize.col("firstName"),
+                        " ",
+                        sequelize.col("lastName")
+                    ),
+                    "Account POC",
+                ],
+                ["phoneNumber", "Phone"],
+                ["status", "Status"],
+                ["state", "Region"],
+            ],
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: users,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
  * @function transferRequest
  * @param req - Express request object, expects `physicianId` and `transferNote` in the body, and `id` in the parameters.
  * @param res - Express response object used to send the response.
@@ -1112,7 +1307,6 @@ export const sendPatientRequest: Controller = async (req, res) => {
         const createRequestLink = "http://localhost:3000/createRequest";
 
         const data = await new Promise((resolve) => {
-            console.log(__dirname);
             fs.readFile(
                 path.join(
                     __dirname,
@@ -1250,6 +1444,111 @@ export const blockHistory: Controller = async (req, res) => {
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: blockRequests,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * @function providerInformation
+ * @param req - Express request object.
+ * @param res - Express response object used to send back the HTTP response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the HTTP status code, a success message, and an array of provider information.
+ * @description This controller function retrieves a list of providers from the database using the `User.findAll` method. It selects specific attributes for each provider, including the provider's ID, full name, role, on-call status, status, email, and phone number. The function filters the results to only include users with an account type of 'Physician'. The function then sends this data back to the client in the response body along with a success message.
+ */
+export const providerInformation: Controller = async (req, res) => {
+    try {
+        const providerInformation = await User.findAll({
+            attributes: [
+                "id",
+                [
+                    sequelize.fn(
+                        "CONCAT",
+                        sequelize.col("firstName"),
+                        " ",
+                        sequelize.col("lastName")
+                    ),
+                    "Provider Name",
+                ],
+                ["accountType", "Role"],
+                ["onCallStatus", "On Call Status"],
+                ["status", "Status"],
+                ["email", "Email"],
+                ["phoneNumber", "Phone"],
+            ],
+            where: { accountType: AccountType.Physician },
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: providerInformation,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+// pending
+export const contactProvider: Controller = async (req, res) => {
+    try {
+        const { messageBody, SMS, email, both } = req.body;
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * @function physicianProfileInAdmin
+ * @param req - Express request object.
+ * @param res - Express response object used to send back the HTTP response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the HTTP status code, a success message, and an array of physician profiles.
+ * @description This controller function retrieves a list of physician profiles from the database using the `User.findAll` method. It selects a comprehensive set of attributes for each physician, including personal details, contact information, medical credentials, and administrative notes. The function then sends this data back to the client in the response body along with a success message.
+ */
+export const physicianProfileInAdmin: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const physicianProfile = await User.findAll({
+            attributes: [
+                "id",
+                ["userName", "User Name"],
+                ["status", "Status"],
+                ["firstName", "First Name"],
+                ["lastName", "Last Name"],
+                ["email", "Email"],
+                "phoneNumber",
+                ["medicalLicense", "Medical Licence"],
+                ["NPINumber", "NPI Number"],
+                ["syncEmailAddress", "Synchronization Email"],
+                ["address1", "Address 1"],
+                ["address2", "Address 2"],
+                ["city", "City"],
+                ["state", "State"],
+                ["zipCode", "zip"],
+                ["altPhone", "Alternate Phone"],
+                ["businessName", "Business Name"],
+                ["businessWebsite", "Business Website"],
+                ["photo", "Photo"],
+                ["signature", "Signature"],
+                ["adminNotes", "Admin Notes"],
+                "isAgreementDoc",
+                "isBackgroundDoc",
+                "isNonDisclosureDoc",
+                "isLicenseDoc",
+            ],
+            where: { id },
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: physicianProfile,
         });
     } catch (error) {
         throw error;

@@ -232,6 +232,7 @@ const createRequest: Controller = async (req, res) => {
                 userName: patientFirstName,
                 email: patientEmail,
                 firstName: patientFirstName,
+                lastName: patientLastName,
                 phoneNumber: patientPhoneNumber,
                 password: hashedPassword,
                 accountType: AccountType.User,
@@ -282,6 +283,7 @@ const createRequest: Controller = async (req, res) => {
             userId,
             caseTag,
             confirmationNumber,
+            isDeleted: false,
             ...req.body,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -290,6 +292,7 @@ const createRequest: Controller = async (req, res) => {
         const documentUpload = await RequestWiseFiles.create({
             requestId: newRequest.id,
             fileName: req.file.originalname,
+            documentPath: req.file.path,
             docType: "MedicalReport",
             createdAt: new Date(),
             updatedAt: new Date(),

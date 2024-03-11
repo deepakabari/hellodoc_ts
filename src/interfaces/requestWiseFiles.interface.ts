@@ -5,6 +5,8 @@ interface RequestWiseFilesAttributes {
     requestId: number;
     fileName: string;
     docType?: string;
+    isDeleted?: boolean
+    documentPath?: string
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

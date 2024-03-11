@@ -109,6 +109,12 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     @Column({ type: DataTypes.STRING, allowNull: true })
     onCallStatus: string;
 
+    @Column({
+        allowNull: true,
+        type: DataTypes.BOOLEAN,
+    })
+    isDeleted?: boolean;
+
     @BelongsToMany(() => Role, () => UserRole, "userId", "roleId")
     roles: Role[];
 

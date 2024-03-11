@@ -2,6 +2,7 @@ const messageConstant = {
     SUCCESS: "Success",
     ERROR: "Error",
     LOGIN_FAILED: "Username or Password is invalid",
+    ACCESS_DENIED: "Access denied...",
     INTERNAL_SERVER_ERROR: "Internal server error",
     USER_CREATED: "User created successfully",
     USER_CREATION_FAILED: "User creation failed",
@@ -31,7 +32,9 @@ const messageConstant = {
     ERROR_SEND_MESSAGE: "Error while sending message",
     ROLE_ALREADY_EXISTS: "Role already exists",
     REQUEST_EMAIL_SMS_SENT: "Request email and sms sent successfully",
-    MISSING_SECTION_OR_UPDATED_DATA: "Missing section or updates data"
+    MISSING_SECTION_OR_UPDATED_DATA: "Missing section or updates data",
+    UPDATE_FAILED: "Update failed...",
+    AGREEMENT_EMAIL_SENT: "Agreement email sent successfully"
 };
 
 export default messageConstant;
