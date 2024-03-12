@@ -13,7 +13,6 @@ import {
     ProfileStatus,
     RegionAbbreviation,
 } from "../utils/enum.constant";
-import { userSchema, requestSchema } from "../validations/index";
 import dotenv from "dotenv";
 import { CaseTag } from "../utils/enum.constant";
 import { Op } from "sequelize";
@@ -32,15 +31,6 @@ const ITERATION = process.env.ITERATION;
  */
 const createUser: Controller = async (req, res) => {
     try {
-        // check the given data is valid
-        const { error } = userSchema.validate(req.body);
-        if (error) {
-            return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
-                status: httpCode.UNPROCESSABLE_CONTENT,
-                message: error,
-            });
-        }
-
         const {
             userName,
             password,
@@ -186,14 +176,6 @@ const isEmailFound: Controller = async (req, res) => {
  */
 const createRequest: Controller = async (req, res) => {
     try {
-        // check the given data is valid
-        const { error } = requestSchema.validate(req.body);
-        if (error) {
-            return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
-                status: httpCode.UNPROCESSABLE_CONTENT,
-                message: error,
-            });
-        }
         const {
             requestType, // value comes from the frontend
             requestStatus,
@@ -219,7 +201,6 @@ const createRequest: Controller = async (req, res) => {
         if (!req.file) {
             throw new Error(messageConstant.IMAGE_NOT_UPLOADED);
         }
-        const documentPhoto: string | undefined = req.file?.path;
 
         // hash the password
         const hashedPassword = await bcrypt.hash(password, Number(ITERATION));

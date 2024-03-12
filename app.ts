@@ -6,6 +6,7 @@ import multer from "multer";
 import { fileStorage } from "./src/utils/multerConfig";
 import path from "path";
 import bodyParser from "body-parser";
+import { errors } from "celebrate";
 import { errorHandler } from "./src/utils/errorHandler";
 import { engine } from "express-handlebars";
 import dotenv from "dotenv";
@@ -41,6 +42,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 app.use(router);
+app.use(errors());
 
 app.get("/", (req: Request, res: Response) => {
     res.send("API is working...");

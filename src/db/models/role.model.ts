@@ -1,12 +1,8 @@
-import {
-    Table,
-    Column,
-    Model,
-    BelongsToMany,
-} from "sequelize-typescript";
+import { Table, Column, Model, BelongsToMany } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { RoleAttributes, RoleCreationAttributes } from "../../interfaces";
 import { User, UserRole } from "./index";
+import { Joi, Segments } from "celebrate";
 
 @Table({
     timestamps: true,
@@ -43,4 +39,19 @@ class Role extends Model<RoleAttributes, RoleCreationAttributes> {
     users: User[];
 }
 
-export default Role;
+export { Role };
+
+export const RoleSchema = {
+    createRole: {
+        [Segments.BODY]: Joi.object({
+            roleName: Joi.string().required(),
+            accountType: Joi.string().required(),
+        }),
+    },
+
+    userAccess: {
+        [Segments.QUERY]: {
+            accountType: Joi.string().valid("Admin", "Physician", "User").required().insensitive(),
+        }
+    }
+};

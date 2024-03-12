@@ -34,7 +34,8 @@ const messageConstant = {
     REQUEST_EMAIL_SMS_SENT: "Request email and sms sent successfully",
     MISSING_SECTION_OR_UPDATED_DATA: "Missing section or updates data",
     UPDATE_FAILED: "Update failed...",
-    AGREEMENT_EMAIL_SENT: "Agreement email sent successfully"
+    AGREEMENT_EMAIL_SENT: "Agreement email sent successfully",
+    INVALID_SORT_PARAMETER: "Invalid sort parameter..."
 };
 
 export default messageConstant;

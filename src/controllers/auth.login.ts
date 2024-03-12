@@ -10,7 +10,6 @@ import bcrypt from "bcrypt";
 import { Op } from "sequelize";
 import { User } from "../db/models/index";
 import * as exphbs from "express-handlebars";
-import { loginSchema, resetSchema } from "../validations/index";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -30,13 +29,7 @@ const RANDOMBYTES = process.env.RANDOMBYTES;
  */
 export const login: Controller = async (req, res) => {
     try {
-        const { error } = loginSchema.validate(req.body);
-        if (error) {
-            return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
-                status: httpCode.UNPROCESSABLE_CONTENT,
-                message: error.details[0].message,
-            });
-        }
+
         // Extract email and password from request body
         const { email, password } = req.body;
 
@@ -205,13 +198,7 @@ export const forgotPassword: Controller = async (req, res) => {
  */
 export const resetPassword: Controller = async (req, res) => {
     try {
-        const { error } = resetSchema.validate(req.body);
-        if (error) {
-            return res.status(httpCode.UNPROCESSABLE_CONTENT).json({
-                status: httpCode.UNPROCESSABLE_CONTENT,
-                message: error.details[0].message,
-            });
-        }
+        
         // Extract email, new password, and confirm password from request body
         const { newPassword, confirmPassword } = req.body;
         const { hash } = req.params;

@@ -39,6 +39,8 @@ interface RequestAttributes {
     physicianNotes?: string
     transferNote?: string
     reasonForCancellation?: string
+    isAgreementSent?: boolean
+    isAgreementAccepted?: boolean
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

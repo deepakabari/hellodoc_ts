@@ -32,6 +32,9 @@ interface UserAttributes {
     expireToken?: Date | null
     onCallStatus?: string
     isDeleted?: boolean
+    notification?: boolean
+    businessName?: string
+    businessWebsite?: string
     createdAt?: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

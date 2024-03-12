@@ -1,46 +1,50 @@
 import * as adminController from "../controllers/admin.controller";
 import express from "express";
 import isAuth from "../middleware/in-auth";
+import { celebrate } from "celebrate";
+import { RequestSchema, RoleSchema, UserSchema } from "../db/models";
 
 const router = express.Router();
 
 router.get("/", isAuth, adminController.getPatientByState);
 
-router.get("/viewCase/:id", isAuth, adminController.viewCase);
+router.get("/viewCase/:id", isAuth, celebrate(RequestSchema.idParams), adminController.viewCase);
 
-router.get("/viewNotes/:id", isAuth, adminController.viewNotes);
+router.get("/viewNotes/:id", isAuth, celebrate(RequestSchema.idParams), adminController.viewNotes);
 
-router.patch("/updateNotes/:id", adminController.updateNotes);
+router.patch("/updateNotes/:id", isAuth, celebrate(RequestSchema.updateNotes), adminController.updateNotes);
 
-router.patch("/cancelCase/:id", isAuth, adminController.cancelCase);
+router.get("/cancelCase/:id", isAuth, celebrate(RequestSchema.idParams), adminController.getPatientName)
 
-router.patch("/blockCase/:id", isAuth, adminController.blockCase);
+router.patch("/cancelCase/:id", isAuth, celebrate(RequestSchema.cancelCase), adminController.cancelCase);
 
-router.post("/clearCase/:id", isAuth, adminController.clearCase);
+router.patch("/blockCase/:id", isAuth, celebrate(RequestSchema.blockCase), adminController.blockCase);
 
-router.post("/sendAgreement/:id", isAuth, adminController.sendAgreement);
+router.post("/clearCase/:id", isAuth, celebrate(RequestSchema.idParams), adminController.clearCase);
+
+router.post("/sendAgreement/:id", isAuth, celebrate(RequestSchema.idParams), adminController.sendAgreement);
 
 router.get("/regions", isAuth, adminController.getRegions);
+
+router.get(
+    "/physicianByRegion/:id",
+    isAuth, celebrate(RequestSchema.idParams),
+    adminController.getPhysicianByRegion
+);
 
 router.get("/viewUploads/:id", isAuth, adminController.viewUploads);
 
 router.get("/closeCaseView/:id", isAuth, adminController.closeCaseView);
 
-router.patch("/closeCase/:id", isAuth, adminController.closeCase);
+router.patch("/closeCase/:id", isAuth, celebrate(RequestSchema.idParams), adminController.closeCase);
 
-router.post("/editCloseCase/:id", isAuth, adminController.editCloseCase);
+router.post("/editCloseCase/:id", isAuth, celebrate(RequestSchema.closeCase), adminController.editCloseCase);
 
-router.get("/adminProfile", isAuth, adminController.adminProfile);
+router.get("/adminProfile/:id", isAuth, celebrate(RequestSchema.idParams), adminController.adminProfile);
 
 router.patch("/editAdminProfile/:id", isAuth, adminController.editAdminProfile);
 
-router.get(
-    "/physicianByRegion/:id",
-    isAuth,
-    adminController.getPhysicianByRegion
-);
-
-router.post("/assignCase", isAuth, adminController.assignCase);
+router.post("/assignCase", isAuth, celebrate(RequestSchema.assignCase), adminController.assignCase);
 
 router.get("/requestSupport", isAuth, adminController.requestSupport);
 
@@ -52,22 +56,22 @@ router.get(
     adminController.accountAccessByAccountType
 );
 
-router.post("/createRole", isAuth, adminController.createRole);
+router.post("/createRole", isAuth, celebrate(RoleSchema.createRole), adminController.createRole);
 
 router.post("/assignCase/:id", isAuth, adminController.assignCase);
 
-router.post("/transferRequest/:id", isAuth, adminController.transferRequest);
+router.post("/transferRequest/:id", isAuth, celebrate(RequestSchema.assignCase), adminController.transferRequest);
 
-router.post("/sendPatientRequest", isAuth, adminController.sendPatientRequest);
+router.post("/sendPatientRequest", isAuth, celebrate(UserSchema.sendPatientRequest), adminController.sendPatientRequest);
 
 router.get("/patientHistory", isAuth, adminController.getPatientHistory);
 
 router.get("/blockHistory", isAuth, adminController.blockHistory);
 
-router.get("/userAccess", adminController.userAccess);
+router.get("/userAccess", isAuth, celebrate(RoleSchema.userAccess), adminController.userAccess);
 
-router.get("/providerInformation", adminController.providerInformation);
+router.get("/providerInformation", isAuth, adminController.providerInformation);
 
-router.get("/physicianProfile/:id", adminController.physicianProfileInAdmin);
+router.get("/physicianProfile/:id", isAuth, celebrate(RequestSchema.idParams), adminController.physicianProfileInAdmin);
 
 export default router;
