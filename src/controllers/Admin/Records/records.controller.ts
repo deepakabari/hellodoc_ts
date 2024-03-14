@@ -23,23 +23,14 @@ export const getPatientHistory: Controller = async (req, res) => {
         const patientsHistory = await Request.findAll({
             attributes: [
                 "id",
-                ["patientFirstName", "First Name"],
-                ["patientLastName", "Last Name"],
-                ["patientEmail", "Email"],
-                ["patientPhoneNumber", "Phone"],
-                [
-                    sequelize.fn(
-                        "CONCAT",
-                        sequelize.col("Request.street"),
-                        ", ",
-                        sequelize.col("Request.city"),
-                        ", ",
-                        sequelize.col("Request.state"),
-                        ", ",
-                        sequelize.col("Request.zipCode")
-                    ),
-                    "Address",
-                ],
+                "patientFirstName",
+                "patientLastName",
+                "patientEmail",
+                "patientPhoneNumber",
+                "Request.street",
+                "Request.city",
+                "Request.state",
+                "Request.zipCode",
             ],
         });
 
@@ -64,19 +55,12 @@ export const blockHistory: Controller = async (req, res) => {
         const blockRequests = await Request.findAll({
             attributes: [
                 "id",
-                [
-                    sequelize.fn(
-                        "CONCAT",
-                        sequelize.col("patientFirstName"),
-                        " ",
-                        sequelize.col("patientLastName")
-                    ),
-                    "Name",
-                ],
-                ["patientPhoneNumber", "Phone Number"],
-                ["patientEmail", "Email"],
-                ["createdAt", "Created Date"],
-                ["patientNote", "Notes"],
+                "patientFirstName",
+                "patientLastName",
+                "patientPhoneNumber",
+                "patientEmail",
+                "createdAt",
+                "patientNote",
             ],
             where: { requestStatus: RequestStatus.Blocked },
         });

@@ -1,6 +1,6 @@
-import userController from "../controllers/User/user.controller";
+import userController from "../../controllers/User/user.controller";
 import express from "express";
-import { RequestSchema, UserSchema } from "../validations/index";
+import { RequestSchema, UserSchema } from "../../validations/index";
 import { celebrate } from "celebrate";
 
 const router = express.Router();

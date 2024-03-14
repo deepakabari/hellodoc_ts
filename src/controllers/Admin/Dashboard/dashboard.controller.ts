@@ -37,7 +37,7 @@ export const requestCount: Controller = async (req, res) => {
                 "caseTag",
                 [sequelize.fn("COUNT", sequelize.col("id")), "count"],
             ],
-            group: 'caseTag',
+            group: "caseTag",
         });
 
         return res.status(httpCode.OK).json({
@@ -754,14 +754,14 @@ export const viewUploads: Controller = async (req, res) => {
         let sortByModel;
         switch (sortBy) {
             case "id":
-            case "Upload Date":
+            case "createdAt":
                 sortByModel = [[sortBy, orderBy]];
                 break;
         }
 
         const uploads = await RequestWiseFiles.findAll({
             where: { requestId: id },
-            attributes: ["id", "fileName", ["createdAt", "Upload Date"]],
+            attributes: ["id", "fileName", "createdAt"],
             order: sortByModel as Order,
         });
 
@@ -819,21 +819,14 @@ export const closeCaseView: Controller = async (req, res) => {
         const closeCase = await Request.findAll({
             attributes: [
                 "id",
-                [
-                    sequelize.fn(
-                        "CONCAT",
-                        sequelize.col("patientFirstName"),
-                        " ",
-                        sequelize.col("patientLastName")
-                    ),
-                    "Patient Name",
-                ],
-                ["confirmationNumber", "Confirmation Number"],
-                ["patientFirstName", "First Name"],
-                ["patientLastName", "Last Name"],
-                ["dob", "Date Of Birth"],
-                ["patientPhoneNumber", "Phone Number"],
-                ["patientEmail", "Email"],
+                "patientFirstName",
+                "patientLastName",
+                "confirmationNumber",
+                "patientFirstName",
+                "patientLastName",
+                "dob",
+                "patientPhoneNumber",
+                "patientEmail",
             ],
             include: [
                 {
@@ -841,7 +834,7 @@ export const closeCaseView: Controller = async (req, res) => {
                     attributes: [
                         "fileName",
                         "documentPath",
-                        ["createdAt", "Upload Date"],
+                        "createdAt",
                     ],
                 },
             ],
@@ -1032,7 +1025,9 @@ export const sendPatientRequest: Controller = async (req, res) => {
                         to: process.env.MY_PHONE_NUMBER as string,
                         from: process.env.TWILIO_PHONE_NUMBER,
                     })
-                    .then((message) => console.log("message sent: ", message.sid));
+                    .then((message) =>
+                        console.log("message sent: ", message.sid)
+                    );
                 return res.json({
                     status: httpCode.OK,
                     message: messageConstant.REQUEST_EMAIL_SMS_SENT,

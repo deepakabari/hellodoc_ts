@@ -1,11 +1,7 @@
-import {
-    AccountType,
-} from "../../../utils/enum.constant";
+import { AccountType } from "../../../utils/enum.constant";
 import httpCode from "../../../constants/http.constant";
 import messageConstant from "../../../constants/message.constant";
-import {
-    User,
-} from "../../../db/models/index";
+import { User } from "../../../db/models/index";
 import { Controller } from "../../../interfaces";
 import sequelize from "sequelize";
 import dotenv from "dotenv";
@@ -23,21 +19,14 @@ export const providerInformation: Controller = async (req, res) => {
         const providerInformation = await User.findAll({
             attributes: [
                 "id",
-                [
-                    sequelize.fn(
-                        "CONCAT",
-                        sequelize.col("firstName"),
-                        " ",
-                        sequelize.col("lastName")
-                    ),
-                    "Provider Name",
-                ],
-                ["accountType", "Role"],
-                ["onCallStatus", "On Call Status"],
-                ["status", "Status"],
-                ["email", "Email"],
-                ["phoneNumber", "Phone"],
-                ["notification", "is Notification Stopped"],
+                "firstName",
+                "lastName",
+                "accountType",
+                "onCallStatus",
+                "status",
+                "email",
+                "phoneNumber",
+                "notification",
             ],
             where: { accountType: AccountType.Physician },
         });
@@ -79,25 +68,25 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
         const physicianProfile = await User.findAll({
             attributes: [
                 "id",
-                ["userName", "User Name"],
-                ["status", "Status"],
-                ["firstName", "First Name"],
-                ["lastName", "Last Name"],
-                ["email", "Email"],
+                "userName",
+                "status",
+                "firstName",
+                "lastName",
+                "email",
                 "phoneNumber",
-                ["medicalLicense", "Medical Licence"],
-                ["NPINumber", "NPI Number"],
-                ["syncEmailAddress", "Synchronization Email"],
-                ["address1", "Address 1"],
-                ["address2", "Address 2"],
-                ["city", "City"],
-                ["state", "State"],
-                ["zipCode", "zip"],
-                ["altPhone", "Alternate Phone"],
-                ["businessName", "Business Name"],
-                ["businessWebsite", "Business Website"],
-                ["photo", "Photo"],
-                ["signature", "Signature"],
+                "medicalLicense",
+                "NPINumber",
+                "syncEmailAddress",
+                "address1",
+                "address2",
+                "city",
+                "state",
+                "zipCode",
+                "altPhone",
+                "businessName",
+                "businessWebsite",
+                "photo",
+                "signature",
                 "isAgreementDoc",
                 "isBackgroundDoc",
                 "isNonDisclosureDoc",

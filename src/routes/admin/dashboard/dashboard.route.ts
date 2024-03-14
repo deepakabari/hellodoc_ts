@@ -1,19 +1,16 @@
-import {
-    dashboardController,
-    myProfileController,
-    accessController,
-    recordsController,
-    providerController,
-    schedulingController,
-} from "../controllers/index";
+import { dashboardController } from "../../../controllers/index";
 import express from "express";
-import isAuth from "../middleware/in-auth";
+import isAuth from "../../../middleware/in-auth";
 import { celebrate } from "celebrate";
-import { RequestSchema, RoleSchema, UserSchema } from "../validations/index";
+import {
+    RequestSchema,
+    RoleSchema,
+    UserSchema,
+} from "../../../validations/index";
 
 const router = express.Router();
 
-router.get("/dashboard", dashboardController.requestCount);
+router.get("/dashboard", isAuth, dashboardController.requestCount);
 
 router.get("/", isAuth, dashboardController.getPatientByState);
 
@@ -82,6 +79,20 @@ router.get(
     dashboardController.getPhysicianByRegion
 );
 
+router.post(
+    "/assignCase/:id",
+    isAuth,
+    celebrate(RequestSchema.assignCase),
+    dashboardController.assignCase
+);
+
+router.post(
+    "/requestSupport",
+    isAuth,
+    celebrate(UserSchema.requestSupport),
+    dashboardController.requestSupport
+);
+
 router.get("/viewUploads/:id", isAuth, dashboardController.viewUploads);
 
 router.get("/closeCaseView/:id", isAuth, dashboardController.closeCaseView);
@@ -100,50 +111,6 @@ router.post(
     dashboardController.editCloseCase
 );
 
-router.get(
-    "/adminProfile/:id",
-    isAuth,
-    celebrate(RequestSchema.idParams),
-    myProfileController.adminProfile
-);
-
-router.patch(
-    "/editAdminProfile/:id",
-    isAuth,
-    myProfileController.editAdminProfile
-);
-
-router.post(
-    "/assignCase",
-    isAuth,
-    celebrate(RequestSchema.assignCase),
-    dashboardController.assignCase
-);
-
-router.post(
-    "/requestSupport",
-    isAuth,
-    celebrate(UserSchema.requestSupport),
-    dashboardController.requestSupport
-);
-
-router.get("/accountAccess", isAuth, accessController.accountAccess);
-
-router.get(
-    "/accountAccessByAccountType",
-    isAuth,
-    accessController.accountAccessByAccountType
-);
-
-router.post(
-    "/createRole",
-    isAuth,
-    celebrate(RoleSchema.createRole),
-    accessController.createRole
-);
-
-router.post("/assignCase/:id", isAuth, dashboardController.assignCase);
-
 router.post(
     "/transferRequest/:id",
     isAuth,
@@ -157,31 +124,4 @@ router.post(
     celebrate(UserSchema.sendPatientRequest),
     dashboardController.sendPatientRequest
 );
-
-router.get("/patientHistory", isAuth, recordsController.getPatientHistory);
-
-router.get("/blockHistory", isAuth, recordsController.blockHistory);
-
-router.get(
-    "/userAccess",
-    isAuth,
-    celebrate(RoleSchema.userAccess),
-    accessController.userAccess
-);
-
-router.get(
-    "/providerInformation",
-    isAuth,
-    providerController.providerInformation
-);
-
-router.get(
-    "/physicianProfile/:id",
-    isAuth,
-    celebrate(RequestSchema.idParams),
-    providerController.physicianProfileInAdmin
-);
-
-router.get("/providerOnCall", isAuth, schedulingController.providerOnCall);
-
 export default router;

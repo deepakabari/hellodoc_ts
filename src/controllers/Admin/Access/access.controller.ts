@@ -23,7 +23,7 @@ interface RoleGroup {
 export const accountAccess: Controller = async (req, res) => {
     try {
         const accountAccess = await Role.findAll({
-            attributes: ["id", "Name", ["accountType", "Account Type"]],
+            attributes: ["id", "Name", "accountType"],
         });
 
         return res.status(httpCode.OK).json({
@@ -127,18 +127,11 @@ export const userAccess: Controller = async (req, res) => {
         const users = await User.findAll({
             attributes: [
                 "id",
-                ["accountType", "Account Type"],
-                [
-                    sequelize.fn(
-                        "CONCAT",
-                        sequelize.col("firstName"),
-                        " ",
-                        sequelize.col("lastName")
-                    ),
-                    "Account POC",
-                ],
-                ["phoneNumber", "Phone"],
-                ["status", "Status"],
+                "accountType",
+                "firstName",
+                "lastName",
+                "phoneNumber",
+                "status",
             ],
             where: whereCondition,
         });
