@@ -1,14 +1,14 @@
-import httpCode from "../constants/http.constant";
-import messageConstant from "../constants/message.constant";
+import httpCode from "../../constants/http.constant";
+import messageConstant from "../../constants/message.constant";
 import jwt from "jsonwebtoken";
-import transporter from "../utils/email";
-import { Controller } from "../interfaces";
+import transporter from "../../utils/email";
+import { Controller } from "../../interfaces";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcrypt";
 import { Op } from "sequelize";
-import { User } from "../db/models/index";
+import { User } from "../../db/models/index";
 import * as exphbs from "express-handlebars";
 import dotenv from "dotenv";
 dotenv.config();
@@ -29,7 +29,6 @@ const RANDOMBYTES = process.env.RANDOMBYTES;
  */
 export const login: Controller = async (req, res) => {
     try {
-
         // Extract email and password from request body
         const { email, password } = req.body;
 
@@ -142,7 +141,13 @@ export const forgotPassword: Controller = async (req, res) => {
         const data = await new Promise((resolve) => {
             console.log(__dirname);
             fs.readFile(
-                path.join(__dirname, "..", "public", "templates", "resetEmail.hbs"),
+                path.join(
+                    __dirname,
+                    "..",
+                    "public",
+                    "templates",
+                    "resetEmail.hbs"
+                ),
                 "utf8",
                 (err, hbsFile) => {
                     if (err) {
@@ -198,7 +203,6 @@ export const forgotPassword: Controller = async (req, res) => {
  */
 export const resetPassword: Controller = async (req, res) => {
     try {
-        
         // Extract email, new password, and confirm password from request body
         const { newPassword, confirmPassword } = req.body;
         const { hash } = req.params;

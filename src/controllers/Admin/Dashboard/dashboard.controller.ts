@@ -1,43 +1,53 @@
 import fs from "fs";
 import path from "path";
-import { AccountType, CaseTag, RequestStatus } from "../utils/enum.constant";
-import httpCode from "../constants/http.constant";
-import messageConstant from "../constants/message.constant";
+import {
+    AccountType,
+    CaseTag,
+    RequestStatus,
+} from "../../../utils/enum.constant";
+import httpCode from "../../../constants/http.constant";
+import messageConstant from "../../../constants/message.constant";
 import {
     Region,
     Request,
     RequestWiseFiles,
-    Role,
     User,
-} from "../db/models/index";
-import { Controller } from "../interfaces";
-import transporter from "../utils/email";
+} from "../../../db/models/index";
+import { Controller } from "../../../interfaces";
+import transporter from "../../../utils/email";
 import sequelize, { FindAttributeOptions, Includeable, Order } from "sequelize";
 import twilio from "twilio";
 import * as exphbs from "express-handlebars";
-import dotenv from "dotenv";
 import { Op } from "sequelize";
+import dotenv from "dotenv";
 dotenv.config();
 
-interface RoleGroup {
-    [key: string]: string[];
-}
+/**
+ * @function requestCount
+ * @param req - Express request object.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the count of request data.
+ * @throws - Throws an error if there's an issue in the execution of the function.
+ * @description This function is an Express controller that retrieves count of request based caseTag
+ */
+export const requestCount: Controller = async (req, res) => {
+    try {
+        const requestCounts = await Request.count({
+            attributes: [
+                "caseTag",
+                [sequelize.fn("COUNT", sequelize.col("id")), "count"],
+            ],
+            group: 'caseTag',
+        });
 
-type AdminUpdates = {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    confirmEmail?: string;
-    phoneNumber?: string;
-};
-
-type BillingUpdates = {
-    address1?: string;
-    address2?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    altPhone?: string;
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: requestCounts,
+        });
+    } catch (error) {
+        throw error;
+    }
 };
 
 /**
@@ -92,11 +102,12 @@ export const getPatientByState: Controller = async (req, res) => {
                 ),
                 "Address",
             ],
-            ["patientNote", "Notes"],
+            ["patientNote", "Patient Note"],
             ["updatedAt", "Date Of Service"],
             ["requestType", "Requestor Type"],
             ["state", "Region"],
             ["caseTag", "State of Request"],
+            ["transferNote", "Transfer Note"],
         ];
         let condition;
         let includeModels;
@@ -138,7 +149,11 @@ export const getPatientByState: Controller = async (req, res) => {
                 ];
                 break;
             case "active":
-                condition = { caseTag: "Active", deletedAt: null };
+                condition = {
+                    caseTag: "Active",
+                    isAgreementAccepted: true,
+                    deletedAt: null,
+                };
                 includeModels = [
                     {
                         model: User,
@@ -261,7 +276,7 @@ export const getPatientByState: Controller = async (req, res) => {
         return res.json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: patients,
+            data: { patients },
         });
     } catch (error) {
         throw error;
@@ -372,7 +387,7 @@ export const updateNotes: Controller = async (req, res) => {
         // Take adminNotes from request body
         const { adminNotes } = req.body;
 
-        // To update note in the adminNotes in request table 
+        // To update note in the adminNotes in request table
         await Request.update(
             {
                 adminNotes,
@@ -592,33 +607,40 @@ export const sendAgreement: Controller = async (req, res) => {
         });
 
         let mailOptions = {
-            from: process.env.EMAIL,
+            from: process.env.EMAIL_FROM,
             to: email,
-            subject: "Agreement",
+            subject: "Agreement From Hallodoc",
             html: data,
         };
 
-        return transporter.sendMail(mailOptions, (error: Error) => {
-            if (error) throw new Error(error.message);
-            console.log("Agreement email Sent Successfully");
+        return transporter.sendMail(mailOptions, async (error: Error) => {
+            if (error) {
+                throw error;
+            } else {
+                console.log("Agreement email Sent Successfully");
 
-            // const client = twilio(
-            //     process.env.TWILIO_ACCOUNT_SID,
-            //     process.env.TWILIO_AUTH_TOKEN
-            // );
+                await Request.update(
+                    { isAgreementSent: true },
+                    { where: { id: req.params.id } }
+                );
+                const client = twilio(
+                    process.env.TWILIO_ACCOUNT_SID,
+                    process.env.TWILIO_AUTH_TOKEN
+                );
 
-            // client.messages
-            //     .create({
-            //         body: "Here you are selected for Maidaan. accept it otherwise we will see you.",
-            //         to: phoneNumber,
-            //         from: process.env.TWILIO_PHONE_NUMBER,
-            //     })
-            //     .then((message) => console.log(message.sid));
+                client.messages
+                    .create({
+                        body: `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: \n\n ${agreementLink}.`,
+                        to: process.env.MY_PHONE_NUMBER as string,
+                        from: process.env.TWILIO_PHONE_NUMBER,
+                    })
+                    .then((message) => console.log(message.sid));
 
-            return res.json({
-                status: httpCode.OK,
-                message: messageConstant.AGREEMENT_EMAIL_SENT,
-            });
+                return res.json({
+                    status: httpCode.OK,
+                    message: messageConstant.AGREEMENT_EMAIL_SENT,
+                });
+            }
         });
     } catch (error) {
         throw error;
@@ -666,7 +688,7 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
                 {
                     model: Region,
                     as: "regions",
-                    where: { id: id },
+                    where: { id },
                     through: {
                         attributes: [],
                     },
@@ -699,7 +721,12 @@ export const assignCase: Controller = async (req, res) => {
         const { id } = req.params;
 
         await Request.update(
-            { physicianId, transferNote, caseTag: CaseTag.Pending },
+            {
+                physicianId,
+                transferNote,
+                caseTag: CaseTag.Pending,
+                requestStatus: RequestStatus.Processing,
+            },
             { where: { id } }
         );
 
@@ -764,7 +791,7 @@ export const viewUploads: Controller = async (req, res) => {
 };
 
 /**
- * @function closeCase
+ * @function closeCaseView
  * @param req - Express request object, expects `id` in the parameters.
  * @param res - Express response object used to send the response.
  * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the case data.
@@ -889,141 +916,6 @@ export const editCloseCase: Controller = async (req, res) => {
 };
 
 /**
- * @function adminProfile
- * @param req - Express request object.
- * @param res - Express response object used to send the response.
- * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the admin profile data.
- * @description This function is an Express controller that retrieves the profile data of all admins and sends the data in the response.
- */
-export const adminProfile: Controller = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const adminProfile = await User.findAll({
-            attributes: [
-                "id",
-                ["userName", "User Name"],
-                ["status", "Status"],
-                ["firstName", "First Name"],
-                ["lastName", "Last Name"],
-                ["email", "Email"],
-                ["phoneNumber", "Phone Number"],
-                ["address1", "Address 1"],
-                ["address2", "Address 2"],
-                ["city", "City"],
-                ["state", "State"],
-                ["zipCode", "zip"],
-                ["altPhone", "Alternate PhoneNumber"],
-            ],
-            where: {
-                id,
-                accountType: "Admin",
-            },
-            include: [
-                {
-                    model: Region,
-                    attributes: ["id", "name"],
-                    through: { attributes: [] }, // This will exclude the join table attributes
-                },
-            ],
-        });
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-            data: adminProfile,
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-/**
- * @param req - Express request object.
- * @param res - Express response object used to send the response.
- * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code and a success message.
- * @description - This function is an Express controller that updates the  administration or Billing information of admin profile.
- */
-export const editAdminProfile: Controller = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { section, updatedData } = req.body;
-
-        if (!section || !updatedData) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
-                message: messageConstant.MISSING_SECTION_OR_UPDATED_DATA,
-            });
-        }
-
-        const updateAdminDetails = async (
-            id: string,
-            updates: AdminUpdates | BillingUpdates
-        ) => {
-            try {
-                await User.update(updates, {
-                    where: { id },
-                });
-                return true;
-            } catch (error) {
-                return false;
-            }
-        };
-
-        let updateResult = false;
-        switch (section) {
-            case "administration":
-                const adminFields = [
-                    "firstName",
-                    "lastName",
-                    "email",
-                    "confirmEmail",
-                    "phoneNumber",
-                ];
-                let adminUpdates: any = {};
-                adminFields.forEach((field) => {
-                    if (updatedData[field] != undefined) {
-                        adminUpdates[field] = updatedData[field];
-                    }
-                });
-                updateResult = await updateAdminDetails(id, adminUpdates);
-                break;
-
-            case "billing":
-                const billingFields = [
-                    "address1",
-                    "address2",
-                    "city",
-                    "state",
-                    "zipCode",
-                    "altPhone",
-                ];
-                let billingUpdates: any = {};
-                billingFields.forEach((field) => {
-                    if (updatedData[field] !== undefined) {
-                        billingUpdates[field] = updatedData[field];
-                    }
-                });
-                updateResult = await updateAdminDetails(id, billingUpdates);
-                break;
-        }
-
-        if (!updateResult) {
-            return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
-                status: httpCode.INTERNAL_SERVER_ERROR,
-                message: messageConstant.UPDATE_FAILED,
-            });
-        }
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-/**
  * @function requestSupport
  * @param req - Express request object.
  * @param res - Express response object used to send the response.
@@ -1032,12 +924,15 @@ export const editAdminProfile: Controller = async (req, res) => {
  */
 export const requestSupport: Controller = async (req, res) => {
     try {
+        const { message } = req.body;
         const unScheduledPhysician = await User.findAll({
             where: { accountType: "Physician", onCallStatus: "UnScheduled" },
         });
 
         for (const physician of unScheduledPhysician) {
-            console.log(`Sending message to ${physician.firstName}`);
+            console.log(
+                `Sending message to ${physician.firstName}, \n ${message}`
+            );
         }
 
         return res.status(httpCode.OK).json({
@@ -1046,145 +941,6 @@ export const requestSupport: Controller = async (req, res) => {
         });
     } catch (error) {
         throw new Error(messageConstant.ERROR_SEND_MESSAGE);
-    }
-};
-
-/**
- * Handles the HTTP request to retrieve account access roles.
- * @param req - The Express Request object containing the incoming request data.
- * @param res - The Express Response object used to send back the desired HTTP response.
- * @returns - A promise that resolves to the Express Response object, which sends a JSON response containing the status code, success message, and the retrieved account access data.
- */
-export const accountAccess: Controller = async (req, res) => {
-    try {
-        const accountAccess = await Role.findAll({
-            attributes: ["id", "Name", ["accountType", "Account Type"]],
-        });
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-            data: accountAccess,
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-/**
- * @function accountAccess
- * @param req - Express request object.
- * @param res - Express response object used to send the response.
- * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the grouped roles data.
- * @description This function is an Express controller that retrieves all roles, groups them by account type, and sends the grouped roles data in the response.
- */
-export const accountAccessByAccountType: Controller = async (req, res) => {
-    try {
-        const roles = await Role.findAll({
-            attributes: ["accountType", "Name"],
-            order: ["accountType"],
-        });
-
-        const groupedRoles: RoleGroup = roles.reduce(
-            (result: RoleGroup, role) => {
-                const key = role.accountType;
-                if (!result[key]) {
-                    result[key] = [];
-                }
-                result[key].push(role.Name);
-                return result;
-            },
-            {} as RoleGroup
-        );
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-            data: groupedRoles,
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-/**
- * @param req - Express request object, expects `roleName` and `accountType` in the body.
- * @param res - Express response object used to send the response.
- * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the created role data. If a role with the provided name already exists, it returns a conflict error message.
- * @description This function is an Express controller that handles the creation of a new role for a specific account type. It first checks if a role with the provided name already exists. If it does, it sends a conflict error response. If not, it creates a new role with the provided name and account type, and sends a success response with the created role data.
- */
-export const createRole: Controller = async (req, res) => {
-    try {
-        const { roleName, accountType } = req.body;
-
-        const existingRole = await Role.findOne({ where: { Name: roleName } });
-
-        if (existingRole) {
-            return res.status(httpCode.CONFLICT).json({
-                status: httpCode.CONFLICT,
-                message: messageConstant.ROLE_ALREADY_EXISTS,
-            });
-        }
-
-        const createRole = await Role.create({
-            Name: roleName,
-            accountType,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        });
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-            data: createRole,
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-/**
- * @function userAccess
- * @param req - Express request object.
- * @param res - Express response object used to send back the HTTP response.
- * @returns - Returns a Promise that resolves to an Express response object. The response contains the HTTP status code, a success message, and an array of user data.
- * @description This controller function retrieves a list of users from the database using the `User.findAll` method. It selects specific attributes for each user, including the user's ID, account type, point of contact (POC) name, phone number, status, and region. The function then sends this data back to the client in the response body along with a success message.
- */
-export const userAccess: Controller = async (req, res) => {
-    try {
-        const accountType = req.query.accountType as string;
-
-        let whereCondition: { [key: string]: any } = {};
-        if (accountType && accountType !== "All") {
-            whereCondition["accountType"] = accountType;
-        }
-
-        const users = await User.findAll({
-            attributes: [
-                "id",
-                ["accountType", "Account Type"],
-                [
-                    sequelize.fn(
-                        "CONCAT",
-                        sequelize.col("firstName"),
-                        " ",
-                        sequelize.col("lastName")
-                    ),
-                    "Account POC",
-                ],
-                ["phoneNumber", "Phone"],
-                ["status", "Status"],
-            ],
-            where: whereCondition,
-        });
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-            data: users,
-        });
-    } catch (error) {
-        throw error;
     }
 };
 
@@ -1265,207 +1021,23 @@ export const sendPatientRequest: Controller = async (req, res) => {
             if (error) {
                 throw error;
             } else {
-                // const client = twilio(
-                //     process.env.TWILIO_ACCOUNT_SID,
-                //     process.env.TWILIO_AUTH_TOKEN
-                // );
+                const client = twilio(
+                    process.env.TWILIO_ACCOUNT_SID,
+                    process.env.TWILIO_AUTH_TOKEN
+                );
 
-                // client.messages
-                //     .create({
-                //         body: "Here you are selected for Maidaan. accept it otherwise we will see you.",
-                //         to: "+5571981265131",
-                //         from: process.env.TWILIO_PHONE_NUMBER,
-                //     })
-                //     .then((message) => console.log("message sent: ", message.sid));
+                client.messages
+                    .create({
+                        body: "Here you are selected for Maidaan. accept it otherwise we will see you.",
+                        to: process.env.MY_PHONE_NUMBER as string,
+                        from: process.env.TWILIO_PHONE_NUMBER,
+                    })
+                    .then((message) => console.log("message sent: ", message.sid));
                 return res.json({
                     status: httpCode.OK,
                     message: messageConstant.REQUEST_EMAIL_SMS_SENT,
                 });
             }
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-/**
- * Retrieves the history of patient requests from the database.
- * @param req - The Express Request object containing the incoming request data.
- * @param res - The Express Response object used to send back the desired HTTP response.
- * @returns - A promise that resolves to the Express Response object, which sends a JSON response containing the status code, success message, and the retrieved patients' history data.
- */
-export const getPatientHistory: Controller = async (req, res) => {
-    try {
-        const patientsHistory = await Request.findAll({
-            attributes: [
-                "id",
-                ["patientFirstName", "First Name"],
-                ["patientLastName", "Last Name"],
-                ["patientEmail", "Email"],
-                ["patientPhoneNumber", "Phone"],
-                [
-                    sequelize.fn(
-                        "CONCAT",
-                        sequelize.col("Request.street"),
-                        ", ",
-                        sequelize.col("Request.city"),
-                        ", ",
-                        sequelize.col("Request.state"),
-                        ", ",
-                        sequelize.col("Request.zipCode")
-                    ),
-                    "Address",
-                ],
-            ],
-        });
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-            data: patientsHistory,
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-/**
- * Retrieves a list of blocked requests from the database.
- * @param req - The Express Request object containing the incoming request data.
- * @param res - The Express Response object used to send back the desired HTTP response.
- * @returns - A promise that resolves to the Express Response object, which sends a JSON response containing the status code, success message, and the data of blocked requests.
- */
-export const blockHistory: Controller = async (req, res) => {
-    try {
-        const blockRequests = await Request.findAll({
-            attributes: [
-                "id",
-                [
-                    sequelize.fn(
-                        "CONCAT",
-                        sequelize.col("patientFirstName"),
-                        " ",
-                        sequelize.col("patientLastName")
-                    ),
-                    "Name",
-                ],
-                ["patientPhoneNumber", "Phone Number"],
-                ["patientEmail", "Email"],
-                ["createdAt", "Created Date"],
-                ["patientNote", "Notes"],
-            ],
-            where: { requestStatus: RequestStatus.Blocked },
-        });
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-            data: blockRequests,
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-/**
- * @function providerInformation
- * @param req - Express request object.
- * @param res - Express response object used to send back the HTTP response.
- * @returns - Returns a Promise that resolves to an Express response object. The response contains the HTTP status code, a success message, and an array of provider information.
- * @description This controller function retrieves a list of providers from the database using the `User.findAll` method. It selects specific attributes for each provider, including the provider's ID, full name, role, on-call status, status, email, and phone number. The function filters the results to only include users with an account type of 'Physician'. The function then sends this data back to the client in the response body along with a success message.
- */
-export const providerInformation: Controller = async (req, res) => {
-    try {
-        const providerInformation = await User.findAll({
-            attributes: [
-                "id",
-                [
-                    sequelize.fn(
-                        "CONCAT",
-                        sequelize.col("firstName"),
-                        " ",
-                        sequelize.col("lastName")
-                    ),
-                    "Provider Name",
-                ],
-                ["accountType", "Role"],
-                ["onCallStatus", "On Call Status"],
-                ["status", "Status"],
-                ["email", "Email"],
-                ["phoneNumber", "Phone"],
-            ],
-            where: { accountType: AccountType.Physician },
-        });
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-            data: providerInformation,
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-// pending
-export const contactProvider: Controller = async (req, res) => {
-    try {
-        const { messageBody, SMS, email, both } = req.body;
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-/**
- * @function physicianProfileInAdmin
- * @param req - Express request object.
- * @param res - Express response object used to send back the HTTP response.
- * @returns - Returns a Promise that resolves to an Express response object. The response contains the HTTP status code, a success message, and an array of physician profiles.
- * @description This controller function retrieves a list of physician profiles from the database using the `User.findAll` method. It selects a comprehensive set of attributes for each physician, including personal details, contact information, medical credentials, and administrative notes. The function then sends this data back to the client in the response body along with a success message.
- */
-export const physicianProfileInAdmin: Controller = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const physicianProfile = await User.findAll({
-            attributes: [
-                "id",
-                ["userName", "User Name"],
-                ["status", "Status"],
-                ["firstName", "First Name"],
-                ["lastName", "Last Name"],
-                ["email", "Email"],
-                "phoneNumber",
-                ["medicalLicense", "Medical Licence"],
-                ["NPINumber", "NPI Number"],
-                ["syncEmailAddress", "Synchronization Email"],
-                ["address1", "Address 1"],
-                ["address2", "Address 2"],
-                ["city", "City"],
-                ["state", "State"],
-                ["zipCode", "zip"],
-                ["altPhone", "Alternate Phone"],
-                ["businessName", "Business Name"],
-                ["businessWebsite", "Business Website"],
-                ["photo", "Photo"],
-                ["signature", "Signature"],
-                ["adminNotes", "Admin Notes"],
-                "isAgreementDoc",
-                "isBackgroundDoc",
-                "isNonDisclosureDoc",
-                "isLicenseDoc",
-            ],
-            where: { id },
-        });
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-            data: physicianProfile,
         });
     } catch (error) {
         throw error;

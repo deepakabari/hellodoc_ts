@@ -1,22 +1,22 @@
-import httpCode from "../constants/http.constant";
-import messageConstant from "../constants/message.constant";
+import httpCode from "../../constants/http.constant";
+import messageConstant from "../../constants/message.constant";
 import {
     User,
     Request,
     UserRegion,
     RequestWiseFiles,
-} from "../db/models/index";
-import { Controller } from "../interfaces";
+} from "../../db/models/index";
+import { Controller } from "../../interfaces";
 import bcrypt from "bcrypt";
 import {
     AccountType,
     ProfileStatus,
     RegionAbbreviation,
-} from "../utils/enum.constant";
-import dotenv from "dotenv";
-import { CaseTag } from "../utils/enum.constant";
+} from "../../utils/enum.constant";
+import { CaseTag } from "../../utils/enum.constant";
 import { Op } from "sequelize";
 
+import dotenv from "dotenv";
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
@@ -257,7 +257,11 @@ const createRequest: Controller = async (req, res) => {
         let requestCountStr = String(requestCount + 1).padStart(4, "0");
 
         // Generate the confirmation number
-        const confirmationNumber = `${regionAbbreviation}${day + month}${patientLastName.slice(0, 2).toUpperCase()}${patientFirstName.slice(0, 2).toUpperCase()}${requestCountStr}`;
+        const confirmationNumber = `${regionAbbreviation}${
+            day + month
+        }${patientLastName.slice(0, 2).toUpperCase()}${patientFirstName
+            .slice(0, 2)
+            .toUpperCase()}${requestCountStr}`;
 
         // create a new patient request
         const newRequest = await Request.create({

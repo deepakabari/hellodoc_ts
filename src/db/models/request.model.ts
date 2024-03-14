@@ -6,7 +6,6 @@ import {
 } from "../../interfaces/";
 import { User } from "../models/index";
 import { RequestWiseFiles } from "./index";
-import { Joi, Segments } from "celebrate";
 
 @Table({
     timestamps: true,
@@ -247,13 +246,13 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
         allowNull: true,
         type: DataTypes.BOOLEAN,
     })
-    isAgreementSent: boolean
+    isAgreementSent: boolean;
 
     @Column({
         allowNull: true,
         type: DataTypes.BOOLEAN,
     })
-    isAgreementAccepted: boolean
+    isAgreementAccepted: boolean;
 
     @BelongsTo(() => User, {
         foreignKey: "userId",
@@ -276,81 +275,4 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
     requestWiseFiles: RequestWiseFiles[];
 }
 
-export { Request };
-
-export const RequestSchema = {
-    idParams: {
-        [Segments.PARAMS]: {
-            id: Joi.number().required(),
-        },
-    },
-
-    updateNotes: {
-        [Segments.BODY]: Joi.object({
-            adminNotes: Joi.string().required(),
-        }),
-        [Segments.PARAMS]: {
-            id: Joi.number().required(),
-        },
-    },
-
-    cancelCase: {
-        [Segments.BODY]: Joi.object({
-            adminNotes: Joi.string().required(),
-            reasonForCancellation: Joi.string().required(),
-        }),
-        [Segments.PARAMS]: {
-            id: Joi.number().required(),
-        },
-    },
-
-    blockCase: {
-        [Segments.BODY]: Joi.object({
-            description: Joi.string().required(),
-        }),
-        [Segments.PARAMS]: {
-            id: Joi.number().required(),
-        },
-    },
-
-    assignCase: {
-        [Segments.BODY]: Joi.object({
-            transferNote: Joi.string().required(),
-        }),
-    },
-
-    closeCase: {
-        [Segments.BODY]: Joi.object({
-            patientPhoneNumber: Joi.string().required().min(10).max(10),
-            patientEmail: Joi.string().required().email(),
-        }),
-    },
-
-    createRequest: {
-        [Segments.BODY]: Joi.object({
-            patientFirstName: Joi.string().required(),
-            patientLastName: Joi.string().required(),
-            patientEmail: Joi.string().required().email(),
-            patientPhoneNumber: Joi.string().required().min(10).max(10),
-            requestorFirstName: Joi.string().optional(),
-            requestorLastName: Joi.string().optional(),
-            requestorPhoneNumber: Joi.string().optional().min(10).max(10),
-            requestorEmail: Joi.string().optional().email(),
-            password: Joi.string()
-                .required()
-                .regex(
-                    RegExp(
-                        "^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,16}$"
-                    )
-                ),
-            relationName: Joi.string().optional(),
-            street: Joi.string().required(),
-            dob: Joi.date().required(),
-            city: Joi.string().required(),
-            state: Joi.string().required(),
-            zipCode: Joi.string().required(),
-            roomNumber: Joi.string().optional(),
-            documentPhoto: Joi.string().optional(),
-        }),
-    },
-};
+export default Request;

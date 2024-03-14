@@ -1,0 +1,8 @@
+export * as myProfileController from "./Admin/Profile/myProfile.controller";
+export * as authController from "./Auth/auth.login";
+export * as userController from "./User/user.controller";
+export * as dashboardController from "./Admin/Dashboard/dashboard.controller";
+export * as accessController from "./Admin/Access/access.controller";
+export * as providerController from "./Admin/Providers/provider.controller";
+export * as schedulingController from "./Admin/Providers/scheduling.controller";
+export * as recordsController from "./Admin/Records/records.controller";

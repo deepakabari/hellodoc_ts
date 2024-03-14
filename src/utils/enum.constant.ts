@@ -2,7 +2,7 @@ export enum RequestType {
     Patient = 'Patient',
     Family = 'Family/Friend',
     Concierge = 'Concierge',
-    BusinessPartner = 'BusinessPartner',
+    Business = 'Business',
 }
 
 export enum AccountType {
