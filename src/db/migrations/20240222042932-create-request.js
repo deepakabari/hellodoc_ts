@@ -129,8 +129,8 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: true,
             },
-            caseNumber: {
-                type: Sequelize.STRING,
+            concludedDate: {
+                type: Sequelize.DATE,
                 allowNull: true,
             },
             caseTag: {

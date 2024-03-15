@@ -2,36 +2,28 @@ import fs from "fs";
 import path from "path";
 import * as exphbs from "express-handlebars";
 
-const resetLink = `http://localhost:3000/auth/resetPassword/`;
+const compileEmailTemplate = async (templateName: string, data: object) => {
+    try {
+        const hbsFile = await fs.promises.readFile(
+            path.join(
+                __dirname,
+                "..",
+                "public",
+                "templates",
+                `${templateName}.hbs`
+            ),
+            "utf8"
+        );
+        const hbs = exphbs.create({
+            extname: ".hbs",
+            defaultLayout: false,
+        }).handlebars;
+        const template = hbs.compile(hbsFile, {});
+        return template(data);
+    } catch (err) {
+        console.error(err);
+        throw new Error("Failed to compile email template");
+    }
+};
 
-const data = new Promise((resolve) => {
-    console.log(__dirname);
-    fs.readFile(
-        path.join(
-            __dirname,
-            "..",
-            "public",
-            "templates",
-            "resetEmail.hbs"
-        ),
-        "utf8",
-        (err, hbsFile) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            const hbs = exphbs.create({
-                extname: "hbs",
-                defaultLayout: false,
-            }).handlebars;
-
-            // Compile template with reset link
-            const template = hbs.compile(hbsFile, {});
-            const htmlToSend = template({
-                reset_url: resetLink,
-            });
-            resolve(htmlToSend);
-        }
-    );
-});
-
+export { compileEmailTemplate };

@@ -1,8 +1,10 @@
 import { Joi, Segments } from "celebrate";
+import { AccountType, ProfileStatus } from "../utils/enum.constant"
 
 export const UserSchema = {
     createUser: {
         [Segments.BODY]: Joi.object({
+            accountType: Joi.string().required().valid(...Object.values(AccountType)),
             userName: Joi.string().required(),
             password: Joi.string()
                 .required()
@@ -15,25 +17,25 @@ export const UserSchema = {
             lastName: Joi.string().allow("", null).optional().min(4),
             email: Joi.string().email().required(),
             phoneNumber: Joi.string().min(10).max(10).required(),
-            address1: Joi.string().allow("").optional(),
-            address2: Joi.string().allow("").optional(),
-            street: Joi.string().allow("").optional(),
+            address1: Joi.string().allow("", null).optional(),
+            address2: Joi.string().allow("", null).optional(),
+            street: Joi.string().allow("", null).optional(),
             city: Joi.string().required(),
             state: Joi.string().required(),
             zipCode: Joi.string().required().min(5).max(6),
-            dob: Joi.date().allow("").optional(),
-            status: Joi.string().allow("").optional(),
-            altPhone: Joi.string().optional().min(10).max(10).allow(""),
-            medicalLicense: Joi.string().optional().allow(""),
-            photo: Joi.string().optional().allow(""),
-            signature: Joi.string().optional().allow(""),
+            dob: Joi.date().allow("", null).optional(),
+            status: Joi.string().valid(...Object.values(ProfileStatus)).optional(),
+            altPhone: Joi.string().optional().min(10).max(10).allow("", null),
+            medicalLicense: Joi.string().optional().allow("", null),
+            photo: Joi.string().optional().allow("", null),
+            signature: Joi.string().optional().allow("", null),
             isAgreementDoc: Joi.boolean().optional(),
             isBackgroundDoc: Joi.boolean().optional(),
             isTrainingDoc: Joi.boolean().optional(),
             isNonDisclosureDoc: Joi.boolean().optional(),
             isLicenseDoc: Joi.boolean().optional(),
-            NPINumber: Joi.string().optional().allow(""),
-            syncEmailAddress: Joi.string().optional().allow(""),
+            NPINumber: Joi.string().optional().allow("", null),
+            syncEmailAddress: Joi.string().optional().allow("", null),
             regions: Joi.array().items(Joi.number().integer()).optional(),
         }).unknown(true),
     },

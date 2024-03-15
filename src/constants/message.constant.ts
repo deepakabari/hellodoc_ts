@@ -35,7 +35,8 @@ const messageConstant = {
     MISSING_SECTION_OR_UPDATED_DATA: "Missing section or updates data",
     UPDATE_FAILED: "Update failed...",
     AGREEMENT_EMAIL_SENT: "Agreement email sent successfully",
-    INVALID_SORT_PARAMETER: "Invalid sort parameter..."
+    INVALID_SORT_PARAMETER: "Invalid sort parameter...",
+    BUSINESS_ALREADY_EXISTS: "Your business already exists in platform."
 };
 
 export default messageConstant;

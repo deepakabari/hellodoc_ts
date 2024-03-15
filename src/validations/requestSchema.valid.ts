@@ -1,4 +1,5 @@
 import { Joi, Segments } from "celebrate";
+import { RequestType } from "../utils/enum.constant";
 
 export const RequestSchema = {
     idParams: {
@@ -28,7 +29,7 @@ export const RequestSchema = {
 
     blockCase: {
         [Segments.BODY]: Joi.object({
-            description: Joi.string().required(),
+            reasonForCancellation: Joi.string().required(),
         }),
         [Segments.PARAMS]: {
             id: Joi.number().required(),
@@ -38,7 +39,7 @@ export const RequestSchema = {
     assignCase: {
         [Segments.BODY]: Joi.object({
             transferNote: Joi.string().required(),
-        }),
+        }).unknown(true),
     },
 
     closeCase: {
@@ -50,6 +51,7 @@ export const RequestSchema = {
 
     createRequest: {
         [Segments.BODY]: Joi.object({
+            requestType: Joi.string().required().valid(...Object.values(RequestType)),
             patientFirstName: Joi.string().required(),
             patientLastName: Joi.string().required(),
             patientEmail: Joi.string().required().email(),
@@ -58,8 +60,13 @@ export const RequestSchema = {
             requestorLastName: Joi.string().optional(),
             requestorPhoneNumber: Joi.string().optional().min(10).max(10),
             requestorEmail: Joi.string().optional().email(),
+            isEmail: Joi.boolean().required(),
             password: Joi.string()
-                .required()
+                .when("isEmail", {
+                    is: true,
+                    then: Joi.optional().allow("", null),
+                    otherwise: Joi.required(),
+                })
                 .regex(
                     RegExp(
                         "^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,16}$"

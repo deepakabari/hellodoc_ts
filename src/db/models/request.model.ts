@@ -202,9 +202,9 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
 
     @Column({
         allowNull: true,
-        type: DataTypes.STRING,
+        type: DataTypes.DATE,
     })
-    caseNumber?: string;
+    concludedDate?: Date;
 
     @Column({
         allowNull: true,

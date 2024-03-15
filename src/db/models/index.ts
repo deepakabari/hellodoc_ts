@@ -5,5 +5,6 @@ import UserRole from "./userRoleMap.model";
 import Region from "./region.model";
 import UserRegion from "./userRegion.model";
 import RequestWiseFiles from "./requestWiseFiles.model";
+import Business from "./business.model";
 
-export { Role, Request, User, UserRole, Region, UserRegion, RequestWiseFiles };
+export { Role, Request, User, UserRole, Region, UserRegion, RequestWiseFiles, Business };

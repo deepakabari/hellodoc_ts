@@ -3,12 +3,15 @@ export enum RequestType {
     Family = 'Family/Friend',
     Concierge = 'Concierge',
     Business = 'Business',
+    Vip = "VIP"
 }
 
 export enum AccountType {
     Admin = 'Admin',
     Physician = 'Physician',
     User = 'User',
+    Vendor = "Vendor",
+    All = "All"
 }
 
 export enum CaseTag {

@@ -4,12 +4,11 @@ import jwt from "jsonwebtoken";
 import transporter from "../../utils/email";
 import { Controller } from "../../interfaces";
 import crypto from "crypto";
-import fs from "fs";
-import path from "path";
 import bcrypt from "bcrypt";
 import { Op } from "sequelize";
 import { User } from "../../db/models/index";
-import * as exphbs from "express-handlebars";
+import { compileEmailTemplate } from "../../utils/hbsCompiler";
+import linkConstant from "../../constants/link.constant";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -134,40 +133,13 @@ export const forgotPassword: Controller = async (req, res) => {
             },
             { where: { email } }
         );
+        
+        const RESET_URL = linkConstant.RESET_URL
+        const templateData = {
+            reset_url: `${RESET_URL}${hashedToken}`,
+        };
 
-        const resetLink = `http://localhost:3000/auth/resetPassword/${hashedToken}`;
-
-        // Read template file
-        const data = await new Promise((resolve) => {
-            console.log(__dirname);
-            fs.readFile(
-                path.join(
-                    __dirname,
-                    "..",
-                    "public",
-                    "templates",
-                    "resetEmail.hbs"
-                ),
-                "utf8",
-                (err, hbsFile) => {
-                    if (err) {
-                        console.error(err);
-                        return;
-                    }
-                    const hbs = exphbs.create({
-                        extname: "hbs",
-                        defaultLayout: false,
-                    }).handlebars;
-
-                    // Compile template with reset link
-                    const template = hbs.compile(hbsFile, {});
-                    const htmlToSend = template({
-                        reset_url: resetLink,
-                    });
-                    resolve(htmlToSend);
-                }
-            );
-        });
+        const data = await compileEmailTemplate("resetEmail", templateData);
 
         const mailOptions = {
             from: EMAIL_FROM,
@@ -180,11 +152,9 @@ export const forgotPassword: Controller = async (req, res) => {
             if (error) {
                 throw error;
             } else {
-                console.log("Email sent: " + resetLink);
                 return res.json({
                     status: httpCode.OK,
                     message: messageConstant.RESET_EMAIL_SENT,
-                    data: { token: hashedToken }, // it is only for testing purpose
                 });
             }
         });

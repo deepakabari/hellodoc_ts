@@ -33,11 +33,6 @@ interface UserAttributes {
     onCallStatus?: string
     isDeleted?: boolean
     notification?: boolean
-    businessName?: string
-    businessWebsite?: string
-    profession?: string
-    faxNumber?: string
-    businessContact?: string
     createdAt?: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

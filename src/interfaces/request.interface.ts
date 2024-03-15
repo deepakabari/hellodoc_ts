@@ -32,15 +32,15 @@ interface RequestAttributes {
     lastReservationDate?: Date;
     acceptedDate?: Date;
     relationName?: string;
-    caseNumber?: string;
+    concludedDate?: Date;
     caseTag?: string;
     caseTagPhysician?: string;
-    adminNotes?: string
-    physicianNotes?: string
-    transferNote?: string
-    reasonForCancellation?: string
-    isAgreementSent?: boolean
-    isAgreementAccepted?: boolean
+    adminNotes?: string;
+    physicianNotes?: string;
+    transferNote?: string;
+    reasonForCancellation?: string;
+    isAgreementSent?: boolean;
+    isAgreementAccepted?: boolean;
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

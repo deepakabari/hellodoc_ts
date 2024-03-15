@@ -1,26 +1,9 @@
 import httpCode from "../../../constants/http.constant";
 import messageConstant from "../../../constants/message.constant";
 import { Region, User } from "../../../db/models/index";
-import { Controller } from "../../../interfaces";
+import { Controller, AdminUpdates, BillingUpdates } from "../../../interfaces";
 import dotenv from "dotenv";
 dotenv.config();
-
-type AdminUpdates = {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    confirmEmail?: string;
-    phoneNumber?: string;
-};
-
-type BillingUpdates = {
-    address1?: string;
-    address2?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    altPhone?: string;
-};
 
 /**
  * @function adminProfile

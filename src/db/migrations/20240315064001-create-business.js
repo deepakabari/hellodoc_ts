@@ -1,0 +1,77 @@
+"use strict";
+/** @type {import('sequelize-cli').Migration} */
+module.exports = {
+    async up(queryInterface, Sequelize) {
+        await queryInterface.createTable("Business", {
+            id: {
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+                type: Sequelize.INTEGER,
+            },
+            accountType: {
+                type: Sequelize.STRING,
+                allowNull: false
+            },
+            businessName: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            businessWebsite: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            profession: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            faxNumber: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            phoneNumber: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            email: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            businessContact: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            street: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            city: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            state: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            zipCode: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            createdAt: {
+                allowNull: false,
+                type: Sequelize.DATE,
+            },
+            updatedAt: {
+                allowNull: false,
+                type: Sequelize.DATE,
+            },
+            deletedAt: {
+                type: Sequelize.DATE,
+                allowNull: true,
+            },
+        });
+    },
+    async down(queryInterface, Sequelize) {
+        await queryInterface.dropTable("Business");
+    },
+};

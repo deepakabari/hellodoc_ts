@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import {
     AccountType,
     CaseTag,
@@ -17,9 +15,10 @@ import { Controller } from "../../../interfaces";
 import transporter from "../../../utils/email";
 import sequelize, { FindAttributeOptions, Includeable, Order } from "sequelize";
 import twilio from "twilio";
-import * as exphbs from "express-handlebars";
 import { Op } from "sequelize";
 import dotenv from "dotenv";
+import { compileEmailTemplate } from "../../../utils/hbsCompiler";
+import linkConstant from "../../../constants/link.constant";
 dotenv.config();
 
 /**
@@ -498,12 +497,12 @@ export const blockCase: Controller = async (req, res) => {
         const { id } = req.params;
 
         // Take value of this from request body
-        const { description } = req.body;
+        const { reasonForCancellation } = req.body;
 
         // To update the reason and status to request table
         await Request.update(
             {
-                reasonForCancellation: description,
+                reasonForCancellation,
                 requestStatus: RequestStatus.Blocked,
                 deletedAt: new Date(),
             },
@@ -572,44 +571,17 @@ export const sendAgreement: Controller = async (req, res) => {
         const phoneNumber = user.patientPhoneNumber;
         const email = user.patientEmail;
 
-        const agreementLink = "http://localhost:3000/agreement";
+        const templateData = {
+            agreementLink: linkConstant.AGREEMENT_URL,
+            recipientName: user.patientFirstName
+        }
 
-        // To create the environment for hbs and compile it to html and then take that data into email
-        const data = await new Promise((resolve) => {
-            fs.readFile(
-                path.join(
-                    __dirname,
-                    "..",
-                    "public",
-                    "templates",
-                    "sendAgreementEmail.hbs"
-                ),
-                "utf8",
-                (err, hbsFile) => {
-                    if (err) {
-                        console.error(err);
-                        return;
-                    }
-                    const hbs = exphbs.create({
-                        extname: "hbs",
-                        defaultLayout: false,
-                    }).handlebars;
-
-                    // Compile template with reset link
-                    const template = hbs.compile(hbsFile, {});
-                    const htmlToSend = template({
-                        recipientName: user.patientFirstName,
-                        agreementLink,
-                    });
-                    resolve(htmlToSend);
-                }
-            );
-        });
+        const data = await compileEmailTemplate('sendAgreementEmail', templateData);
 
         let mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
-            subject: "Agreement From Hallodoc",
+            subject: linkConstant.agreementSubject,
             html: data,
         };
 
@@ -630,7 +602,7 @@ export const sendAgreement: Controller = async (req, res) => {
 
                 client.messages
                     .create({
-                        body: `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: \n\n ${agreementLink}.`,
+                        body: `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: http://localhost:3000/agreement.`,
                         to: process.env.MY_PHONE_NUMBER as string,
                         from: process.env.TWILIO_PHONE_NUMBER,
                     })
@@ -970,43 +942,17 @@ export const sendPatientRequest: Controller = async (req, res) => {
     try {
         const { firstName, lastName, phoneNumber, email } = req.body;
 
-        const createRequestLink = "http://localhost:3000/createRequest";
-
-        const data = await new Promise((resolve) => {
-            fs.readFile(
-                path.join(
-                    __dirname,
-                    "..",
-                    "public",
-                    "templates",
-                    "sendRequestEmail.hbs"
-                ),
-                "utf8",
-                (err, hbsFile) => {
-                    if (err) {
-                        console.error(err);
-                        return;
-                    }
-                    const hbs = exphbs.create({
-                        extname: "hbs",
-                        defaultLayout: false,
-                    }).handlebars;
-
-                    // Compile template with reset link
-                    const template = hbs.compile(hbsFile, {});
-                    const htmlToSend = template({
-                        patientName: firstName + lastName,
-                        createRequestLink,
-                    });
-                    resolve(htmlToSend);
-                }
-            );
-        });
+        const templateData = {
+            createRequestLink: linkConstant.REQUEST_URL,
+            patientName: firstName + " " + lastName
+        }
+        
+        const data = await compileEmailTemplate("sendRequestEmail", templateData);
 
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
-            subject: "Create your account at HalloDoc Platform",
+            subject: linkConstant.createRequestSubject,
             html: data,
         };
 

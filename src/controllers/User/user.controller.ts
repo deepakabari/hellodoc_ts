@@ -12,6 +12,7 @@ import {
     AccountType,
     ProfileStatus,
     RegionAbbreviation,
+    RequestStatus,
 } from "../../utils/enum.constant";
 import { CaseTag } from "../../utils/enum.constant";
 import { Op } from "sequelize";
@@ -49,10 +50,12 @@ const createUser: Controller = async (req, res) => {
             accountType,
             zipCode,
             dob,
+            document
         } = req.body;
 
-        // let accountType = AccountType.User;
-        let status = ProfileStatus.Active;
+        if (!req.file) {
+            throw new Error(messageConstant.IMAGE_NOT_UPLOADED);
+        }
 
         // check if user is exists in the database
         const existingUser = await User.findOne({
@@ -78,7 +81,7 @@ const createUser: Controller = async (req, res) => {
             lastName,
             email,
             phoneNumber,
-            status,
+            status: ProfileStatus.Active,
             street,
             address1,
             address2,
@@ -90,6 +93,7 @@ const createUser: Controller = async (req, res) => {
             altPhone,
             medicalLicense,
             NPINumber,
+            photo: req.file.path,
             createdAt: new Date(),
             updatedAt: new Date(),
         });
@@ -177,39 +181,31 @@ const isEmailFound: Controller = async (req, res) => {
 const createRequest: Controller = async (req, res) => {
     try {
         const {
-            requestType, // value comes from the frontend
-            requestStatus,
-            requestorFirstName,
-            requestorLastName,
-            requestorPhoneNumber,
-            requestorEmail,
-            relationName,
             patientFirstName,
             patientLastName,
             patientEmail,
             password,
+            isEmail,
             patientPhoneNumber,
-            status,
-            street,
-            dob,
-            city,
             state,
-            zipCode,
-            roomNumber,
         } = req.body;
 
         if (!req.file) {
             throw new Error(messageConstant.IMAGE_NOT_UPLOADED);
         }
+        let userId;
 
-        // hash the password
-        const hashedPassword = await bcrypt.hash(password, Number(ITERATION));
+        if (!isEmail) {
+            // hash the password
+            const hashedPassword = await bcrypt.hash(
+                password,
+                Number(ITERATION)
+            );
 
-        // find or create a user with the given email
-        const [user] = await User.findOrCreate({
-            where: { email: patientEmail },
-            defaults: {
+            // find or create a user with the given email
+            const user = await User.create({
                 ...req.body,
+                status: ProfileStatus.Active,
                 userName: patientFirstName,
                 email: patientEmail,
                 firstName: patientFirstName,
@@ -219,13 +215,15 @@ const createRequest: Controller = async (req, res) => {
                 accountType: AccountType.User,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-            },
-        });
-
-        // get the user id from the user object
-        const userId = user.id;
-
-        let caseTag = CaseTag.New;
+            });
+            // get the user id from the user object
+            userId = user.id;
+        } else {
+            const existingUser = await User.findOne({
+                where: { email: patientEmail },
+            });
+            userId = existingUser ? existingUser.id : null;
+        }
 
         // Get the current date
         const currentDate = new Date();
@@ -266,7 +264,8 @@ const createRequest: Controller = async (req, res) => {
         // create a new patient request
         const newRequest = await Request.create({
             userId,
-            caseTag,
+            requestStatus: RequestStatus.Unassigned,
+            caseTag: CaseTag.New,
             confirmationNumber,
             isDeleted: false,
             ...req.body,

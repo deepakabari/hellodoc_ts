@@ -4,7 +4,6 @@ import isAuth from "../../../middleware/in-auth";
 import { celebrate } from "celebrate";
 import {
     RequestSchema,
-    RoleSchema,
     UserSchema,
 } from "../../../validations/index";
 

@@ -9,7 +9,6 @@ import { DataTypes } from "sequelize";
 import { UserAttributes, UserCreationAttributes } from "../../interfaces";
 import { Role, UserRole, Request, Region, UserRegion } from "./index";
 
-
 @Table({
     timestamps: true,
     paranoid: true,
@@ -68,7 +67,10 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     @Column({ type: DataTypes.STRING, allowNull: true })
     status: string;
 
-    @Column({ type: DataTypes.STRING, allowNull: false })
+    @Column({
+        type: DataTypes.STRING,
+        allowNull: false,
+    })
     accountType: string;
 
     @Column({ type: DataTypes.STRING, allowNull: true })
@@ -121,36 +123,6 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
         type: DataTypes.BOOLEAN,
     })
     notification: boolean;
-
-    @Column({
-        allowNull: true,
-        type: DataTypes.STRING,
-    })
-    businessName: string;
-
-    @Column({
-        allowNull: true,
-        type: DataTypes.STRING,
-    })
-    businessWebsite: string;
-    
-    @Column({
-        allowNull: true,
-        type: DataTypes.STRING,
-    })
-    profession: string;
-
-    @Column({
-        allowNull: true,
-        type: DataTypes.STRING,
-    })
-    faxNumber: string;
-
-    @Column({
-        allowNull: true,
-        type: DataTypes.STRING,
-    })
-    businessContact: string;
 
     @BelongsToMany(() => Role, () => UserRole, "userId", "roleId")
     roles: Role[];

@@ -8,14 +8,6 @@ module.exports = {
             allowNull: true,
             defaultValue: false,
         });
-        await queryInterface.addColumn("User", "businessName", {
-            type: Sequelize.STRING,
-            allowNull: true,
-        });
-        await queryInterface.addColumn("User", "businessWebsite", {
-            type: Sequelize.STRING,
-            allowNull: true,
-        });
         await queryInterface.addColumn("Request", "isAgreementSent", {
             type: Sequelize.BOOLEAN,
             allowNull: true,
@@ -31,8 +23,6 @@ module.exports = {
 
     async down(queryInterface, Sequelize) {
         await queryInterface.removeColumn("User", "notification")
-        await queryInterface.removeColumn("User", "businessName")
-        await queryInterface.removeColumn("User", "businessWebsite")
         await queryInterface.removeColumn("Request", "isAgreementSent")
         await queryInterface.removeColumn("Request", "isAgreementAccepted")
     },
