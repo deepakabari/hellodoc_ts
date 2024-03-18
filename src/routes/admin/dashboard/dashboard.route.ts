@@ -2,10 +2,7 @@ import { dashboardController } from "../../../controllers/index";
 import express from "express";
 import isAuth from "../../../middleware/in-auth";
 import { celebrate } from "celebrate";
-import {
-    RequestSchema,
-    UserSchema,
-} from "../../../validations/index";
+import { RequestSchema, UserSchema } from "../../../validations/index";
 
 const router = express.Router();
 
@@ -93,6 +90,13 @@ router.post(
 );
 
 router.get("/viewUploads/:id", isAuth, dashboardController.viewUploads);
+
+router.post(
+    "/uploadFile/:id",
+    isAuth,
+    celebrate(RequestSchema.uploadFile),
+    dashboardController.uploadFile
+);
 
 router.get("/closeCaseView/:id", isAuth, dashboardController.closeCaseView);
 

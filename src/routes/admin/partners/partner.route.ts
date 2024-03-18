@@ -12,4 +12,16 @@ router.post(
     partnerController.addBusiness
 );
 
+router.get("/professions", isAuth, partnerController.professions);
+
+router.get(
+    "/businessByProfession/:profession",
+    isAuth,
+    partnerController.businessByProfession
+);
+
+router.get("/viewSendOrder/:id", isAuth, partnerController.viewSendOrder)
+
+router.post("/sendOrder/:id", isAuth, partnerController.sendOrder)
+
 export default router;

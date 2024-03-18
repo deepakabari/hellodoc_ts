@@ -16,6 +16,7 @@ dotenv.config();
  */
 export const getPatientHistory: Controller = async (req, res) => {
     try {
+        const { search } = req.query;
         const patientsHistory = await Request.findAll({
             attributes: [
                 "id",
@@ -23,11 +24,27 @@ export const getPatientHistory: Controller = async (req, res) => {
                 "patientLastName",
                 "patientEmail",
                 "patientPhoneNumber",
-                "Request.street",
-                "Request.city",
-                "Request.state",
-                "Request.zipCode",
+                "street",
+                "city",
+                "state",
+                "zipCode",
             ],
+            where: {
+                ...(search
+                    ? {
+                        [Op.or]: [
+                            "patientFirstName",
+                            "patientLastName",
+                            "patientEmail",
+                            "patientPhoneNumber",
+                        ].map((field) => ({
+                            [field]: {
+                                [Op.like]: `%${search}%`,
+                            },
+                        })),
+                      }
+                    : {}),
+            },
         });
 
         return res.status(httpCode.OK).json({
@@ -143,27 +160,15 @@ export const searchRecord: Controller = async (req, res) => {
                 ...(search
                     ? {
                           [Op.or]: [
-                              {
-                                  patientFirstName: {
-                                      [Op.like]: `%${search}%`,
-                                  },
+                              "patientFirstName",
+                              "patientLastName",
+                              "patientEmail",
+                              "patientPhoneNumber",
+                          ].map((field) => ({
+                              [field]: {
+                                  [Op.like]: `%${search}%`,
                               },
-                              {
-                                  patientLastName: {
-                                      [Op.like]: `%${search}%`,
-                                  },
-                              },
-                              {
-                                  patientEmail: {
-                                      [Op.like]: `%${search}%`,
-                                  },
-                              },
-                              {
-                                  patientPhoneNumber: {
-                                      [Op.like]: `%${search}%`,
-                                  },
-                              },
-                          ],
+                          })),
                       }
                     : {}),
             },

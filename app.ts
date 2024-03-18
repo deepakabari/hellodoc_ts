@@ -3,7 +3,7 @@ import router from "./src/routes/index";
 import { dbConnection } from "./src/db/config/index";
 import swaggerDoc from "./src/swagger/swagger";
 import multer from "multer";
-import { fileStorage } from "./src/utils/multerConfig";
+import { fileStorage, fileFilter } from "./src/utils/multerConfig";
 import path from "path";
 import bodyParser from "body-parser";
 import { errors } from "celebrate";
@@ -19,7 +19,7 @@ const app = express();
 app.engine("hbs", engine({ extname: "hbs", defaultLayout: false }));
 app.set("view engine", "hbs");
 
-app.use(multer({ storage: fileStorage }).single("document"));
+app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single("document"));
 
 app.use(
     "/images",

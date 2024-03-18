@@ -1,5 +1,5 @@
 import { Joi, Segments } from "celebrate";
-import { RequestType } from "../utils/enum.constant";
+import { AllowedMimetype, RequestType } from "../utils/enum.constant";
 
 export const RequestSchema = {
     idParams: {
@@ -49,9 +49,19 @@ export const RequestSchema = {
         }),
     },
 
+    uploadFile: {
+        [Segments.BODY]: {
+            document: Joi.object({
+                mimetype: Joi.string().valid(...Object.values(AllowedMimetype)).required(),
+            }),
+        },
+    },
+
     createRequest: {
         [Segments.BODY]: Joi.object({
-            requestType: Joi.string().required().valid(...Object.values(RequestType)),
+            requestType: Joi.string()
+                .required()
+                .valid(...Object.values(RequestType)),
             patientFirstName: Joi.string().required(),
             patientLastName: Joi.string().required(),
             patientEmail: Joi.string().required().email(),

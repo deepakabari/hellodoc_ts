@@ -1,7 +1,7 @@
 import { AccountType } from "../../../utils/enum.constant";
 import httpCode from "../../../constants/http.constant";
 import messageConstant from "../../../constants/message.constant";
-import { User } from "../../../db/models/index";
+import { Region, User } from "../../../db/models/index";
 import { Controller } from "../../../interfaces";
 import sequelize from "sequelize";
 import dotenv from "dotenv";
@@ -29,6 +29,11 @@ export const providerInformation: Controller = async (req, res) => {
                 "notification",
             ],
             where: { accountType: AccountType.Physician },
+            include: {
+                model: Region,
+                attributes: ["id", "name"],
+                through: { attributes: [] },
+            },
         });
 
         return res.status(httpCode.OK).json({
@@ -44,7 +49,7 @@ export const providerInformation: Controller = async (req, res) => {
 // pending
 export const contactProvider: Controller = async (req, res) => {
     try {
-        const { messageBody, SMS, email, both } = req.body;
+        const { messageBody, contactMethod } = req.body;
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,

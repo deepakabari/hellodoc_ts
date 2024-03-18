@@ -70,3 +70,10 @@ export enum CallType {
     HouseCall = 'HouseCall',
     Consult = 'Consult',
 }
+
+export enum AllowedMimetype {
+    'image/png',
+    'image/jpg',
+    'image/jpeg',
+    'application/pdf',
+}

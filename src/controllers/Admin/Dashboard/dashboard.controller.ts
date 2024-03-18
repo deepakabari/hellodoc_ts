@@ -419,15 +419,9 @@ export const getPatientName: Controller = async (req, res) => {
         const patientName = await Request.findAll({
             attributes: [
                 "id",
-                [
-                    sequelize.fn(
-                        "CONCAT",
-                        sequelize.col("patientFirstName"),
-                        " ",
-                        sequelize.col("patientLastName")
-                    ),
-                    "Patient Name",
-                ],
+                "patientFirstName",
+                "patientLastName",
+                "confirmationNumber",
             ],
             where: { id },
         });
@@ -573,10 +567,13 @@ export const sendAgreement: Controller = async (req, res) => {
 
         const templateData = {
             agreementLink: linkConstant.AGREEMENT_URL,
-            recipientName: user.patientFirstName
-        }
+            recipientName: user.patientFirstName,
+        };
 
-        const data = await compileEmailTemplate('sendAgreementEmail', templateData);
+        const data = await compileEmailTemplate(
+            "sendAgreementEmail",
+            templateData
+        );
 
         let mailOptions = {
             from: process.env.EMAIL_FROM,
@@ -733,7 +730,7 @@ export const viewUploads: Controller = async (req, res) => {
 
         const uploads = await RequestWiseFiles.findAll({
             where: { requestId: id },
-            attributes: ["id", "fileName", "createdAt"],
+            attributes: ["id", "fileName", "createdAt", "documentPath"],
             order: sortByModel as Order,
         });
 
@@ -757,6 +754,35 @@ export const viewUploads: Controller = async (req, res) => {
             message: messageConstant.SUCCESS,
             data: uploads,
         });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const uploadFile: Controller = async (req, res) => {
+    try {
+        const id = +req.params.id;
+
+        if (!req.file) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.FILE_NOT_UPLOADED
+            })
+        }
+        
+        const uploadFile = await RequestWiseFiles.create({
+            requestId: id,
+            fileName: req.file.originalname,
+            documentPath: req.file.path,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.FILE_UPLOADED,
+            data: uploadFile
+        })
     } catch (error) {
         throw error;
     }
@@ -803,11 +829,7 @@ export const closeCaseView: Controller = async (req, res) => {
             include: [
                 {
                     model: RequestWiseFiles,
-                    attributes: [
-                        "fileName",
-                        "documentPath",
-                        "createdAt",
-                    ],
+                    attributes: ["fileName", "documentPath", "createdAt"],
                 },
             ],
             where: { id },
@@ -944,10 +966,13 @@ export const sendPatientRequest: Controller = async (req, res) => {
 
         const templateData = {
             createRequestLink: linkConstant.REQUEST_URL,
-            patientName: firstName + " " + lastName
-        }
-        
-        const data = await compileEmailTemplate("sendRequestEmail", templateData);
+            patientName: firstName + " " + lastName,
+        };
+
+        const data = await compileEmailTemplate(
+            "sendRequestEmail",
+            templateData
+        );
 
         const mailOptions = {
             from: process.env.EMAIL_FROM,
