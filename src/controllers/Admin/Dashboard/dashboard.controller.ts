@@ -14,11 +14,11 @@ import {
 import { Controller } from "../../../interfaces";
 import transporter from "../../../utils/email";
 import sequelize, { FindAttributeOptions, Includeable, Order } from "sequelize";
-import twilio from "twilio";
 import { Op } from "sequelize";
 import dotenv from "dotenv";
 import { compileEmailTemplate } from "../../../utils/hbsCompiler";
 import linkConstant from "../../../constants/link.constant";
+import { sendSMS } from "../../../utils/smsSender";
 dotenv.config();
 
 /**
@@ -60,7 +60,7 @@ export const requestCount: Controller = async (req, res) => {
 export const getPatientByState: Controller = async (req, res) => {
     try {
         // Extract variables from query parameters
-        const { state, search, sortBy, orderBy } = req.query;
+        const { state, search, sortBy, orderBy, regions } = req.query;
 
         // Take needed attributes and modify accordingly
         let attributes = [
@@ -114,8 +114,8 @@ export const getPatientByState: Controller = async (req, res) => {
 
         switch (sortBy) {
             case "id":
-            case "Requested Date":
-            case "Date Of Service":
+            case "createdAt":
+            case "updatedAt":
                 sortByModel = [[sortBy, orderBy]];
                 break;
         }
@@ -267,6 +267,7 @@ export const getPatientByState: Controller = async (req, res) => {
                           ],
                       }
                     : {}),
+                ...(regions ? { state: regions as string } : {}),
             },
             include: includeModels as unknown as Includeable[],
             order: sortByModel as Order,
@@ -325,6 +326,13 @@ export const viewCase: Controller = async (req, res) => {
             where: { id },
         });
 
+        if (!viewCase) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
+
         // success response with data in response body
         return res.json({
             status: httpCode.OK,
@@ -359,6 +367,13 @@ export const viewNotes: Controller = async (req, res) => {
             ],
             where: { id },
         });
+
+        if (!notes) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
 
         return res.json({
             status: httpCode.OK,
@@ -425,6 +440,13 @@ export const getPatientName: Controller = async (req, res) => {
             ],
             where: { id },
         });
+
+        if (!patientName) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
 
         // success response
         return res.status(httpCode.OK).json({
@@ -592,18 +614,9 @@ export const sendAgreement: Controller = async (req, res) => {
                     { isAgreementSent: true },
                     { where: { id: req.params.id } }
                 );
-                const client = twilio(
-                    process.env.TWILIO_ACCOUNT_SID,
-                    process.env.TWILIO_AUTH_TOKEN
-                );
 
-                client.messages
-                    .create({
-                        body: `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: http://localhost:3000/agreement.`,
-                        to: process.env.MY_PHONE_NUMBER as string,
-                        from: process.env.TWILIO_PHONE_NUMBER,
-                    })
-                    .then((message) => console.log(message.sid));
+                const messageBody = `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: http://localhost:3000/agreement.`;
+                sendSMS(messageBody);
 
                 return res.json({
                     status: httpCode.OK,
@@ -726,6 +739,11 @@ export const viewUploads: Controller = async (req, res) => {
             case "createdAt":
                 sortByModel = [[sortBy, orderBy]];
                 break;
+            default:
+                res.status(httpCode.UNPROCESSABLE_CONTENT).json({
+                    status: httpCode.UNPROCESSABLE_CONTENT,
+                    message: messageConstant.INVALID_SORT_PARAMETER,
+                });
         }
 
         const uploads = await RequestWiseFiles.findAll({
@@ -733,6 +751,13 @@ export const viewUploads: Controller = async (req, res) => {
             attributes: ["id", "fileName", "createdAt", "documentPath"],
             order: sortByModel as Order,
         });
+
+        if (!uploads) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.FILE_NOT_FOUND,
+            });
+        }
 
         // To format the date in MM(string) DD YYYY format
         // const formattedUploads = uploads.map((upload) => {
@@ -766,10 +791,10 @@ export const uploadFile: Controller = async (req, res) => {
         if (!req.file) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
-                message: messageConstant.FILE_NOT_UPLOADED
-            })
+                message: messageConstant.FILE_NOT_UPLOADED,
+            });
         }
-        
+
         const uploadFile = await RequestWiseFiles.create({
             requestId: id,
             fileName: req.file.originalname,
@@ -778,11 +803,18 @@ export const uploadFile: Controller = async (req, res) => {
             updatedAt: new Date(),
         });
 
+        if (!uploadFile) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.ERROR_UPLOAD_FILE,
+            });
+        }
+
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.FILE_UPLOADED,
-            data: uploadFile
-        })
+            data: uploadFile,
+        });
     } catch (error) {
         throw error;
     }
@@ -812,6 +844,11 @@ export const closeCaseView: Controller = async (req, res) => {
                     ],
                 ];
                 break;
+            default:
+                res.status(httpCode.UNPROCESSABLE_CONTENT).json({
+                    status: httpCode.UNPROCESSABLE_CONTENT,
+                    message: messageConstant.INVALID_SORT_PARAMETER,
+                });
         }
 
         const closeCase = await Request.findAll({
@@ -835,6 +872,13 @@ export const closeCaseView: Controller = async (req, res) => {
             where: { id },
             order: sortByModel as Order,
         });
+
+        if (!closeCase) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -974,6 +1018,10 @@ export const sendPatientRequest: Controller = async (req, res) => {
             templateData
         );
 
+        const messageBody =
+            "Here you are selected for Maidaan. accept it otherwise we will see you.";
+        sendSMS(messageBody);
+
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
@@ -985,20 +1033,6 @@ export const sendPatientRequest: Controller = async (req, res) => {
             if (error) {
                 throw error;
             } else {
-                const client = twilio(
-                    process.env.TWILIO_ACCOUNT_SID,
-                    process.env.TWILIO_AUTH_TOKEN
-                );
-
-                client.messages
-                    .create({
-                        body: "Here you are selected for Maidaan. accept it otherwise we will see you.",
-                        to: process.env.MY_PHONE_NUMBER as string,
-                        from: process.env.TWILIO_PHONE_NUMBER,
-                    })
-                    .then((message) =>
-                        console.log("message sent: ", message.sid)
-                    );
                 return res.json({
                     status: httpCode.OK,
                     message: messageConstant.REQUEST_EMAIL_SMS_SENT,

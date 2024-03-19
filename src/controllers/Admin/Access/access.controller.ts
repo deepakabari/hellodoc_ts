@@ -5,7 +5,6 @@ import {
     User,
 } from "../../../db/models/index";
 import { Controller } from "../../../interfaces";
-import sequelize from "sequelize";
 import dotenv from "dotenv";
 dotenv.config();
 

@@ -31,6 +31,7 @@ const messageConstant = {
     REQUEST_CREATED: "Request Created Successfully",
     FILE_NOT_FOUND: "File not found",
     ERROR_DOWNLOAD_FILE: "Error when downloading file",
+    ERROR_UPLOAD_FILE: "Error when uploading file",
     MESSAGE_SENT_SUCCESSFULLY: "Message sent successfully",
     ERROR_SEND_MESSAGE: "Error while sending message",
     ROLE_ALREADY_EXISTS: "Role already exists",
@@ -40,6 +41,8 @@ const messageConstant = {
     AGREEMENT_EMAIL_SENT: "Agreement email sent successfully",
     INVALID_SORT_PARAMETER: "Invalid sort parameter...",
     BUSINESS_ALREADY_EXISTS: "Your business already exists in platform.",
+    DATA_NOT_FOUND: "Data not found...",
+    INVALID_BODY: "Invalid body parameters."
 };
 
 export default messageConstant;

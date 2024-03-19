@@ -3,8 +3,10 @@ import httpCode from "../../../constants/http.constant";
 import messageConstant from "../../../constants/message.constant";
 import { Region, User } from "../../../db/models/index";
 import { Controller } from "../../../interfaces";
-import sequelize from "sequelize";
 import dotenv from "dotenv";
+import linkConstant from "../../../constants/link.constant";
+import transporter from "../../../utils/email";
+import { sendSMS } from "../../../utils/smsSender";
 dotenv.config();
 
 /**
@@ -16,6 +18,7 @@ dotenv.config();
  */
 export const providerInformation: Controller = async (req, res) => {
     try {
+        const { regions } = req.query;
         const providerInformation = await User.findAll({
             attributes: [
                 "id",
@@ -28,11 +31,16 @@ export const providerInformation: Controller = async (req, res) => {
                 "phoneNumber",
                 "notification",
             ],
-            where: { accountType: AccountType.Physician },
+            where: {
+                accountType: AccountType.Physician,
+            },
             include: {
                 model: Region,
                 attributes: ["id", "name"],
                 through: { attributes: [] },
+                where: {
+                    ...(regions ? { name: regions as string } : {}),
+                },
             },
         });
 
@@ -46,10 +54,51 @@ export const providerInformation: Controller = async (req, res) => {
     }
 };
 
-// pending
+/**
+ * @function contactProvider
+ * @param req - Express request object.
+ * @param res - Express response object used to send back the HTTP response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the HTTP status code, a success message.
+ * @description This controller function takes messageBody and contactMethod as request body and
+ */
 export const contactProvider: Controller = async (req, res) => {
     try {
+        const { id } = req.params;
         const { messageBody, contactMethod } = req.body;
+
+        const user = await User.findOne({
+            where: { id },
+        });
+
+        const sendEmail = (message: string) => {
+            let mailOptions = {
+                from: process.env.EMAIL_FROM,
+                to: user?.email,
+                subject: linkConstant.contactSubject,
+                text: message,
+            };
+
+            return transporter.sendMail(mailOptions, (error: Error) => {
+                if (error) {
+                    throw error;
+                } else {
+                    console.log("Email Sent Successfully");
+                }
+            });
+        };
+
+        switch (contactMethod) {
+            case "sms":
+                sendSMS(messageBody);
+                break;
+            case "email":
+                sendEmail(messageBody);
+                break;
+            case "both":
+                sendSMS(messageBody);
+                sendEmail(messageBody);
+                break;
+        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -100,10 +149,214 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
             where: { id },
         });
 
+        if (!physicianProfile) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
+
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: physicianProfile,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+// export const editPhysicianProfile: Controller = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const { section, updatedData } = req.body;
+
+//         if (!section || !updatedData) {
+//             return res.status(httpCode.NOT_FOUND).json({
+//                 status: httpCode.NOT_FOUND,
+//                 message: messageConstant.MISSING_SECTION_OR_UPDATED_DATA,
+//             });
+//         }
+
+//         const updatePhysicianDetails = async (id: string, updates: any) => {
+//             try {
+//                 await User.update(updates, {
+//                     where: { id },
+//                 });
+//                 return true;
+//             } catch (error) {
+//                 return false;
+//             }
+//         };
+
+//         let updateResult = false;
+//         switch (section) {
+//             case "accountInformation":
+//                 const accountFields = ["password", "status"];
+//                 let accountUpdates: any = {};
+//                 accountFields.forEach((field) => {
+//                     if (updatedData[field] != undefined) {
+//                         accountUpdates[field] = updatedData[field];
+//                     }
+//                 });
+//                 updateResult = await updatePhysicianDetails(id, accountUpdates);
+//                 break;
+
+//             case "physicianInformation":
+//                 const physicianFields = [
+//                     "firstName",
+//                     "lastName",
+//                     "email",
+//                     "phoneNumber",
+//                     "medicalLicense",
+//                     "NPINumber",
+//                     "syncEmailAddress",
+//                 ];
+//                 let physicianUpdates: any = {};
+//                 physicianFields.forEach((field) => {
+//                     if (updatedData[field] != undefined) {
+//                         physicianUpdates[field] = updatedData[field];
+//                     }
+//                 });
+//                 updateResult = await updatePhysicianDetails(
+//                     id,
+//                     physicianUpdates
+//                 );
+//                 break;
+
+//             case "billingInformation":
+//                 const billingFields = [
+//                     "address1",
+//                     "address2",
+//                     "city",
+//                     "state",
+//                     "zipCode",
+//                     "altPhone",
+//                 ];
+//                 let billingUpdates: any = {};
+//                 billingFields.forEach((field) => {
+//                     if (updatedData[field] != undefined) {
+//                         billingUpdates[field] = updatedData[field];
+//                     }
+//                 });
+//                 updateResult = await updatePhysicianDetails(id, billingUpdates);
+//                 break;
+
+//             case "providerProfile":
+//                 const providerFields = ["photo", "signature"];
+//                 let providerUpdates: any = {};
+//                 providerFields.forEach((field) => {
+//                     if (updatedData[field] != undefined) {
+//                         providerUpdates[field] = updatedData[field];
+//                     }
+//                 });
+//                 updateResult = await updatePhysicianDetails(
+//                     id,
+//                     providerUpdates
+//                 );
+//                 break;
+
+//             default:
+//                 return res.status(httpCode.METHOD_NOT_ALLOWED).json({
+//                     status: httpCode.METHOD_NOT_ALLOWED,
+//                     message: messageConstant.INVALID_BODY,
+//                 });
+//         }
+
+//         if (!updateResult) {
+//             return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
+//                 status: httpCode.INTERNAL_SERVER_ERROR,
+//                 message: messageConstant.UPDATE_FAILED,
+//             });
+//         }
+
+//         return res.status(httpCode.OK).json({
+//             status: httpCode.OK,
+//             message: messageConstant.SUCCESS,
+//         });
+//     } catch (error) {
+//         throw error;
+//     }
+// };
+
+export const editPhysicianProfile: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const updatePhysicianDetails = async (
+            id: string,
+            updates: any,
+            files: { [fieldName: string]: Express.Multer.File[] }
+        ) => {
+            try {
+                if (files.photo && files.photo[0]) {
+                    updates.photo = files.photo[0].filename;
+                }
+                if (files.signature && files.signature[0]) {
+                    updates.signature = files.signature[0].filename;
+                }
+
+                await User.update(updates, {
+                    where: { id },
+                });
+                return true;
+            } catch (error) {
+                return false;
+            }
+        };
+
+        const files = req.files as {
+            [fieldName: string]: Express.Multer.File[];
+        };
+
+        let fieldUpdates: any = {};
+
+        const fields = [
+            "password",
+            "status",
+            "firstName",
+            "lastName",
+            "email",
+            "phoneNumber",
+            "medicalLicense",
+            "NPINumber",
+            "syncEmailAddress",
+            "address1",
+            "address2",
+            "city",
+            "state",
+            "zipCode",
+            "altPhone",
+        ];
+
+        if (!files) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.FILE_NOT_FOUND,
+            });
+        }
+
+        fields.forEach((field) => {
+            if (req.body[field] != undefined) {
+                fieldUpdates[field] = req.body[field];
+            }
+        });
+        const updateResult = await updatePhysicianDetails(
+            id,
+            fieldUpdates,
+            files
+        );
+
+        if (!updateResult) {
+            return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
+                status: httpCode.INTERNAL_SERVER_ERROR,
+                message: messageConstant.UPDATE_FAILED,
+            });
+        }
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
         });
     } catch (error) {
         throw error;

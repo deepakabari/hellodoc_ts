@@ -2,8 +2,6 @@ import express, { NextFunction, Request, Response } from "express";
 import router from "./src/routes/index";
 import { dbConnection } from "./src/db/config/index";
 import swaggerDoc from "./src/swagger/swagger";
-import multer from "multer";
-import { fileStorage, fileFilter } from "./src/utils/multerConfig";
 import path from "path";
 import bodyParser from "body-parser";
 import { errors } from "celebrate";
@@ -18,8 +16,6 @@ const app = express();
 
 app.engine("hbs", engine({ extname: "hbs", defaultLayout: false }));
 app.set("view engine", "hbs");
-
-app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single("document"));
 
 app.use(
     "/images",
@@ -47,7 +43,7 @@ app.use(errors());
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error(err); // Log the error for debugging purposes
     const statusCode = err.statusCode || 500;
-    const errorMessage = err.message || 'Internal Server Error';
+    const errorMessage = err.message || "Internal Server Error";
     res.status(statusCode).json({ statusCode, errorMessage });
 });
 

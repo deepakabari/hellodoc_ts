@@ -22,3 +22,5 @@ export const fileFilter = (req: Request, file: any, cb: any) => {
         cb(null, false);
     }
 };
+
+export const upload = multer({ storage: fileStorage, fileFilter: fileFilter })

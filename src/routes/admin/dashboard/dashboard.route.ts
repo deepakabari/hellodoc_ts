@@ -3,6 +3,7 @@ import express from "express";
 import isAuth from "../../../middleware/in-auth";
 import { celebrate } from "celebrate";
 import { RequestSchema, UserSchema } from "../../../validations/index";
+import { upload } from "../../../utils/multerConfig";
 
 const router = express.Router();
 
@@ -93,8 +94,8 @@ router.get("/viewUploads/:id", isAuth, dashboardController.viewUploads);
 
 router.post(
     "/uploadFile/:id",
+    upload.single("document"),
     isAuth,
-    celebrate(RequestSchema.uploadFile),
     dashboardController.uploadFile
 );
 

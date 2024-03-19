@@ -1,18 +1,17 @@
 import { Joi, Segments } from "celebrate";
-import { AccountType, ProfileStatus } from "../utils/enum.constant"
+import { AccountType, ProfileStatus } from "../utils/enum.constant";
+import linkConstant from "../constants/link.constant";
 
 export const UserSchema = {
     createUser: {
         [Segments.BODY]: Joi.object({
-            accountType: Joi.string().required().valid(...Object.values(AccountType)),
+            accountType: Joi.string()
+                .required()
+                .valid(...Object.values(AccountType)),
             userName: Joi.string().required(),
             password: Joi.string()
                 .required()
-                .regex(
-                    RegExp(
-                        "^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,16}$"
-                    )
-                ),
+                .regex(RegExp(linkConstant.PASSWORD_REGEX)),
             firstName: Joi.string().required().min(2),
             lastName: Joi.string().allow("", null).optional().min(4),
             email: Joi.string().email().required(),
@@ -24,7 +23,9 @@ export const UserSchema = {
             state: Joi.string().required(),
             zipCode: Joi.string().required().min(5).max(6),
             dob: Joi.date().allow("", null).optional(),
-            status: Joi.string().valid(...Object.values(ProfileStatus)).optional(),
+            status: Joi.string()
+                .valid(...Object.values(ProfileStatus))
+                .optional(),
             altPhone: Joi.string().optional().min(10).max(10).allow("", null),
             medicalLicense: Joi.string().optional().allow("", null),
             photo: Joi.string().optional().allow("", null),
@@ -51,11 +52,7 @@ export const UserSchema = {
             email: Joi.string().required().email(),
             password: Joi.string()
                 .required()
-                .regex(
-                    RegExp(
-                        "^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,16}$"
-                    )
-                ),
+                .regex(RegExp(linkConstant.PASSWORD_REGEX)),
         }),
     },
 
@@ -69,18 +66,10 @@ export const UserSchema = {
         [Segments.BODY]: Joi.object({
             newPassword: Joi.string()
                 .required()
-                .regex(
-                    RegExp(
-                        "^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,16}$"
-                    )
-                ),
+                .regex(RegExp(linkConstant.PASSWORD_REGEX)),
             confirmPassword: Joi.string()
                 .required()
-                .regex(
-                    RegExp(
-                        "^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,16}$"
-                    )
-                ),
+                .regex(RegExp(linkConstant.PASSWORD_REGEX)),
         }),
         [Segments.PARAMS]: {
             hash: Joi.string().required(),
@@ -99,6 +88,31 @@ export const UserSchema = {
     requestSupport: {
         [Segments.BODY]: Joi.object({
             message: Joi.string().required(),
+        }),
+    },
+
+    editPhysicianProfile: {
+        [Segments.PARAMS]: {
+            id: Joi.string().required(),
+        },
+        [Segments.BODY]: Joi.object({
+            password: Joi.string().regex(RegExp(linkConstant.PASSWORD_REGEX)).optional(),
+            status: Joi.string().valid(...Object.values(ProfileStatus)),
+            firstName: Joi.string(),
+            lastName: Joi.string(),
+            email: Joi.string().email(),
+            phoneNumber: Joi.string().min(10).max(10),
+            medicalLicense: Joi.string(),
+            NPINumber: Joi.string(),
+            syncEmailAddress: Joi.string().email(),
+            address1: Joi.string(),
+            address2: Joi.string(),
+            city: Joi.string(),
+            state: Joi.string(),
+            zipCode: Joi.string().min(5).max(6),
+            altPhone: Joi.string().min(10).max(10),
+            photo: Joi.string(),
+            signature: Joi.string(),
         }),
     },
 };

@@ -63,6 +63,43 @@ export const addBusiness: Controller = async (req, res) => {
     }
 };
 
+export const viewBusiness: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const viewBusiness = await Business.findAll({
+            attributes: [
+                "id",
+                "businessName",
+                "profession",
+                "faxNumber",
+                "phoneNumber",
+                "email",
+                "businessContact",
+                "street",
+                "city",
+                "state",
+                "zipCode"
+            ],
+            where: { id }
+        });
+
+        if(!viewBusiness) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.DATA_NOT_FOUND,
+            })
+        }
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: viewBusiness
+        })
+    } catch (error) {
+        throw error;
+    }
+};
+
 /**
  * @function professions
  * @param req - The request object.
@@ -73,7 +110,7 @@ export const addBusiness: Controller = async (req, res) => {
 export const professions: Controller = async (req, res) => {
     try {
         const professions = await Business.findAll({
-            attributes: ["id", "profession"],
+            attributes: ["profession"],
             group: ["profession"],
         });
 

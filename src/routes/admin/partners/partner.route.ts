@@ -12,6 +12,8 @@ router.post(
     partnerController.addBusiness
 );
 
+router.get("/viewBusiness/:id", isAuth, partnerController.viewBusiness)
+
 router.get("/professions", isAuth, partnerController.professions);
 
 router.get(

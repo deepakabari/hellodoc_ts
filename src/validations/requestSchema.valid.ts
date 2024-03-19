@@ -1,5 +1,6 @@
 import { Joi, Segments } from "celebrate";
-import { AllowedMimetype, RequestType } from "../utils/enum.constant";
+import { RequestType } from "../utils/enum.constant";
+import linkConstant from "../constants/link.constant";
 
 export const RequestSchema = {
     idParams: {
@@ -49,14 +50,6 @@ export const RequestSchema = {
         }),
     },
 
-    uploadFile: {
-        [Segments.BODY]: {
-            document: Joi.object({
-                mimetype: Joi.string().valid(...Object.values(AllowedMimetype)).required(),
-            }),
-        },
-    },
-
     createRequest: {
         [Segments.BODY]: Joi.object({
             requestType: Joi.string()
@@ -79,7 +72,7 @@ export const RequestSchema = {
                 })
                 .regex(
                     RegExp(
-                        "^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,16}$"
+                        linkConstant.PASSWORD_REGEX
                     )
                 ),
             relationName: Joi.string().optional(),

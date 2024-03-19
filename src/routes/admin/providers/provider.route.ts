@@ -5,16 +5,18 @@ import {
 import express from "express";
 import isAuth from "../../../middleware/in-auth";
 import { celebrate } from "celebrate";
-import { RequestSchema, RoleSchema, UserSchema } from "../../../validations/index";
+import { RequestSchema, UserSchema } from "../../../validations/index";
+import { upload } from "../../../utils/multerConfig";
 
 const router = express.Router();
-
 
 router.get(
     "/providerInformation",
     isAuth,
     providerController.providerInformation
 );
+
+router.post("/contactProvider/:id", isAuth, providerController.contactProvider);
 
 router.get(
     "/physicianProfile/:id",
@@ -24,5 +26,16 @@ router.get(
 );
 
 router.get("/providerOnCall", isAuth, schedulingController.providerOnCall);
+
+router.patch(
+    "/providerProfile/:id",
+    isAuth,
+    upload.fields([
+        { name: "photo", maxCount: 1 },
+        { name: "signature", maxCount: 1 },
+    ]),
+    celebrate(UserSchema.editPhysicianProfile),
+    providerController.editPhysicianProfile
+);
 
 export default router;
