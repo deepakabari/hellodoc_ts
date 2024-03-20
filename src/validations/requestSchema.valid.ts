@@ -53,8 +53,8 @@ export const RequestSchema = {
     createRequest: {
         [Segments.BODY]: Joi.object({
             requestType: Joi.string()
-                .required()
-                .valid(...Object.values(RequestType)),
+                .valid(...Object.values(RequestType))
+                .required(),
             patientFirstName: Joi.string().required(),
             patientLastName: Joi.string().required(),
             patientEmail: Joi.string().required().email(),
@@ -70,11 +70,7 @@ export const RequestSchema = {
                     then: Joi.optional().allow("", null),
                     otherwise: Joi.required(),
                 })
-                .regex(
-                    RegExp(
-                        linkConstant.PASSWORD_REGEX
-                    )
-                ),
+                .regex(RegExp(linkConstant.PASSWORD_REGEX)),
             relationName: Joi.string().optional(),
             street: Joi.string().required(),
             dob: Joi.date().required(),

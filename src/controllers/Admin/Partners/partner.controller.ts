@@ -1,8 +1,8 @@
-import messageConstant from "../../../constants/message.constant";
-import httpCode from "../../../constants/http.constant";
-import { Business, OrderDetail } from "../../../db/models";
-import { Controller } from "../../../interfaces";
-import { AccountType } from "../../../utils/enum.constant";
+import messageConstant from '../../../constants/message.constant';
+import httpCode from '../../../constants/http.constant';
+import { Business, OrderDetail } from '../../../db/models';
+import { Controller } from '../../../interfaces';
+import { AccountType } from '../../../utils/enum.constant';
 
 /**
  * @function addBusiness
@@ -63,38 +63,45 @@ export const addBusiness: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function viewBusiness
+ * @param req - The HTTP request object, containing the request parameters.
+ * @param res - The HTTP response object used for sending responses back to the client.
+ * @returns - A promise that resolves to the HTTP response with the business details or an error message.
+ * @description - retrieves the business details of a business by it's ID.
+ */
 export const viewBusiness: Controller = async (req, res) => {
     try {
         const { id } = req.params;
         const viewBusiness = await Business.findAll({
             attributes: [
-                "id",
-                "businessName",
-                "profession",
-                "faxNumber",
-                "phoneNumber",
-                "email",
-                "businessContact",
-                "street",
-                "city",
-                "state",
-                "zipCode"
+                'id',
+                'businessName',
+                'profession',
+                'faxNumber',
+                'phoneNumber',
+                'email',
+                'businessContact',
+                'street',
+                'city',
+                'state',
+                'zipCode',
             ],
-            where: { id }
+            where: { id },
         });
 
-        if(!viewBusiness) {
+        if (!viewBusiness) {
             return res.status(httpCode.NOT_FOUND).json({
                 status: httpCode.NOT_FOUND,
                 message: messageConstant.DATA_NOT_FOUND,
-            })
+            });
         }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: viewBusiness
-        })
+            data: viewBusiness,
+        });
     } catch (error) {
         throw error;
     }
@@ -110,8 +117,8 @@ export const viewBusiness: Controller = async (req, res) => {
 export const professions: Controller = async (req, res) => {
     try {
         const professions = await Business.findAll({
-            attributes: ["profession"],
-            group: ["profession"],
+            attributes: ['profession'],
+            group: ['profession'],
         });
 
         return res.status(httpCode.OK).json({
@@ -135,7 +142,7 @@ export const businessByProfession: Controller = async (req, res) => {
     try {
         const { profession } = req.params;
         const businessByProfession = await Business.findAll({
-            attributes: ["id", "businessName"],
+            attributes: ['id', 'businessName'],
             where: { profession: profession },
         });
 
@@ -161,7 +168,7 @@ export const viewSendOrder: Controller = async (req, res) => {
         const { id } = req.params;
 
         const businessDetails = await Business.findAll({
-            attributes: ["id", "businessContact", "email", "faxNumber"],
+            attributes: ['id', 'businessContact', 'email', 'faxNumber'],
             where: { id },
         });
 

@@ -5,6 +5,7 @@ import {
     Request,
     UserRegion,
     RequestWiseFiles,
+    Region,
 } from "../../db/models/index";
 import { Controller } from "../../interfaces";
 import bcrypt from "bcrypt";
@@ -181,6 +182,7 @@ const isEmailFound: Controller = async (req, res) => {
 const createRequest: Controller = async (req, res) => {
     try {
         const {
+            requestType,
             patientFirstName,
             patientLastName,
             patientEmail,
@@ -229,13 +231,20 @@ const createRequest: Controller = async (req, res) => {
         const currentDate = new Date();
 
         // generate the abbreviation of given state for confirmation number
-        function getAbbreviation(
-            state: keyof typeof RegionAbbreviation
-        ): string | undefined {
-            return RegionAbbreviation[state];
+        async function getAbbreviationFromDb(name: string): Promise<string | undefined> {
+            try {
+                const regionEntry = await Region.findOne({
+                    where: { name }
+                })
+                console.log(regionEntry?.abbreviation);
+                return regionEntry ? regionEntry?.abbreviation : undefined
+            } catch (error) {
+                throw error;
+            }
         }
 
-        const regionAbbreviation = getAbbreviation(state);
+        const regionAbbreviation = await getAbbreviationFromDb(state);
+        console.log(regionAbbreviation);
         const day = String(currentDate.getDate()).padStart(2, "0"); // display the date in 2 digit format
         const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // display the month in 2 digit format
 

@@ -7,6 +7,7 @@ import UserRegion from "./userRegion.model";
 import RequestWiseFiles from "./requestWiseFiles.model";
 import Business from "./business.model";
 import OrderDetail from "./orderDetails.model";
+import Shift from "./shift.model";
 
 export {
     Role,
@@ -18,4 +19,5 @@ export {
     RequestWiseFiles,
     Business,
     OrderDetail,
+    Shift
 };

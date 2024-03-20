@@ -7,7 +7,7 @@ import {
 } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { UserAttributes, UserCreationAttributes } from "../../interfaces";
-import { Role, UserRole, Request, Region, UserRegion } from "./index";
+import { Role, UserRole, Request, Region, UserRegion, Shift } from "./index";
 
 @Table({
     timestamps: true,
@@ -143,5 +143,12 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
 
     @BelongsToMany(() => Region, () => UserRegion, "userId", "regionId")
     regions: Region[];
+
+    @HasMany(() => Shift, {
+        foreignKey: 'physicianId',
+        sourceKey: "id",
+        as: "physicianShift"
+    })
+    physicianShifts: Shift[];
 }
 export default User;

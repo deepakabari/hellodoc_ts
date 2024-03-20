@@ -38,4 +38,8 @@ router.patch(
     providerController.editPhysicianProfile
 );
 
+router.post("/addNewShift", isAuth, schedulingController.addNewShift)
+
+router.get("/viewShift/:id", isAuth, schedulingController.viewShift)
+
 export default router;

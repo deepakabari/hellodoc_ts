@@ -1,15 +1,15 @@
-import httpCode from "../../constants/http.constant";
-import messageConstant from "../../constants/message.constant";
-import jwt from "jsonwebtoken";
-import transporter from "../../utils/email";
-import { Controller } from "../../interfaces";
-import crypto from "crypto";
-import bcrypt from "bcrypt";
-import { Op } from "sequelize";
-import { User } from "../../db/models/index";
-import { compileEmailTemplate } from "../../utils/hbsCompiler";
-import linkConstant from "../../constants/link.constant";
-import dotenv from "dotenv";
+import httpCode from '../../constants/http.constant';
+import messageConstant from '../../constants/message.constant';
+import jwt from 'jsonwebtoken';
+import transporter from '../../utils/email';
+import { Controller } from '../../interfaces';
+import crypto from 'crypto';
+import bcrypt from 'bcrypt';
+import { Op } from 'sequelize';
+import { User } from '../../db/models/index';
+import { compileEmailTemplate } from '../../utils/hbsCompiler';
+import linkConstant from '../../constants/link.constant';
+import dotenv from 'dotenv';
 dotenv.config();
 
 const SECRET = process.env.SECRET;
@@ -61,7 +61,7 @@ export const login: Controller = async (req, res) => {
                 SECRET as string,
                 {
                     expiresIn: EXPIRESIN,
-                }
+                },
             );
 
             return res.json({
@@ -109,7 +109,7 @@ export const forgotPassword: Controller = async (req, res) => {
         // Generate a reset token
         const hashedToken = crypto
             .randomBytes(Number(RANDOMBYTES))
-            .toString("hex");
+            .toString('hex');
 
         // Check if the token was successfully generated
         if (!hashedToken) {
@@ -131,20 +131,21 @@ export const forgotPassword: Controller = async (req, res) => {
                 resetToken: hashedToken,
                 expireToken,
             },
-            { where: { email } }
+            { where: { email } },
         );
-        
-        const RESET_URL = linkConstant.RESET_URL
+
+        const RESET_URL = linkConstant.RESET_URL;
         const templateData = {
+            patientName: existingUser.firstName,
             reset_url: `${RESET_URL}${hashedToken}`,
         };
 
-        const data = await compileEmailTemplate("resetEmail", templateData);
+        const data = await compileEmailTemplate('resetEmail', templateData);
 
         const mailOptions = {
             from: EMAIL_FROM,
             to: email,
-            subject: "Password Reset Email",
+            subject: 'Password Reset Email',
             html: data,
         };
 
@@ -204,7 +205,7 @@ export const resetPassword: Controller = async (req, res) => {
         // Hash the new Password
         const hashedPassword = await bcrypt.hash(
             newPassword,
-            Number(ITERATION)
+            Number(ITERATION),
         );
 
         // Update user's password, resetToken, and expireToken
@@ -214,7 +215,7 @@ export const resetPassword: Controller = async (req, res) => {
                 resetToken: null,
                 expireToken: null,
             },
-            { where: { resetToken: hash } }
+            { where: { resetToken: hash } },
         );
 
         // return success response if password was updated

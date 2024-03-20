@@ -114,8 +114,8 @@ export const getPatientByState: Controller = async (req, res) => {
 
         switch (sortBy) {
             case "id":
-            case "createdAt":
-            case "updatedAt":
+            case "Requested Date":
+            case "Date Of Service":
                 sortByModel = [[sortBy, orderBy]];
                 break;
         }
@@ -739,11 +739,6 @@ export const viewUploads: Controller = async (req, res) => {
             case "createdAt":
                 sortByModel = [[sortBy, orderBy]];
                 break;
-            default:
-                res.status(httpCode.UNPROCESSABLE_CONTENT).json({
-                    status: httpCode.UNPROCESSABLE_CONTENT,
-                    message: messageConstant.INVALID_SORT_PARAMETER,
-                });
         }
 
         const uploads = await RequestWiseFiles.findAll({

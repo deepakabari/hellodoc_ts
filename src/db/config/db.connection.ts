@@ -8,7 +8,8 @@ import {
     UserRegion,
     RequestWiseFiles,
     Business,
-    OrderDetail
+    OrderDetail,
+    Shift
 } from "../models/index";
 
 import dotenv from "dotenv";
@@ -34,7 +35,8 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
         UserRegion,
         RequestWiseFiles,
         Business,
-        OrderDetail
+        OrderDetail,
+        Shift
     ],
 });
 

@@ -2,11 +2,12 @@ import { AccountType } from "../../../utils/enum.constant";
 import httpCode from "../../../constants/http.constant";
 import messageConstant from "../../../constants/message.constant";
 import { Region, User } from "../../../db/models/index";
-import { Controller } from "../../../interfaces";
+import { Controller, FieldUpdates } from "../../../interfaces";
 import dotenv from "dotenv";
 import linkConstant from "../../../constants/link.constant";
 import transporter from "../../../utils/email";
 import { sendSMS } from "../../../utils/smsSender";
+import bcrypt from "bcrypt";
 dotenv.config();
 
 /**
@@ -279,34 +280,41 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
 //     }
 // };
 
+/**
+ * @function editPhysicianProfile
+ * @param req 
+ * @param res 
+ * @returns 
+ */
 export const editPhysicianProfile: Controller = async (req, res) => {
     try {
         const { id } = req.params;
+        const files = req.files as {
+            [fieldName: string]: Express.Multer.File[];
+        };
 
         const updatePhysicianDetails = async (
             id: string,
-            updates: any,
-            files: { [fieldName: string]: Express.Multer.File[] }
+            fieldUpdates: FieldUpdates,
+            files?: { [fieldName: string]: Express.Multer.File[] }
         ) => {
             try {
-                if (files.photo && files.photo[0]) {
-                    updates.photo = files.photo[0].filename;
-                }
-                if (files.signature && files.signature[0]) {
-                    updates.signature = files.signature[0].filename;
+                if (files) {
+                    if (files.photo && files.photo[0]) {
+                        fieldUpdates.photo = files.photo[0].filename;
+                    }
+                    if (files.signature && files.signature[0]) {
+                        fieldUpdates.signature = files.signature[0].filename;
+                    }
                 }
 
-                await User.update(updates, {
+                await User.update(fieldUpdates, {
                     where: { id },
                 });
                 return true;
             } catch (error) {
                 return false;
             }
-        };
-
-        const files = req.files as {
-            [fieldName: string]: Express.Multer.File[];
         };
 
         let fieldUpdates: any = {};
@@ -329,18 +337,25 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             "altPhone",
         ];
 
-        if (!files) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
-                message: messageConstant.FILE_NOT_FOUND,
-            });
+        const hashPassword = async (password: string): Promise<string> => {
+            const saltRounds = process.env.ITERATION;
+            const hashedPassword = await bcrypt.hash(
+                password,
+                Number(saltRounds)
+            );
+            return hashedPassword;
+        };
+        
+        for (const field of fields) {
+            if (req.body[field] !== undefined) {
+                if (field === "password") {
+                    fieldUpdates[field] = await hashPassword(req.body[field]);
+                } else {
+                    fieldUpdates[field] = req.body[field];
+                }
+            }
         }
 
-        fields.forEach((field) => {
-            if (req.body[field] != undefined) {
-                fieldUpdates[field] = req.body[field];
-            }
-        });
         const updateResult = await updatePhysicianDetails(
             id,
             fieldUpdates,
