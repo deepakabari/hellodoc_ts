@@ -1,6 +1,6 @@
-import { Joi, Segments } from "celebrate";
-import { RequestType } from "../utils/enum.constant";
-import linkConstant from "../constants/link.constant";
+import { Joi, Segments } from 'celebrate';
+import { RequestType } from '../utils/enum.constant';
+import linkConstant from '../constants/link.constant';
 
 export const RequestSchema = {
     idParams: {
@@ -65,9 +65,9 @@ export const RequestSchema = {
             requestorEmail: Joi.string().optional().email(),
             isEmail: Joi.boolean().required(),
             password: Joi.string()
-                .when("isEmail", {
+                .when('isEmail', {
                     is: true,
-                    then: Joi.optional().allow("", null),
+                    then: Joi.optional().allow('', null),
                     otherwise: Joi.required(),
                 })
                 .regex(RegExp(linkConstant.PASSWORD_REGEX)),

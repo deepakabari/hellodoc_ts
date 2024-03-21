@@ -1,131 +1,131 @@
-import { dashboardController } from "../../../controllers/index";
-import express from "express";
-import isAuth from "../../../middleware/in-auth";
-import { celebrate } from "celebrate";
-import { RequestSchema, UserSchema } from "../../../validations/index";
-import { upload } from "../../../utils/multerConfig";
+import { dashboardController } from '../../../controllers/index';
+import express from 'express';
+import isAuth from '../../../middleware/in-auth';
+import { celebrate } from 'celebrate';
+import { RequestSchema, UserSchema } from '../../../validations/index';
+import { upload } from '../../../utils/multerConfig';
 
 const router = express.Router();
 
-router.get("/dashboard", isAuth, dashboardController.requestCount);
+router.get('/dashboard', isAuth, dashboardController.requestCount);
 
-router.get("/", isAuth, dashboardController.getPatientByState);
+router.get('/', isAuth, dashboardController.getPatientByState);
 
 router.get(
-    "/viewCase/:id",
+    '/viewCase/:id',
     isAuth,
     celebrate(RequestSchema.idParams),
-    dashboardController.viewCase
+    dashboardController.viewCase,
 );
 
 router.get(
-    "/viewNotes/:id",
+    '/viewNotes/:id',
     isAuth,
     celebrate(RequestSchema.idParams),
-    dashboardController.viewNotes
+    dashboardController.viewNotes,
 );
 
 router.patch(
-    "/updateNotes/:id",
+    '/updateNotes/:id',
     isAuth,
     celebrate(RequestSchema.updateNotes),
-    dashboardController.updateNotes
+    dashboardController.updateNotes,
 );
 
 router.get(
-    "/patientName/:id",
+    '/patientName/:id',
     isAuth,
     celebrate(RequestSchema.idParams),
-    dashboardController.getPatientName
+    dashboardController.getPatientName,
 );
 
 router.patch(
-    "/cancelCase/:id",
+    '/cancelCase/:id',
     isAuth,
     celebrate(RequestSchema.cancelCase),
-    dashboardController.cancelCase
+    dashboardController.cancelCase,
 );
 
 router.patch(
-    "/blockCase/:id",
+    '/blockCase/:id',
     isAuth,
     celebrate(RequestSchema.blockCase),
-    dashboardController.blockCase
+    dashboardController.blockCase,
 );
 
 router.post(
-    "/clearCase/:id",
+    '/clearCase/:id',
     isAuth,
     celebrate(RequestSchema.idParams),
-    dashboardController.clearCase
+    dashboardController.clearCase,
 );
 
 router.post(
-    "/sendAgreement/:id",
+    '/sendAgreement/:id',
     isAuth,
     celebrate(RequestSchema.idParams),
-    dashboardController.sendAgreement
+    dashboardController.sendAgreement,
 );
 
-router.get("/regions", isAuth, dashboardController.getRegions);
+router.get('/regions', isAuth, dashboardController.getRegions);
 
 router.get(
-    "/physicianByRegion/:id",
+    '/physicianByRegion/:id',
     isAuth,
     celebrate(RequestSchema.idParams),
-    dashboardController.getPhysicianByRegion
+    dashboardController.getPhysicianByRegion,
 );
 
 router.post(
-    "/assignCase/:id",
+    '/assignCase/:id',
     isAuth,
     celebrate(RequestSchema.assignCase),
-    dashboardController.assignCase
+    dashboardController.assignCase,
 );
 
 router.post(
-    "/requestSupport",
+    '/requestSupport',
     isAuth,
     celebrate(UserSchema.requestSupport),
-    dashboardController.requestSupport
+    dashboardController.requestSupport,
 );
 
-router.get("/viewUploads/:id", isAuth, dashboardController.viewUploads);
+router.get('/viewUploads/:id', isAuth, dashboardController.viewUploads);
 
 router.post(
-    "/uploadFile/:id",
-    upload.single("document"),
+    '/uploadFile/:id',
+    upload.single('document'),
     isAuth,
-    dashboardController.uploadFile
+    dashboardController.uploadFile,
 );
 
-router.get("/closeCaseView/:id", isAuth, dashboardController.closeCaseView);
+router.get('/closeCaseView/:id', isAuth, dashboardController.closeCaseView);
 
 router.patch(
-    "/closeCase/:id",
+    '/closeCase/:id',
     isAuth,
     celebrate(RequestSchema.idParams),
-    dashboardController.closeCase
+    dashboardController.closeCase,
 );
 
 router.post(
-    "/editCloseCase/:id",
+    '/editCloseCase/:id',
     isAuth,
     celebrate(RequestSchema.closeCase),
-    dashboardController.editCloseCase
+    dashboardController.editCloseCase,
 );
 
 router.post(
-    "/transferRequest/:id",
+    '/transferRequest/:id',
     isAuth,
     celebrate(RequestSchema.assignCase),
-    dashboardController.transferRequest
+    dashboardController.transferRequest,
 );
 
 router.post(
-    "/sendPatientRequest",
+    '/sendPatientRequest',
     isAuth,
     celebrate(UserSchema.sendPatientRequest),
-    dashboardController.sendPatientRequest
+    dashboardController.sendPatientRequest,
 );
 export default router;

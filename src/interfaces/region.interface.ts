@@ -1,11 +1,11 @@
-import { Optional } from 'sequelize'
+import { Optional } from 'sequelize';
 
 interface RegionAttributes {
     id: number;
-    name: string
-    abbreviation: string
+    name: string;
+    abbreviation: string;
 }
 
-type RegionCreationAttributes = Optional<RegionAttributes, 'id'>
+type RegionCreationAttributes = Optional<RegionAttributes, 'id'>;
 
-export { RegionAttributes, RegionCreationAttributes }
+export { RegionAttributes, RegionCreationAttributes };

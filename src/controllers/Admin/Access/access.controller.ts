@@ -1,13 +1,9 @@
-import httpCode from "../../../constants/http.constant";
-import messageConstant from "../../../constants/message.constant";
-import {
-    Role,
-    User,
-} from "../../../db/models/index";
-import { Controller } from "../../../interfaces";
-import dotenv from "dotenv";
+import httpCode from '../../../constants/http.constant';
+import messageConstant from '../../../constants/message.constant';
+import { Role, User } from '../../../db/models/index';
+import { Controller } from '../../../interfaces';
+import dotenv from 'dotenv';
 dotenv.config();
-
 
 interface RoleGroup {
     [key: string]: string[];
@@ -22,7 +18,7 @@ interface RoleGroup {
 export const accountAccess: Controller = async (req, res) => {
     try {
         const accountAccess = await Role.findAll({
-            attributes: ["id", "Name", "accountType"],
+            attributes: ['id', 'Name', 'accountType'],
         });
 
         return res.status(httpCode.OK).json({
@@ -45,8 +41,8 @@ export const accountAccess: Controller = async (req, res) => {
 export const accountAccessByAccountType: Controller = async (req, res) => {
     try {
         const roles = await Role.findAll({
-            attributes: ["accountType", "Name"],
-            order: ["accountType"],
+            attributes: ['accountType', 'Name'],
+            order: ['accountType'],
         });
 
         const groupedRoles: RoleGroup = roles.reduce(
@@ -58,7 +54,7 @@ export const accountAccessByAccountType: Controller = async (req, res) => {
                 result[key].push(role.Name);
                 return result;
             },
-            {} as RoleGroup
+            {} as RoleGroup,
         );
 
         return res.status(httpCode.OK).json({
@@ -119,18 +115,18 @@ export const userAccess: Controller = async (req, res) => {
         const accountType = req.query.accountType as string;
 
         let whereCondition: { [key: string]: any } = {};
-        if (accountType && accountType !== "All") {
-            whereCondition["accountType"] = accountType;
+        if (accountType && accountType !== 'All') {
+            whereCondition['accountType'] = accountType;
         }
 
         const users = await User.findAll({
             attributes: [
-                "id",
-                "accountType",
-                "firstName",
-                "lastName",
-                "phoneNumber",
-                "status",
+                'id',
+                'accountType',
+                'firstName',
+                'lastName',
+                'phoneNumber',
+                'status',
             ],
             where: whereCondition,
         });

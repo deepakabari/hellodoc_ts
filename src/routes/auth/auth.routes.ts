@@ -1,22 +1,22 @@
-import { UserSchema } from "../../validations/index";
-import * as authLogin from "../../controllers/Auth/auth.login";
-import express from "express";
-import { celebrate } from "celebrate";
+import { UserSchema } from '../../validations/index';
+import * as authLogin from '../../controllers/Auth/auth.login';
+import express from 'express';
+import { celebrate } from 'celebrate';
 
 const router = express.Router();
 
-router.post("/login", celebrate(UserSchema.login), authLogin.login);
+router.post('/login', celebrate(UserSchema.login), authLogin.login);
 
 router.post(
-    "/forgotPassword",
+    '/forgotPassword',
     celebrate(UserSchema.forgotPassword),
-    authLogin.forgotPassword
+    authLogin.forgotPassword,
 );
 
 router.post(
-    "/resetPassword/:hash",
+    '/resetPassword/:hash',
     celebrate(UserSchema.resetPassword),
-    authLogin.resetPassword
+    authLogin.resetPassword,
 );
 
 export default router;

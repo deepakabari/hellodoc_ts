@@ -43,7 +43,7 @@ const messageConstant = {
     BUSINESS_ALREADY_EXISTS: 'Your business already exists in platform.',
     DATA_NOT_FOUND: 'Data not found...',
     INVALID_BODY: 'Invalid body parameters.',
-    SHIFT_CREATION_FAILED: "Shift Creation failed..."
+    SHIFT_CREATION_FAILED: 'Shift Creation failed...',
 };
 
 export default messageConstant;

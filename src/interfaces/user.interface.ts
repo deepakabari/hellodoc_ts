@@ -1,4 +1,4 @@
-import { Optional } from "sequelize";
+import { Optional } from 'sequelize';
 
 interface UserAttributes {
     id: number;
@@ -28,16 +28,16 @@ interface UserAttributes {
     isLicenseDoc?: boolean;
     NPINumber?: string;
     syncEmailAddress?: string;
-    resetToken?: string | null
-    expireToken?: Date | null
-    onCallStatus?: string
-    isDeleted?: boolean
-    notification?: boolean
+    resetToken?: string | null;
+    expireToken?: Date | null;
+    onCallStatus?: string;
+    isDeleted?: boolean;
+    notification?: boolean;
     createdAt?: Date;
     updatedAt: Date;
     deletedAt?: Date | null;
 }
 
-type UserCreationAttributes = Optional<UserAttributes, "id">;
+type UserCreationAttributes = Optional<UserAttributes, 'id'>;
 
 export { UserAttributes, UserCreationAttributes };

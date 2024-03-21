@@ -2,23 +2,23 @@ import {
     AccountType,
     CaseTag,
     RequestStatus,
-} from "../../../utils/enum.constant";
-import httpCode from "../../../constants/http.constant";
-import messageConstant from "../../../constants/message.constant";
+} from '../../../utils/enum.constant';
+import httpCode from '../../../constants/http.constant';
+import messageConstant from '../../../constants/message.constant';
 import {
     Region,
     Request,
     RequestWiseFiles,
     User,
-} from "../../../db/models/index";
-import { Controller } from "../../../interfaces";
-import transporter from "../../../utils/email";
-import sequelize, { FindAttributeOptions, Includeable, Order } from "sequelize";
-import { Op } from "sequelize";
-import dotenv from "dotenv";
-import { compileEmailTemplate } from "../../../utils/hbsCompiler";
-import linkConstant from "../../../constants/link.constant";
-import { sendSMS } from "../../../utils/smsSender";
+} from '../../../db/models/index';
+import { Controller } from '../../../interfaces';
+import transporter from '../../../utils/email';
+import sequelize, { FindAttributeOptions, Includeable, Order } from 'sequelize';
+import { Op } from 'sequelize';
+import dotenv from 'dotenv';
+import { compileEmailTemplate } from '../../../utils/hbsCompiler';
+import linkConstant from '../../../constants/link.constant';
+import { sendSMS } from '../../../utils/smsSender';
 dotenv.config();
 
 /**
@@ -33,10 +33,10 @@ export const requestCount: Controller = async (req, res) => {
     try {
         const requestCounts = await Request.count({
             attributes: [
-                "caseTag",
-                [sequelize.fn("COUNT", sequelize.col("id")), "count"],
+                'caseTag',
+                [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
             ],
-            group: "caseTag",
+            group: 'caseTag',
         });
 
         return res.status(httpCode.OK).json({
@@ -64,181 +64,191 @@ export const getPatientByState: Controller = async (req, res) => {
 
         // Take needed attributes and modify accordingly
         let attributes = [
-            "id",
+            'id',
             [
                 sequelize.fn(
-                    "CONCAT",
-                    sequelize.col("patientFirstName"),
-                    " ",
-                    sequelize.col("patientLastName")
+                    'CONCAT',
+                    sequelize.col('patientFirstName'),
+                    ' ',
+                    sequelize.col('patientLastName'),
                 ),
-                "Name",
+                'Name',
             ],
-            ["dob", "Date Of Birth"],
+            ['dob', 'Date Of Birth'],
             [
                 sequelize.fn(
-                    "CONCAT",
-                    sequelize.col("requestType"),
-                    " ",
-                    sequelize.col("requestorFirstName"),
-                    " ",
-                    sequelize.col("requestorLastName")
+                    'CONCAT',
+                    sequelize.col('requestType'),
+                    ' ',
+                    sequelize.col('requestorFirstName'),
+                    ' ',
+                    sequelize.col('requestorLastName'),
                 ),
-                "Requestor",
+                'Requestor',
             ],
-            ["createdAt", "Requested Date"],
-            ["patientPhoneNumber", "Phone"],
+            ['createdAt', 'Requested Date'],
+            ['patientPhoneNumber', 'Phone'],
             [
                 sequelize.fn(
-                    "CONCAT",
-                    sequelize.col("Request.street"),
-                    ", ",
-                    sequelize.col("Request.city"),
-                    ", ",
-                    sequelize.col("Request.state"),
-                    ", ",
-                    sequelize.col("Request.zipCode")
+                    'CONCAT',
+                    sequelize.col('Request.street'),
+                    ', ',
+                    sequelize.col('Request.city'),
+                    ', ',
+                    sequelize.col('Request.state'),
+                    ', ',
+                    sequelize.col('Request.zipCode'),
                 ),
-                "Address",
+                'Address',
             ],
-            ["patientNote", "Patient Note"],
-            ["updatedAt", "Date Of Service"],
-            ["requestType", "Requestor Type"],
-            ["state", "Region"],
-            ["caseTag", "State of Request"],
-            ["transferNote", "Transfer Note"],
+            ['patientNote', 'Patient Note'],
+            ['updatedAt', 'Date Of Service'],
+            ['requestType', 'Requestor Type'],
+            ['state', 'Region'],
+            ['caseTag', 'State of Request'],
+            ['transferNote', 'Transfer Note'],
         ];
         let condition;
         let includeModels;
         let sortByModel;
 
         switch (sortBy) {
-            case "id":
-            case "Requested Date":
-            case "Date Of Service":
+            case 'id':
+            case 'Requested Date':
+            case 'Date Of Service':
                 sortByModel = [[sortBy, orderBy]];
                 break;
         }
 
         switch (state) {
-            case "new":
-                condition = { caseTag: "New", deletedAt: null };
+            case 'new':
+                condition = { caseTag: 'New', deletedAt: null };
                 break;
-            case "pending":
-                condition = { caseTag: "Pending", deletedAt: null };
+            case 'pending':
+                condition = { caseTag: 'Pending', deletedAt: null };
                 includeModels = [
                     {
                         model: User,
-                        as: "physician",
+                        as: 'physician',
                         attributes: [
                             [
                                 sequelize.fn(
-                                    "CONCAT",
-                                    sequelize.col("firstName"),
-                                    " ",
-                                    sequelize.col("lastName")
+                                    'CONCAT',
+                                    sequelize.col('firstName'),
+                                    ' ',
+                                    sequelize.col('lastName'),
                                 ),
-                                "Physician Name",
+                                'Physician Name',
                             ],
                         ],
                         where: {
-                            id: sequelize.col("Request.physicianId"),
+                            id: sequelize.col('Request.physicianId'),
                         },
                     },
                 ];
                 break;
-            case "active":
+            case 'active':
                 condition = {
-                    caseTag: "Active",
+                    caseTag: 'Active',
                     isAgreementAccepted: true,
                     deletedAt: null,
                 };
                 includeModels = [
                     {
                         model: User,
-                        as: "physician",
+                        as: 'physician',
                         attributes: [
                             [
                                 sequelize.fn(
-                                    "CONCAT",
-                                    sequelize.col("firstName"),
-                                    " ",
-                                    sequelize.col("lastName")
+                                    'CONCAT',
+                                    sequelize.col('firstName'),
+                                    ' ',
+                                    sequelize.col('lastName'),
                                 ),
-                                "Physician Name",
+                                'Physician Name',
                             ],
                         ],
                         where: {
-                            id: sequelize.col("Request.physicianId"),
+                            id: sequelize.col('Request.physicianId'),
                         },
                     },
                 ];
                 break;
-            case "conclude":
-                condition = { caseTag: "Conclude", deletedAt: null };
+            case 'conclude':
+                condition = { caseTag: 'Conclude', deletedAt: null };
                 includeModels = [
                     {
                         model: User,
-                        as: "physician",
+                        as: 'physician',
                         attributes: [
                             [
                                 sequelize.fn(
-                                    "CONCAT",
-                                    sequelize.col("firstName"),
-                                    " ",
-                                    sequelize.col("lastName")
+                                    'CONCAT',
+                                    sequelize.col('firstName'),
+                                    ' ',
+                                    sequelize.col('lastName'),
                                 ),
-                                "Physician Name",
+                                'Physician Name',
                             ],
                         ],
                         where: {
-                            id: sequelize.col("Request.physicianId"),
+                            id: sequelize.col('Request.physicianId'),
                         },
                     },
                 ];
                 break;
-            case "to close":
-                condition = { caseTag: "To Close", deletedAt: null };
+            case 'to close':
+                condition = {
+                    [Op.and]: [
+                        { caseTag: 'To Close' },
+                        {
+                            [Op.or]: [
+                                { physicianId: null },
+                                { deletedAt: null },
+                            ],
+                        },
+                    ],
+                };
                 includeModels = [
                     {
                         model: User,
-                        as: "physician",
+                        as: 'physician',
                         attributes: [
                             [
                                 sequelize.fn(
-                                    "CONCAT",
-                                    sequelize.col("firstName"),
-                                    " ",
-                                    sequelize.col("lastName")
+                                    'CONCAT',
+                                    sequelize.col('firstName'),
+                                    ' ',
+                                    sequelize.col('lastName'),
                                 ),
-                                "Physician Name",
+                                'Physician Name',
                             ],
                         ],
                         where: {
-                            id: sequelize.col("Request.physicianId"),
+                            id: sequelize.col('Request.physicianId'),
                         },
                     },
                 ];
                 break;
-            case "unpaid":
-                condition = { caseTag: "UnPaid", deletedAt: null };
+            case 'unpaid':
+                condition = { caseTag: 'UnPaid', deletedAt: null };
                 includeModels = [
                     {
                         model: User,
-                        as: "physician",
+                        as: 'physician',
                         attributes: [
                             [
                                 sequelize.fn(
-                                    "CONCAT",
-                                    sequelize.col("firstName"),
-                                    " ",
-                                    sequelize.col("lastName")
+                                    'CONCAT',
+                                    sequelize.col('firstName'),
+                                    ' ',
+                                    sequelize.col('lastName'),
                                 ),
-                                "Physician Name",
+                                'Physician Name',
                             ],
                         ],
                         where: {
-                            id: sequelize.col("Request.physicianId"),
+                            id: sequelize.col('Request.physicianId'),
                         },
                     },
                 ];
@@ -298,30 +308,30 @@ export const viewCase: Controller = async (req, res) => {
         // select query to find attributes from Request table
         const viewCase = await Request.findAll({
             attributes: [
-                "id",
-                ["confirmationNumber", "Confirmation Number"],
-                ["patientNote", "Patient Notes"],
-                ["patientFirstName", "First Name"],
-                ["patientLastName", "Last Name"],
-                ["dob", "Date Of Birth"],
-                ["patientPhoneNumber", "Phone Number"],
-                ["patientEmail", "Email"],
-                ["state", "Region"],
+                'id',
+                ['confirmationNumber', 'Confirmation Number'],
+                ['patientNote', 'Patient Notes'],
+                ['patientFirstName', 'First Name'],
+                ['patientLastName', 'Last Name'],
+                ['dob', 'Date Of Birth'],
+                ['patientPhoneNumber', 'Phone Number'],
+                ['patientEmail', 'Email'],
+                ['state', 'Region'],
                 [
                     sequelize.fn(
-                        "CONCAT",
-                        sequelize.col("street"),
-                        ", ",
-                        sequelize.col("city"),
-                        ", ",
-                        sequelize.col("state"),
-                        ", ",
-                        sequelize.col("zipCode")
+                        'CONCAT',
+                        sequelize.col('street'),
+                        ', ',
+                        sequelize.col('city'),
+                        ', ',
+                        sequelize.col('state'),
+                        ', ',
+                        sequelize.col('zipCode'),
                     ),
-                    "Address",
+                    'Address',
                 ],
-                ["roomNumber", "Room"],
-                ["caseTag", "Case Tag"],
+                ['roomNumber', 'Room'],
+                ['caseTag', 'Case Tag'],
             ],
             where: { id },
         });
@@ -359,11 +369,11 @@ export const viewNotes: Controller = async (req, res) => {
         // Select query to retrieve asked attributes from Request table
         const notes = await Request.findAll({
             attributes: [
-                "id",
-                ["transferNote", "Transfer Notes"],
-                ["physicianNotes", "Physician Notes"],
-                ["adminNotes", "Admin Notes"],
-                ["patientNote", "Patient Note"],
+                'id',
+                ['transferNote', 'Transfer Notes'],
+                ['physicianNotes', 'Physician Notes'],
+                ['adminNotes', 'Admin Notes'],
+                ['patientNote', 'Patient Note'],
             ],
             where: { id },
         });
@@ -406,7 +416,7 @@ export const updateNotes: Controller = async (req, res) => {
             {
                 adminNotes,
             },
-            { where: { id } }
+            { where: { id } },
         );
 
         return res.json({
@@ -433,10 +443,11 @@ export const getPatientName: Controller = async (req, res) => {
         // Select query to retrieve asked attributes from request table
         const patientName = await Request.findAll({
             attributes: [
-                "id",
-                "patientFirstName",
-                "patientLastName",
-                "confirmationNumber",
+                'id',
+                'patientFirstName',
+                'patientLastName',
+                'confirmationNumber',
+                'requestType',
             ],
             where: { id },
         });
@@ -481,13 +492,14 @@ export const cancelCase: Controller = async (req, res) => {
                 reasonForCancellation,
                 requestStatus: RequestStatus.CancelledByAdmin,
                 caseTag: CaseTag.Close,
-                deletedAt: new Date(),
+                isDeleted: true,
+                physicianId: 17,
             },
             {
                 where: {
                     id,
                 },
-            }
+            },
         );
 
         // success response
@@ -522,7 +534,7 @@ export const blockCase: Controller = async (req, res) => {
                 requestStatus: RequestStatus.Blocked,
                 deletedAt: new Date(),
             },
-            { where: { id } }
+            { where: { id } },
         );
 
         // success response
@@ -553,12 +565,51 @@ export const clearCase: Controller = async (req, res) => {
             },
             {
                 where: { id: req.params.id },
-            }
+            },
         );
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * @function viewSendAgreement
+ * @param req - The HTTP request object containing the request parameters.
+ * @param res - The HTTP response object used for sending responses back to the client.
+ * @returns - A promise that resolves to the HTTP response with the agreement details or an error message.
+ * @description - Retrieves agreement details such as patient's phone number and email from the Request table based on the provided ID.
+ */
+export const viewSendAgreement: Controller = async (req, res) => {
+    try {
+        // Extract the ID from the request parameters.
+        const { id } = req.params;
+
+        // Retrieve the agreement details from the Request table.
+        const viewSendAgreement = await Request.findAll({
+            attributes: ['patientPhoneNumber', 'patientEmail'],
+            where: {
+                id,
+            },
+        });
+
+        // If no agreement details are found, send a 502 Bad Gateway response with an appropriate message.
+        if (!viewSendAgreement) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_GATEWAY,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
+
+        // If agreement details are found, send a 200 OK response with the details.
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: viewSendAgreement,
         });
     } catch (error) {
         throw error;
@@ -574,9 +625,10 @@ export const clearCase: Controller = async (req, res) => {
  */
 export const sendAgreement: Controller = async (req, res) => {
     try {
-        // Find user from request table with use of id given in request params
+        // Attempt to retrieve the user's details from the Request table using the ID from the request parameters.
         const user = await Request.findOne({ where: { id: req.params.id } });
 
+        // If no user is found, return a 404 Not Found status with a user not exist message.
         if (!user) {
             return res.status(httpCode.NOT_FOUND).json({
                 status: httpCode.NOT_FOUND,
@@ -584,19 +636,23 @@ export const sendAgreement: Controller = async (req, res) => {
             });
         }
 
+        // Extract the patient's phone number and email from the retrieved user details.
         const phoneNumber = user.patientPhoneNumber;
         const email = user.patientEmail;
 
+        // Prepare the data for the email template, including the agreement link and the recipient's name.
         const templateData = {
             agreementLink: linkConstant.AGREEMENT_URL,
             recipientName: user.patientFirstName,
         };
 
+        // Compile the email template with the provided data.
         const data = await compileEmailTemplate(
-            "sendAgreementEmail",
-            templateData
+            'sendAgreementEmail',
+            templateData,
         );
 
+        // Define the email options, including sender, recipient, subject, and HTML content.
         let mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
@@ -604,20 +660,24 @@ export const sendAgreement: Controller = async (req, res) => {
             html: data,
         };
 
+        // Send the email and handle the callback for success or failure.
         return transporter.sendMail(mailOptions, async (error: Error) => {
             if (error) {
                 throw error;
             } else {
-                console.log("Agreement email Sent Successfully");
+                console.log('Agreement email Sent Successfully');
 
+                // Update the Request table to reflect that the agreement has been sent.
                 await Request.update(
                     { isAgreementSent: true },
-                    { where: { id: req.params.id } }
+                    { where: { id: req.params.id } },
                 );
 
+                // Prepare the SMS message body with a link to the agreement.
                 const messageBody = `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: http://localhost:3000/agreement.`;
                 sendSMS(messageBody);
 
+                // Return a 200 OK status with a message indicating the email was sent successfully.
                 return res.json({
                     status: httpCode.OK,
                     message: messageConstant.AGREEMENT_EMAIL_SENT,
@@ -639,7 +699,7 @@ export const sendAgreement: Controller = async (req, res) => {
 export const getRegions: Controller = async (req, res) => {
     try {
         const getRegions = await Region.findAll({
-            attributes: ["id", "name"],
+            attributes: ['id', 'name'],
         });
 
         return res.status(httpCode.OK).json({
@@ -669,7 +729,7 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
             include: [
                 {
                     model: Region,
-                    as: "regions",
+                    as: 'regions',
                     where: { id },
                     through: {
                         attributes: [],
@@ -677,7 +737,7 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
                     attributes: [],
                 },
             ],
-            attributes: ["id", "firstName", "lastName"],
+            attributes: ['id', 'firstName', 'lastName'],
         });
 
         return res.status(httpCode.OK).json({
@@ -709,7 +769,7 @@ export const assignCase: Controller = async (req, res) => {
                 caseTag: CaseTag.Pending,
                 requestStatus: RequestStatus.Processing,
             },
-            { where: { id } }
+            { where: { id } },
         );
 
         return res.status(httpCode.OK).json({
@@ -735,15 +795,15 @@ export const viewUploads: Controller = async (req, res) => {
 
         let sortByModel;
         switch (sortBy) {
-            case "id":
-            case "createdAt":
+            case 'id':
+            case 'createdAt':
                 sortByModel = [[sortBy, orderBy]];
                 break;
         }
 
         const uploads = await RequestWiseFiles.findAll({
             where: { requestId: id },
-            attributes: ["id", "fileName", "createdAt", "documentPath"],
+            attributes: ['id', 'fileName', 'createdAt', 'documentPath'],
             order: sortByModel as Order,
         });
 
@@ -829,11 +889,11 @@ export const closeCaseView: Controller = async (req, res) => {
 
         let sortByModel;
         switch (sortBy) {
-            case "id":
-            case "createdAt":
+            case 'id':
+            case 'createdAt':
                 sortByModel = [
                     [
-                        { model: RequestWiseFiles, as: "requestWiseFiles" },
+                        { model: RequestWiseFiles, as: 'requestWiseFiles' },
                         sortBy,
                         orderBy,
                     ],
@@ -848,20 +908,20 @@ export const closeCaseView: Controller = async (req, res) => {
 
         const closeCase = await Request.findAll({
             attributes: [
-                "id",
-                "patientFirstName",
-                "patientLastName",
-                "confirmationNumber",
-                "patientFirstName",
-                "patientLastName",
-                "dob",
-                "patientPhoneNumber",
-                "patientEmail",
+                'id',
+                'patientFirstName',
+                'patientLastName',
+                'confirmationNumber',
+                'patientFirstName',
+                'patientLastName',
+                'dob',
+                'patientPhoneNumber',
+                'patientEmail',
             ],
             include: [
                 {
                     model: RequestWiseFiles,
-                    attributes: ["fileName", "documentPath", "createdAt"],
+                    attributes: ['fileName', 'documentPath', 'createdAt'],
                 },
             ],
             where: { id },
@@ -898,7 +958,7 @@ export const closeCase: Controller = async (req, res) => {
 
         await Request.update(
             { requestStatus: RequestStatus.Closed, caseTag: CaseTag.UnPaid },
-            { where: { id, caseTag: CaseTag.Close } }
+            { where: { id, caseTag: CaseTag.Close } },
         );
 
         return res.status(httpCode.OK).json({
@@ -929,7 +989,7 @@ export const editCloseCase: Controller = async (req, res) => {
                 where: {
                     id: req.params.id,
                 },
-            }
+            },
         );
 
         return res.status(httpCode.OK).json({
@@ -952,12 +1012,12 @@ export const requestSupport: Controller = async (req, res) => {
     try {
         const { message } = req.body;
         const unScheduledPhysician = await User.findAll({
-            where: { accountType: "Physician", onCallStatus: "UnScheduled" },
+            where: { accountType: 'Physician', onCallStatus: 'UnScheduled' },
         });
 
         for (const physician of unScheduledPhysician) {
             console.log(
-                `Sending message to ${physician.firstName}, \n ${message}`
+                `Sending message to ${physician.firstName}, \n ${message}`,
             );
         }
 
@@ -1005,16 +1065,16 @@ export const sendPatientRequest: Controller = async (req, res) => {
 
         const templateData = {
             createRequestLink: linkConstant.REQUEST_URL,
-            patientName: firstName + " " + lastName,
+            patientName: firstName + ' ' + lastName,
         };
 
         const data = await compileEmailTemplate(
-            "sendRequestEmail",
-            templateData
+            'sendRequestEmail',
+            templateData,
         );
 
         const messageBody =
-            "Here you are selected for Maidaan. accept it otherwise we will see you.";
+            'Here you are selected for Maidaan. accept it otherwise we will see you.';
         sendSMS(messageBody);
 
         const mailOptions = {

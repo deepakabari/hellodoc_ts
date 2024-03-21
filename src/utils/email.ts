@@ -1,5 +1,5 @@
-import { createTransport, SentMessageInfo } from "nodemailer";
-import dotenv from 'dotenv'
+import { createTransport, SentMessageInfo } from 'nodemailer';
+import dotenv from 'dotenv';
 dotenv.config();
 
 interface EmailAuth {
@@ -8,7 +8,7 @@ interface EmailAuth {
 }
 
 const transporter: SentMessageInfo = createTransport({
-    service: "outlook",
+    service: 'outlook',
     auth: {
         user: process.env.EMAIL_FROM,
         pass: process.env.EMAIL_PASSWORD,

@@ -1,4 +1,4 @@
-import { Optional } from "sequelize";
+import { Optional } from 'sequelize';
 
 interface OrderDetailsAttributes {
     id: number;
@@ -8,6 +8,6 @@ interface OrderDetailsAttributes {
     noOfRefill?: number;
 }
 
-type OrderDetailsCreationAttributes = Optional<OrderDetailsAttributes, "id">;
+type OrderDetailsCreationAttributes = Optional<OrderDetailsAttributes, 'id'>;
 
 export { OrderDetailsAttributes, OrderDetailsCreationAttributes };

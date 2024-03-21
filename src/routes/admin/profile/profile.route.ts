@@ -1,24 +1,22 @@
-import {
-    myProfileController,
-} from "../../../controllers/index";
-import express from "express";
-import isAuth from "../../../middleware/in-auth";
-import { celebrate } from "celebrate";
-import { RequestSchema, RoleSchema, UserSchema } from "../../../validations/index";
+import { myProfileController } from '../../../controllers/index';
+import express from 'express';
+import isAuth from '../../../middleware/in-auth';
+import { celebrate } from 'celebrate';
+import { RequestSchema } from '../../../validations/index';
 
 const router = express.Router();
 
 router.get(
-    "/adminProfile/:id",
+    '/adminProfile/:id',
     isAuth,
     celebrate(RequestSchema.idParams),
-    myProfileController.adminProfile
+    myProfileController.adminProfile,
 );
 
 router.patch(
-    "/editAdminProfile/:id",
+    '/editAdminProfile/:id',
     isAuth,
-    myProfileController.editAdminProfile
+    myProfileController.editAdminProfile,
 );
 
 export default router;

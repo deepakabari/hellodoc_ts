@@ -1,9 +1,9 @@
-import multer, { StorageEngine } from "multer";
-import { Request } from "express";
+import multer, { StorageEngine } from 'multer';
+import { Request } from 'express';
 
 export const fileStorage: StorageEngine = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "./src/public/images");
+        cb(null, './src/public/images');
     },
     filename: (req, file, cb) => {
         cb(null, file.originalname);
@@ -12,10 +12,10 @@ export const fileStorage: StorageEngine = multer.diskStorage({
 
 export const fileFilter = (req: Request, file: any, cb: any) => {
     if (
-        file.mimetype === "image/png" ||
-        file.mimetype === "image/jpg" ||
-        file.mimetype === "image/jpeg" ||
-        file.mimetype === "application/pdf"
+        file.mimetype === 'image/png' ||
+        file.mimetype === 'image/jpg' ||
+        file.mimetype === 'image/jpeg' ||
+        file.mimetype === 'application/pdf'
     ) {
         cb(null, true);
     } else {
@@ -23,4 +23,4 @@ export const fileFilter = (req: Request, file: any, cb: any) => {
     }
 };
 
-export const upload = multer({ storage: fileStorage, fileFilter: fileFilter })
+export const upload = multer({ storage: fileStorage, fileFilter: fileFilter });

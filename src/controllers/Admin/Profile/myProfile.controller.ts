@@ -1,8 +1,8 @@
-import httpCode from "../../../constants/http.constant";
-import messageConstant from "../../../constants/message.constant";
-import { Region, User } from "../../../db/models/index";
-import { Controller, AdminUpdates, BillingUpdates } from "../../../interfaces";
-import dotenv from "dotenv";
+import httpCode from '../../../constants/http.constant';
+import messageConstant from '../../../constants/message.constant';
+import { Region, User } from '../../../db/models/index';
+import { Controller, AdminUpdates, BillingUpdates } from '../../../interfaces';
+import dotenv from 'dotenv';
 dotenv.config();
 
 /**
@@ -17,28 +17,28 @@ export const adminProfile: Controller = async (req, res) => {
         const { id } = req.params;
         const adminProfile = await User.findAll({
             attributes: [
-                "id",
-                "userName",
-                "status",
-                "firstName",
-                "lastName",
-                "email",
-                "phoneNumber",
-                "address1",
-                "address2",
-                "city",
-                "state",
-                "zipCode",
-                "altPhone",
+                'id',
+                'userName',
+                'status',
+                'firstName',
+                'lastName',
+                'email',
+                'phoneNumber',
+                'address1',
+                'address2',
+                'city',
+                'state',
+                'zipCode',
+                'altPhone',
             ],
             where: {
                 id,
-                accountType: "Admin",
+                accountType: 'Admin',
             },
             include: [
                 {
                     model: Region,
-                    attributes: ["id", "name"],
+                    attributes: ['id', 'name'],
                     through: { attributes: [] }, // This will exclude the join table attributes
                 },
             ],
@@ -74,7 +74,7 @@ export const editAdminProfile: Controller = async (req, res) => {
 
         const updateAdminDetails = async (
             id: string,
-            updates: AdminUpdates | BillingUpdates
+            updates: AdminUpdates | BillingUpdates,
         ) => {
             try {
                 await User.update(updates, {
@@ -88,13 +88,13 @@ export const editAdminProfile: Controller = async (req, res) => {
 
         let updateResult = false;
         switch (section) {
-            case "administration":
+            case 'administration':
                 const adminFields = [
-                    "firstName",
-                    "lastName",
-                    "email",
-                    "confirmEmail",
-                    "phoneNumber",
+                    'firstName',
+                    'lastName',
+                    'email',
+                    'confirmEmail',
+                    'phoneNumber',
                 ];
                 let adminUpdates: any = {};
                 adminFields.forEach((field) => {
@@ -105,14 +105,14 @@ export const editAdminProfile: Controller = async (req, res) => {
                 updateResult = await updateAdminDetails(id, adminUpdates);
                 break;
 
-            case "billing":
+            case 'billing':
                 const billingFields = [
-                    "address1",
-                    "address2",
-                    "city",
-                    "state",
-                    "zipCode",
-                    "altPhone",
+                    'address1',
+                    'address2',
+                    'city',
+                    'state',
+                    'zipCode',
+                    'altPhone',
                 ];
                 let billingUpdates: any = {};
                 billingFields.forEach((field) => {

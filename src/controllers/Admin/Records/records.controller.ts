@@ -1,11 +1,11 @@
-import { RequestStatus } from "../../../utils/enum.constant";
-import httpCode from "../../../constants/http.constant";
-import messageConstant from "../../../constants/message.constant";
-import { Request, User } from "../../../db/models/index";
-import { Controller } from "../../../interfaces";
-import sequelize, { Order } from "sequelize";
-import dotenv from "dotenv";
-import { Op } from "sequelize";
+import { RequestStatus } from '../../../utils/enum.constant';
+import httpCode from '../../../constants/http.constant';
+import messageConstant from '../../../constants/message.constant';
+import { Request, User } from '../../../db/models/index';
+import { Controller } from '../../../interfaces';
+import sequelize, { Order } from 'sequelize';
+import dotenv from 'dotenv';
+import { Op } from 'sequelize';
 dotenv.config();
 
 /**
@@ -19,29 +19,29 @@ export const getPatientHistory: Controller = async (req, res) => {
         const { search } = req.query;
         const patientsHistory = await Request.findAll({
             attributes: [
-                "id",
-                "patientFirstName",
-                "patientLastName",
-                "patientEmail",
-                "patientPhoneNumber",
-                "street",
-                "city",
-                "state",
-                "zipCode",
+                'id',
+                'patientFirstName',
+                'patientLastName',
+                'patientEmail',
+                'patientPhoneNumber',
+                'street',
+                'city',
+                'state',
+                'zipCode',
             ],
             where: {
                 ...(search
                     ? {
-                        [Op.or]: [
-                            "patientFirstName",
-                            "patientLastName",
-                            "patientEmail",
-                            "patientPhoneNumber",
-                        ].map((field) => ({
-                            [field]: {
-                                [Op.like]: `%${search}%`,
-                            },
-                        })),
+                          [Op.or]: [
+                              'patientFirstName',
+                              'patientLastName',
+                              'patientEmail',
+                              'patientPhoneNumber',
+                          ].map((field) => ({
+                              [field]: {
+                                  [Op.like]: `%${search}%`,
+                              },
+                          })),
                       }
                     : {}),
             },
@@ -67,13 +67,13 @@ export const blockHistory: Controller = async (req, res) => {
     try {
         const blockRequests = await Request.findAll({
             attributes: [
-                "id",
-                "patientFirstName",
-                "patientLastName",
-                "patientPhoneNumber",
-                "patientEmail",
-                "createdAt",
-                "patientNote",
+                'id',
+                'patientFirstName',
+                'patientLastName',
+                'patientPhoneNumber',
+                'patientEmail',
+                'createdAt',
+                'patientNote',
             ],
             where: { requestStatus: RequestStatus.Blocked },
         });
@@ -99,19 +99,19 @@ export const patientRecord: Controller = async (req, res) => {
     try {
         const patients = await Request.findAll({
             attributes: [
-                "id",
-                "patientFirstName",
-                "patientLastName",
-                "createdAt",
-                "confirmationNumber",
-                "concludedDate",
-                "requestStatus",
+                'id',
+                'patientFirstName',
+                'patientLastName',
+                'createdAt',
+                'confirmationNumber',
+                'concludedDate',
+                'requestStatus',
             ],
             include: {
                 model: User,
-                as: "physician",
-                attributes: ["id", "firstName", "lastName"],
-                where: { id: sequelize.col("Request.physicianId") },
+                as: 'physician',
+                attributes: ['id', 'firstName', 'lastName'],
+                where: { id: sequelize.col('Request.physicianId') },
             },
         });
 
@@ -131,39 +131,39 @@ export const searchRecord: Controller = async (req, res) => {
 
         const patientData = await Request.findAll({
             attributes: [
-                "id",
-                "patientFirstName",
-                "patientLastName",
-                "requestType",
-                "acceptedDate",
-                "updatedAt",
-                "patientEmail",
-                "patientPhoneNumber",
-                "street",
-                "city",
-                "state",
-                "zipCode",
-                "requestStatus",
-                "physicianNotes",
-                "reasonForCancellation",
-                "adminNotes",
-                "patientNote",
+                'id',
+                'patientFirstName',
+                'patientLastName',
+                'requestType',
+                'acceptedDate',
+                'updatedAt',
+                'patientEmail',
+                'patientPhoneNumber',
+                'street',
+                'city',
+                'state',
+                'zipCode',
+                'requestStatus',
+                'physicianNotes',
+                'reasonForCancellation',
+                'adminNotes',
+                'patientNote',
             ],
             include: {
                 model: User,
-                as: "physician",
-                attributes: ["id", "firstName", "lastName"],
-                where: { id: sequelize.col("Request.physicianId") },
+                as: 'physician',
+                attributes: ['id', 'firstName', 'lastName'],
+                where: { id: sequelize.col('Request.physicianId') },
             },
             order: [[sortBy, orderBy]] as Order,
             where: {
                 ...(search
                     ? {
                           [Op.or]: [
-                              "patientFirstName",
-                              "patientLastName",
-                              "patientEmail",
-                              "patientPhoneNumber",
+                              'patientFirstName',
+                              'patientLastName',
+                              'patientEmail',
+                              'patientPhoneNumber',
                           ].map((field) => ({
                               [field]: {
                                   [Op.like]: `%${search}%`,

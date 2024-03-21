@@ -1,17 +1,20 @@
-import { Optional } from "sequelize";
+import { Optional } from 'sequelize';
 
 interface RequestWiseFilesAttributes {
     id: number;
     requestId: number;
     fileName: string;
     docType?: string;
-    isDeleted?: boolean
-    documentPath?: string
+    isDeleted?: boolean;
+    documentPath?: string;
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;
 }
 
-type RequestWiseFilesCreationAttributes = Optional<RequestWiseFilesAttributes, "id">;
+type RequestWiseFilesCreationAttributes = Optional<
+    RequestWiseFilesAttributes,
+    'id'
+>;
 
 export { RequestWiseFilesAttributes, RequestWiseFilesCreationAttributes };

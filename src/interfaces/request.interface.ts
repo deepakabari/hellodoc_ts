@@ -1,4 +1,4 @@
-import { Optional } from "sequelize";
+import { Optional } from 'sequelize';
 
 interface RequestAttributes {
     id: number;
@@ -46,6 +46,6 @@ interface RequestAttributes {
     deletedAt?: Date | null;
 }
 
-type RequestCreationAttributes = Optional<RequestAttributes, "id">;
+type RequestCreationAttributes = Optional<RequestAttributes, 'id'>;
 
 export { RequestAttributes, RequestCreationAttributes };

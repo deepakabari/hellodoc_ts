@@ -1,28 +1,28 @@
-import userController from "../../controllers/User/user.controller";
-import express from "express";
-import { RequestSchema, UserSchema } from "../../validations/index";
-import { celebrate } from "celebrate";
-import { upload } from "../../utils/multerConfig";
+import userController from '../../controllers/User/user.controller';
+import express from 'express';
+import { RequestSchema, UserSchema } from '../../validations/index';
+import { celebrate } from 'celebrate';
+import { upload } from '../../utils/multerConfig';
 
 const router = express.Router();
 
 router.post(
-    "/createUser",
+    '/createUser',
     celebrate(UserSchema.createUser),
-    userController.createUser
+    userController.createUser,
 );
 
 router.get(
-    "/emailFound",
+    '/emailFound',
     celebrate(UserSchema.isEmailFound),
-    userController.isEmailFound
+    userController.isEmailFound,
 );
 
 router.post(
-    "/createRequest",
-    upload.single("document"),
+    '/createRequest',
+    upload.single('document'),
     celebrate(RequestSchema.createRequest),
-    userController.createRequest
+    userController.createRequest,
 );
 
 export default router;

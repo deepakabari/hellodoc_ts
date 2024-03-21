@@ -18,6 +18,9 @@ class Business extends Model<BusinessAttributes, BusinessCreationAttributes> {
     })
     id: number;
 
+    @Column({ type: DataTypes.INTEGER, allowNull: false })
+    userId: number
+
     @Column({ type: DataTypes.STRING, allowNull: false })
     email: string;
 

@@ -1,24 +1,24 @@
-import httpCode from "../../constants/http.constant";
-import messageConstant from "../../constants/message.constant";
+import httpCode from '../../constants/http.constant';
+import messageConstant from '../../constants/message.constant';
 import {
     User,
     Request,
     UserRegion,
     RequestWiseFiles,
     Region,
-} from "../../db/models/index";
-import { Controller } from "../../interfaces";
-import bcrypt from "bcrypt";
+} from '../../db/models/index';
+import { Controller } from '../../interfaces';
+import bcrypt from 'bcrypt';
 import {
     AccountType,
     ProfileStatus,
     RegionAbbreviation,
     RequestStatus,
-} from "../../utils/enum.constant";
-import { CaseTag } from "../../utils/enum.constant";
-import { Op } from "sequelize";
+} from '../../utils/enum.constant';
+import { CaseTag } from '../../utils/enum.constant';
+import { Op } from 'sequelize';
 
-import dotenv from "dotenv";
+import dotenv from 'dotenv';
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
@@ -51,7 +51,7 @@ const createUser: Controller = async (req, res) => {
             accountType,
             zipCode,
             dob,
-            document
+            document,
         } = req.body;
 
         if (!req.file) {
@@ -141,7 +141,7 @@ const createUser: Controller = async (req, res) => {
         }
         // any error generated above then give error message
     } catch (error) {
-        console.log("Catch:", error);
+        console.log('Catch:', error);
         throw error;
     }
 };
@@ -201,7 +201,7 @@ const createRequest: Controller = async (req, res) => {
             // hash the password
             const hashedPassword = await bcrypt.hash(
                 password,
-                Number(ITERATION)
+                Number(ITERATION),
             );
 
             // find or create a user with the given email
@@ -231,13 +231,15 @@ const createRequest: Controller = async (req, res) => {
         const currentDate = new Date();
 
         // generate the abbreviation of given state for confirmation number
-        async function getAbbreviationFromDb(name: string): Promise<string | undefined> {
+        async function getAbbreviationFromDb(
+            name: string,
+        ): Promise<string | undefined> {
             try {
                 const regionEntry = await Region.findOne({
-                    where: { name }
-                })
+                    where: { name },
+                });
                 console.log(regionEntry?.abbreviation);
-                return regionEntry ? regionEntry?.abbreviation : undefined
+                return regionEntry ? regionEntry?.abbreviation : undefined;
             } catch (error) {
                 throw error;
             }
@@ -245,8 +247,8 @@ const createRequest: Controller = async (req, res) => {
 
         const regionAbbreviation = await getAbbreviationFromDb(state);
         console.log(regionAbbreviation);
-        const day = String(currentDate.getDate()).padStart(2, "0"); // display the date in 2 digit format
-        const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // display the month in 2 digit format
+        const day = String(currentDate.getDate()).padStart(2, '0'); // display the date in 2 digit format
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // display the month in 2 digit format
 
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
@@ -261,7 +263,7 @@ const createRequest: Controller = async (req, res) => {
                 },
             },
         });
-        let requestCountStr = String(requestCount + 1).padStart(4, "0");
+        let requestCountStr = String(requestCount + 1).padStart(4, '0');
 
         // Generate the confirmation number
         const confirmationNumber = `${regionAbbreviation}${
@@ -286,7 +288,7 @@ const createRequest: Controller = async (req, res) => {
             requestId: newRequest.id,
             fileName: req.file.originalname,
             documentPath: req.file.path,
-            docType: "MedicalReport",
+            docType: 'MedicalReport',
             createdAt: new Date(),
             updatedAt: new Date(),
         });

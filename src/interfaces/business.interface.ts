@@ -1,8 +1,9 @@
-import { Optional } from "sequelize";
+import { Optional } from 'sequelize';
 
 interface BusinessAttributes {
     id: number;
-    accountType: string
+    userId: number;
+    accountType: string;
     businessName: string;
     businessWebsite: string;
     businessContact: string;
@@ -16,6 +17,6 @@ interface BusinessAttributes {
     zipCode: string;
 }
 
-type BusinessCreationAttributes = Optional<BusinessAttributes, "id">;
+type BusinessCreationAttributes = Optional<BusinessAttributes, 'id'>;
 
 export { BusinessAttributes, BusinessCreationAttributes };

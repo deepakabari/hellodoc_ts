@@ -1,6 +1,6 @@
 interface UserRegionAttributes {
-    regionId: number
-    userId: number
+    regionId: number;
+    userId: number;
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

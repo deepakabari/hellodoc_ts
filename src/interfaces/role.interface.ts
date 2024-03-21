@@ -1,4 +1,4 @@
-import { Optional } from "sequelize";
+import { Optional } from 'sequelize';
 
 interface RoleAttributes {
     id: number;
@@ -10,6 +10,6 @@ interface RoleAttributes {
     deletedAt?: Date;
 }
 
-type RoleCreationAttributes = Optional<RoleAttributes, "id">;
+type RoleCreationAttributes = Optional<RoleAttributes, 'id'>;
 
 export { RoleAttributes, RoleCreationAttributes };

@@ -1,13 +1,13 @@
-import { AccountType } from "../../../utils/enum.constant";
-import httpCode from "../../../constants/http.constant";
-import messageConstant from "../../../constants/message.constant";
-import { Region, User } from "../../../db/models/index";
-import { Controller, FieldUpdates } from "../../../interfaces";
-import dotenv from "dotenv";
-import linkConstant from "../../../constants/link.constant";
-import transporter from "../../../utils/email";
-import { sendSMS } from "../../../utils/smsSender";
-import bcrypt from "bcrypt";
+import { AccountType } from '../../../utils/enum.constant';
+import httpCode from '../../../constants/http.constant';
+import messageConstant from '../../../constants/message.constant';
+import { Business, Region, User } from '../../../db/models/index';
+import { Controller, FieldUpdates } from '../../../interfaces';
+import dotenv from 'dotenv';
+import linkConstant from '../../../constants/link.constant';
+import transporter from '../../../utils/email';
+import { sendSMS } from '../../../utils/smsSender';
+import bcrypt from 'bcrypt';
 dotenv.config();
 
 /**
@@ -22,22 +22,22 @@ export const providerInformation: Controller = async (req, res) => {
         const { regions } = req.query;
         const providerInformation = await User.findAll({
             attributes: [
-                "id",
-                "firstName",
-                "lastName",
-                "accountType",
-                "onCallStatus",
-                "status",
-                "email",
-                "phoneNumber",
-                "notification",
+                'id',
+                'firstName',
+                'lastName',
+                'accountType',
+                'onCallStatus',
+                'status',
+                'email',
+                'phoneNumber',
+                'notification',
             ],
             where: {
                 accountType: AccountType.Physician,
             },
             include: {
                 model: Region,
-                attributes: ["id", "name"],
+                attributes: ['id', 'name'],
                 through: { attributes: [] },
                 where: {
                     ...(regions ? { name: regions as string } : {}),
@@ -83,19 +83,19 @@ export const contactProvider: Controller = async (req, res) => {
                 if (error) {
                     throw error;
                 } else {
-                    console.log("Email Sent Successfully");
+                    console.log('Email Sent Successfully');
                 }
             });
         };
 
         switch (contactMethod) {
-            case "sms":
+            case 'sms':
                 sendSMS(messageBody);
                 break;
-            case "email":
+            case 'email':
                 sendEmail(messageBody);
                 break;
-            case "both":
+            case 'both':
                 sendSMS(messageBody);
                 sendEmail(messageBody);
                 break;
@@ -122,30 +122,30 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
         const { id } = req.params;
         const physicianProfile = await User.findAll({
             attributes: [
-                "id",
-                "userName",
-                "status",
-                "firstName",
-                "lastName",
-                "email",
-                "phoneNumber",
-                "medicalLicense",
-                "NPINumber",
-                "syncEmailAddress",
-                "address1",
-                "address2",
-                "city",
-                "state",
-                "zipCode",
-                "altPhone",
-                "businessName",
-                "businessWebsite",
-                "photo",
-                "signature",
-                "isAgreementDoc",
-                "isBackgroundDoc",
-                "isNonDisclosureDoc",
-                "isLicenseDoc",
+                'id',
+                'userName',
+                'status',
+                'firstName',
+                'lastName',
+                'email',
+                'phoneNumber',
+                'medicalLicense',
+                'NPINumber',
+                'syncEmailAddress',
+                'address1',
+                'address2',
+                'city',
+                'state',
+                'zipCode',
+                'altPhone',
+                'businessName',
+                'businessWebsite',
+                'photo',
+                'signature',
+                'isAgreementDoc',
+                'isBackgroundDoc',
+                'isNonDisclosureDoc',
+                'isLicenseDoc',
             ],
             where: { id },
         });
@@ -167,128 +167,16 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
     }
 };
 
-// export const editPhysicianProfile: Controller = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const { section, updatedData } = req.body;
-
-//         if (!section || !updatedData) {
-//             return res.status(httpCode.NOT_FOUND).json({
-//                 status: httpCode.NOT_FOUND,
-//                 message: messageConstant.MISSING_SECTION_OR_UPDATED_DATA,
-//             });
-//         }
-
-//         const updatePhysicianDetails = async (id: string, updates: any) => {
-//             try {
-//                 await User.update(updates, {
-//                     where: { id },
-//                 });
-//                 return true;
-//             } catch (error) {
-//                 return false;
-//             }
-//         };
-
-//         let updateResult = false;
-//         switch (section) {
-//             case "accountInformation":
-//                 const accountFields = ["password", "status"];
-//                 let accountUpdates: any = {};
-//                 accountFields.forEach((field) => {
-//                     if (updatedData[field] != undefined) {
-//                         accountUpdates[field] = updatedData[field];
-//                     }
-//                 });
-//                 updateResult = await updatePhysicianDetails(id, accountUpdates);
-//                 break;
-
-//             case "physicianInformation":
-//                 const physicianFields = [
-//                     "firstName",
-//                     "lastName",
-//                     "email",
-//                     "phoneNumber",
-//                     "medicalLicense",
-//                     "NPINumber",
-//                     "syncEmailAddress",
-//                 ];
-//                 let physicianUpdates: any = {};
-//                 physicianFields.forEach((field) => {
-//                     if (updatedData[field] != undefined) {
-//                         physicianUpdates[field] = updatedData[field];
-//                     }
-//                 });
-//                 updateResult = await updatePhysicianDetails(
-//                     id,
-//                     physicianUpdates
-//                 );
-//                 break;
-
-//             case "billingInformation":
-//                 const billingFields = [
-//                     "address1",
-//                     "address2",
-//                     "city",
-//                     "state",
-//                     "zipCode",
-//                     "altPhone",
-//                 ];
-//                 let billingUpdates: any = {};
-//                 billingFields.forEach((field) => {
-//                     if (updatedData[field] != undefined) {
-//                         billingUpdates[field] = updatedData[field];
-//                     }
-//                 });
-//                 updateResult = await updatePhysicianDetails(id, billingUpdates);
-//                 break;
-
-//             case "providerProfile":
-//                 const providerFields = ["photo", "signature"];
-//                 let providerUpdates: any = {};
-//                 providerFields.forEach((field) => {
-//                     if (updatedData[field] != undefined) {
-//                         providerUpdates[field] = updatedData[field];
-//                     }
-//                 });
-//                 updateResult = await updatePhysicianDetails(
-//                     id,
-//                     providerUpdates
-//                 );
-//                 break;
-
-//             default:
-//                 return res.status(httpCode.METHOD_NOT_ALLOWED).json({
-//                     status: httpCode.METHOD_NOT_ALLOWED,
-//                     message: messageConstant.INVALID_BODY,
-//                 });
-//         }
-
-//         if (!updateResult) {
-//             return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
-//                 status: httpCode.INTERNAL_SERVER_ERROR,
-//                 message: messageConstant.UPDATE_FAILED,
-//             });
-//         }
-
-//         return res.status(httpCode.OK).json({
-//             status: httpCode.OK,
-//             message: messageConstant.SUCCESS,
-//         });
-//     } catch (error) {
-//         throw error;
-//     }
-// };
-
 /**
  * @function editPhysicianProfile
- * @param req 
- * @param res 
- * @returns 
+ * @param req
+ * @param res
+ * @returns
  */
 export const editPhysicianProfile: Controller = async (req, res) => {
     try {
         const { id } = req.params;
+        const { businessName, businessWebsite } = req.body;
         const files = req.files as {
             [fieldName: string]: Express.Multer.File[];
         };
@@ -296,7 +184,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
         const updatePhysicianDetails = async (
             id: string,
             fieldUpdates: FieldUpdates,
-            files?: { [fieldName: string]: Express.Multer.File[] }
+            files?: { [fieldName: string]: Express.Multer.File[] },
         ) => {
             try {
                 if (files) {
@@ -311,6 +199,12 @@ export const editPhysicianProfile: Controller = async (req, res) => {
                 await User.update(fieldUpdates, {
                     where: { id },
                 });
+
+                await Business.update(
+                    { businessName, businessWebsite },
+                    { where: { userId: id } },
+                );
+
                 return true;
             } catch (error) {
                 return false;
@@ -320,35 +214,35 @@ export const editPhysicianProfile: Controller = async (req, res) => {
         let fieldUpdates: any = {};
 
         const fields = [
-            "password",
-            "status",
-            "firstName",
-            "lastName",
-            "email",
-            "phoneNumber",
-            "medicalLicense",
-            "NPINumber",
-            "syncEmailAddress",
-            "address1",
-            "address2",
-            "city",
-            "state",
-            "zipCode",
-            "altPhone",
+            'password',
+            'status',
+            'firstName',
+            'lastName',
+            'email',
+            'phoneNumber',
+            'medicalLicense',
+            'NPINumber',
+            'syncEmailAddress',
+            'address1',
+            'address2',
+            'city',
+            'state',
+            'zipCode',
+            'altPhone',
         ];
 
         const hashPassword = async (password: string): Promise<string> => {
             const saltRounds = process.env.ITERATION;
             const hashedPassword = await bcrypt.hash(
                 password,
-                Number(saltRounds)
+                Number(saltRounds),
             );
             return hashedPassword;
         };
-        
+
         for (const field of fields) {
             if (req.body[field] !== undefined) {
-                if (field === "password") {
+                if (field === 'password') {
                     fieldUpdates[field] = await hashPassword(req.body[field]);
                 } else {
                     fieldUpdates[field] = req.body[field];
@@ -359,7 +253,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
         const updateResult = await updatePhysicianDetails(
             id,
             fieldUpdates,
-            files
+            files,
         );
 
         if (!updateResult) {

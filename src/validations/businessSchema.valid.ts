@@ -1,4 +1,4 @@
-import { Joi, Segments } from "celebrate";
+import { Joi, Segments } from 'celebrate';
 
 export const BusinessSchema = {
     createBusiness: {
@@ -13,7 +13,7 @@ export const BusinessSchema = {
             street: Joi.string().required(),
             city: Joi.string().required(),
             state: Joi.string().required(),
-            zipCode: Joi.string().min(5).max(6).required()
-        })
-    }
-}
+            zipCode: Joi.string().min(5).max(6).required(),
+        }),
+    },
+};

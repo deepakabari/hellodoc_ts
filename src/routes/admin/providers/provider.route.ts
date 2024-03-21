@@ -1,45 +1,45 @@
 import {
     providerController,
     schedulingController,
-} from "../../../controllers/index";
-import express from "express";
-import isAuth from "../../../middleware/in-auth";
-import { celebrate } from "celebrate";
-import { RequestSchema, UserSchema } from "../../../validations/index";
-import { upload } from "../../../utils/multerConfig";
+} from '../../../controllers/index';
+import express from 'express';
+import isAuth from '../../../middleware/in-auth';
+import { celebrate } from 'celebrate';
+import { RequestSchema, UserSchema } from '../../../validations/index';
+import { upload } from '../../../utils/multerConfig';
 
 const router = express.Router();
 
 router.get(
-    "/providerInformation",
+    '/providerInformation',
     isAuth,
-    providerController.providerInformation
+    providerController.providerInformation,
 );
 
-router.post("/contactProvider/:id", isAuth, providerController.contactProvider);
+router.post('/contactProvider/:id', isAuth, providerController.contactProvider);
 
 router.get(
-    "/physicianProfile/:id",
+    '/physicianProfile/:id',
     isAuth,
     celebrate(RequestSchema.idParams),
-    providerController.physicianProfileInAdmin
+    providerController.physicianProfileInAdmin,
 );
 
-router.get("/providerOnCall", isAuth, schedulingController.providerOnCall);
+router.get('/providerOnCall', isAuth, schedulingController.providerOnCall);
 
 router.patch(
-    "/providerProfile/:id",
+    '/providerProfile/:id',
     isAuth,
     upload.fields([
-        { name: "photo", maxCount: 1 },
-        { name: "signature", maxCount: 1 },
+        { name: 'photo', maxCount: 1 },
+        { name: 'signature', maxCount: 1 },
     ]),
     celebrate(UserSchema.editPhysicianProfile),
-    providerController.editPhysicianProfile
+    providerController.editPhysicianProfile,
 );
 
-router.post("/addNewShift", isAuth, schedulingController.addNewShift)
+router.post('/addNewShift', isAuth, schedulingController.addNewShift);
 
-router.get("/viewShift/:id", isAuth, schedulingController.viewShift)
+router.get('/viewShift/:id', isAuth, schedulingController.viewShift);
 
 export default router;

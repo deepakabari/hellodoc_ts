@@ -31,8 +31,8 @@ type FieldUpdates = {
     state?: string;
     zipCode?: string;
     altPhone?: string;
-    photo?: string
-    signature?: string
+    photo?: string;
+    signature?: string;
 };
 
 export { AdminUpdates, BillingUpdates, FieldUpdates };

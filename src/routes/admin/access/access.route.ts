@@ -1,31 +1,31 @@
-import { accessController, } from "../../../controllers/index";
-import express from "express";
-import isAuth from "../../../middleware/in-auth";
-import { celebrate } from "celebrate";
-import { RequestSchema, RoleSchema, UserSchema } from "../../../validations/index";
+import { accessController } from '../../../controllers/index';
+import express from 'express';
+import isAuth from '../../../middleware/in-auth';
+import { celebrate } from 'celebrate';
+import { RoleSchema } from '../../../validations/index';
 
 const router = express.Router();
 
-router.get("/accountAccess", isAuth, accessController.accountAccess);
+router.get('/accountAccess', isAuth, accessController.accountAccess);
 
 router.get(
-    "/accountAccessByAccountType",
+    '/accountAccessByAccountType',
     isAuth,
-    accessController.accountAccessByAccountType
+    accessController.accountAccessByAccountType,
 );
 
 router.post(
-    "/createRole",
+    '/createRole',
     isAuth,
     celebrate(RoleSchema.createRole),
-    accessController.createRole
+    accessController.createRole,
 );
 
 router.get(
-    "/userAccess",
+    '/userAccess',
     isAuth,
     celebrate(RoleSchema.userAccess),
-    accessController.userAccess
+    accessController.userAccess,
 );
 
 export default router;

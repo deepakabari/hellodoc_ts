@@ -1,6 +1,6 @@
-import { Joi, Segments } from "celebrate";
-import { AccountType, ProfileStatus } from "../utils/enum.constant";
-import linkConstant from "../constants/link.constant";
+import { Joi, Segments } from 'celebrate';
+import { AccountType, ProfileStatus } from '../utils/enum.constant';
+import linkConstant from '../constants/link.constant';
 
 export const UserSchema = {
     createUser: {
@@ -13,30 +13,30 @@ export const UserSchema = {
                 .required()
                 .regex(RegExp(linkConstant.PASSWORD_REGEX)),
             firstName: Joi.string().required().min(2),
-            lastName: Joi.string().allow("", null).optional().min(4),
+            lastName: Joi.string().allow('', null).optional().min(4),
             email: Joi.string().email().required(),
             phoneNumber: Joi.string().min(10).max(10).required(),
-            address1: Joi.string().allow("", null).optional(),
-            address2: Joi.string().allow("", null).optional(),
-            street: Joi.string().allow("", null).optional(),
+            address1: Joi.string().allow('', null).optional(),
+            address2: Joi.string().allow('', null).optional(),
+            street: Joi.string().allow('', null).optional(),
             city: Joi.string().required(),
             state: Joi.string().required(),
             zipCode: Joi.string().required().min(5).max(6),
-            dob: Joi.date().allow("", null).optional(),
+            dob: Joi.date().allow('', null).optional(),
             status: Joi.string()
                 .valid(...Object.values(ProfileStatus))
                 .optional(),
-            altPhone: Joi.string().optional().min(10).max(10).allow("", null),
-            medicalLicense: Joi.string().optional().allow("", null),
-            photo: Joi.string().optional().allow("", null),
-            signature: Joi.string().optional().allow("", null),
+            altPhone: Joi.string().optional().min(10).max(10).allow('', null),
+            medicalLicense: Joi.string().optional().allow('', null),
+            photo: Joi.string().optional().allow('', null),
+            signature: Joi.string().optional().allow('', null),
             isAgreementDoc: Joi.boolean().optional(),
             isBackgroundDoc: Joi.boolean().optional(),
             isTrainingDoc: Joi.boolean().optional(),
             isNonDisclosureDoc: Joi.boolean().optional(),
             isLicenseDoc: Joi.boolean().optional(),
-            NPINumber: Joi.string().optional().allow("", null),
-            syncEmailAddress: Joi.string().optional().allow("", null),
+            NPINumber: Joi.string().optional().allow('', null),
+            syncEmailAddress: Joi.string().optional().allow('', null),
             regions: Joi.array().items(Joi.number().integer()).optional(),
         }).unknown(true),
     },
@@ -96,7 +96,9 @@ export const UserSchema = {
             id: Joi.string().required(),
         },
         [Segments.BODY]: Joi.object({
-            password: Joi.string().regex(RegExp(linkConstant.PASSWORD_REGEX)).optional(),
+            password: Joi.string()
+                .regex(RegExp(linkConstant.PASSWORD_REGEX))
+                .optional(),
             status: Joi.string().valid(...Object.values(ProfileStatus)),
             firstName: Joi.string(),
             lastName: Joi.string(),
@@ -113,6 +115,8 @@ export const UserSchema = {
             altPhone: Joi.string().min(10).max(10),
             photo: Joi.string(),
             signature: Joi.string(),
+            businessName: Joi.string(),
+            businessWebsite: Joi.string(),
         }),
     },
 };

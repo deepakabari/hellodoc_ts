@@ -40,6 +40,7 @@ export const addBusiness: Controller = async (req, res) => {
 
         const newBusiness = await Business.create({
             accountType: AccountType.Vendor,
+            userId: req.user.id,
             businessName,
             businessWebsite,
             profession,
