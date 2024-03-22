@@ -1,9 +1,9 @@
-import { Table, Column, Model } from "sequelize-typescript";
-import { DataTypes } from "sequelize";
+import { Table, Column, Model } from 'sequelize-typescript';
+import { DataTypes } from 'sequelize';
 import {
     BusinessAttributes,
     BusinessCreationAttributes,
-} from "../../interfaces";
+} from '../../interfaces';
 
 @Table({
     timestamps: true,
@@ -19,7 +19,7 @@ class Business extends Model<BusinessAttributes, BusinessCreationAttributes> {
     id: number;
 
     @Column({ type: DataTypes.INTEGER, allowNull: false })
-    userId: number
+    userId: number;
 
     @Column({ type: DataTypes.STRING, allowNull: false })
     email: string;

@@ -12,7 +12,6 @@ import bcrypt from 'bcrypt';
 import {
     AccountType,
     ProfileStatus,
-    RegionAbbreviation,
     RequestStatus,
 } from '../../utils/enum.constant';
 import { CaseTag } from '../../utils/enum.constant';
@@ -31,48 +30,126 @@ const ITERATION = process.env.ITERATION;
  * @throws - Throws an error if there's an issue in the execution of the function.
  * @description This function is an Express controller that handles user registration. It validates the request body, checks if the user already exists, hashes the password, creates the user, associates the user with regions if the account type is admin or physician, and sends the created user data in the response.
  */
-const createUser: Controller = async (req, res) => {
+const createAccount: Controller = async (req, res) => {
     try {
         const {
+            accountType,
             userName,
             password,
             firstName,
             lastName,
             email,
             phoneNumber,
+            address1,
+            address2,
             street,
             city,
-            address1,
+            state,
+            zipCode,
+            altPhone,
             medicalLicense,
             NPINumber,
-            address2,
-            altPhone,
-            state,
-            accountType,
-            zipCode,
             dob,
-            document,
+            businessName,
+            businessWebsite,
+            photo,
+            independentContract,
+            backgroundCheck,
+            hpaaCompliance,
+            nonDisclosureAgreement,
         } = req.body;
-
-        if (!req.file) {
-            throw new Error(messageConstant.IMAGE_NOT_UPLOADED);
-        }
-
-        // check if user is exists in the database
-        const existingUser = await User.findOne({
-            where: { email },
-        });
-
-        // if exists then give error response
-        if (existingUser) {
-            return res.status(httpCode.CONFLICT).json({
-                status: httpCode.CONFLICT,
-                message: messageConstant.USER_ALREADY_EXISTS,
-            });
-        }
 
         // secure the password using bcrypt hashing algorithm
         const hashedPassword = await bcrypt.hash(password, Number(ITERATION));
+
+        if (accountType === 'Admin') {
+            const newUser = await User.create({
+                accountType,
+                userName,
+                email,
+                password: hashedPassword,
+                firstName,
+                lastName,
+                phoneNumber,
+                address1,
+                address2,
+                city,
+                state,
+                zipCode,
+                altPhone,
+                status: ProfileStatus.Active,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+
+            if (!newUser) {
+                return res.status(httpCode.BAD_REQUEST).json({
+                    status: httpCode.BAD_REQUEST,
+                    message: messageConstant.USER_CREATION_FAILED,
+                });
+            } else {
+                const { regions } = req.body;
+
+                // Create UserRegion instances for each region
+                for (const regionId of regions) {
+                    await UserRegion.create({
+                        userId: newUser.id,
+                        regionId,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    });
+                }
+
+                // Omit the sensitive information from response
+                const {
+                    password,
+                    street,
+                    city,
+                    state,
+                    zipCode,
+                    dob,
+                    ...userResponse
+                } = newUser.get({ plain: true });
+
+                return res.status(httpCode.OK).json({
+                    status: httpCode.OK,
+                    message: messageConstant.SUCCESS,
+                    data: userResponse,
+                });
+            }
+        } else if (accountType === 'Physician') {
+            const newUser = await User.create({
+                accountType,
+                userName,
+                firstName,
+                lastName,
+                email,
+                password,
+                phoneNumber,
+                address1,
+                address2,
+                city,
+                state,
+                zipCode,
+                altPhone,
+                medicalLicense,
+                NPINumber,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+
+            if (!newUser) {
+                return res.status(httpCode.BAD_REQUEST).json({
+                    status: httpCode.BAD_REQUEST,
+                    message: messageConstant.USER_CREATION_FAILED,
+                });
+            } else {
+                const newFiles = await RequestWiseFiles.bulkCreate([
+                    {requestId: newUser.id, fileName: independentContract, docType: "Independent Contract", documentPath: req.file.path},
+                    {requestId: newUser.id, fileName: backgroundCheck, docType: "Background Check"},
+                ])
+            }
+        }
 
         // create the user and store it in the database
         const newUser = await User.create({
@@ -94,7 +171,6 @@ const createUser: Controller = async (req, res) => {
             altPhone,
             medicalLicense,
             NPINumber,
-            photo: req.file.path,
             createdAt: new Date(),
             updatedAt: new Date(),
         });
@@ -289,8 +365,6 @@ const createRequest: Controller = async (req, res) => {
             fileName: req.file.originalname,
             documentPath: req.file.path,
             docType: 'MedicalReport',
-            createdAt: new Date(),
-            updatedAt: new Date(),
         });
 
         // if request successfully created then give success message
@@ -306,7 +380,7 @@ const createRequest: Controller = async (req, res) => {
 };
 
 export default {
-    createUser,
+    createAccount,
     createRequest,
     isEmailFound,
 };

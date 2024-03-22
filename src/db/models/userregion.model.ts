@@ -1,6 +1,6 @@
-import { Table, Column, Model } from "sequelize-typescript";
-import { DataTypes } from "sequelize";
-import { UserRegionAttributes } from "../../interfaces";
+import { Table, Column, Model } from 'sequelize-typescript';
+import { DataTypes } from 'sequelize';
+import { UserRegionAttributes } from '../../interfaces';
 
 @Table({
     timestamps: true,
@@ -8,7 +8,7 @@ import { UserRegionAttributes } from "../../interfaces";
     indexes: [
         {
             unique: true,
-            fields: ["userId", "regionId"],
+            fields: ['userId', 'regionId'],
         },
     ],
 })

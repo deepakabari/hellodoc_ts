@@ -4,10 +4,10 @@ import {
     Model,
     BelongsToMany,
     HasMany,
-} from "sequelize-typescript";
-import { DataTypes } from "sequelize";
-import { UserAttributes, UserCreationAttributes } from "../../interfaces";
-import { Role, UserRole, Request, Region, UserRegion, Shift } from "./index";
+} from 'sequelize-typescript';
+import { DataTypes } from 'sequelize';
+import { UserAttributes, UserCreationAttributes } from '../../interfaces';
+import { Role, UserRole, Request, Region, UserRegion, Shift } from './index';
 
 @Table({
     timestamps: true,
@@ -124,30 +124,30 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     })
     notification: boolean;
 
-    @BelongsToMany(() => Role, () => UserRole, "userId", "roleId")
+    @BelongsToMany(() => Role, () => UserRole, 'userId', 'roleId')
     roles: Role[];
 
     @HasMany(() => Request, {
-        foreignKey: "userId",
-        sourceKey: "id",
-        as: "userRequest",
+        foreignKey: 'userId',
+        sourceKey: 'id',
+        as: 'userRequest',
     })
     userRequests: Request[];
 
     @HasMany(() => Request, {
-        foreignKey: "physicianId",
-        sourceKey: "id",
-        as: "physicianRequest",
+        foreignKey: 'physicianId',
+        sourceKey: 'id',
+        as: 'physicianRequest',
     })
     physicianRequests: Request[];
 
-    @BelongsToMany(() => Region, () => UserRegion, "userId", "regionId")
+    @BelongsToMany(() => Region, () => UserRegion, 'userId', 'regionId')
     regions: Region[];
 
     @HasMany(() => Shift, {
         foreignKey: 'physicianId',
-        sourceKey: "id",
-        as: "physicianShift"
+        sourceKey: 'id',
+        as: 'physicianShift',
     })
     physicianShifts: Shift[];
 }

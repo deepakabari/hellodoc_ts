@@ -1,4 +1,4 @@
-import { Sequelize } from "sequelize-typescript";
+import { Sequelize } from 'sequelize-typescript';
 import {
     User,
     Role,
@@ -9,10 +9,10 @@ import {
     RequestWiseFiles,
     Business,
     OrderDetail,
-    Shift
-} from "../models/index";
+    Shift,
+} from '../models/index';
 
-import dotenv from "dotenv";
+import dotenv from 'dotenv';
 dotenv.config();
 
 const dbName = process.env.DB_NAME as string;
@@ -22,7 +22,7 @@ const dbPassword = process.env.DB_PASSWORD;
 
 export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
     host: dbHost,
-    dialect: "mysql",
+    dialect: 'mysql',
     define: {
         freezeTableName: true,
     },
@@ -36,7 +36,7 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
         RequestWiseFiles,
         Business,
         OrderDetail,
-        Shift
+        Shift,
     ],
 });
 
@@ -44,10 +44,10 @@ export const dbConnection = async (): Promise<Sequelize> => {
     await sequelize
         .authenticate()
         .then(() => {
-            console.log("Connection has been established successfully.");
+            console.log('Connection has been established successfully.');
         })
         .catch((err: Error) =>
-            console.log("Unable to connect to the database.", err)
+            console.log('Unable to connect to the database.', err),
         );
     return sequelize;
 };

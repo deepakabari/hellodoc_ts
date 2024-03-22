@@ -1,9 +1,9 @@
-import { Table, Column, Model } from "sequelize-typescript";
-import { DataTypes } from "sequelize";
+import { Table, Column, Model } from 'sequelize-typescript';
+import { DataTypes } from 'sequelize';
 import {
     OrderDetailsAttributes,
     OrderDetailsCreationAttributes,
-} from "../../interfaces";
+} from '../../interfaces';
 
 @Table({
     timestamps: true,

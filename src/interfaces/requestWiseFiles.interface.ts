@@ -7,9 +7,6 @@ interface RequestWiseFilesAttributes {
     docType?: string;
     isDeleted?: boolean;
     documentPath?: string;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt?: Date | null;
 }
 
 type RequestWiseFilesCreationAttributes = Optional<

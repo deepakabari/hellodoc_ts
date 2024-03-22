@@ -1,11 +1,11 @@
-import { Table, Column, Model, BelongsTo, HasMany } from "sequelize-typescript";
-import { DataTypes } from "sequelize";
+import { Table, Column, Model, BelongsTo, HasMany } from 'sequelize-typescript';
+import { DataTypes } from 'sequelize';
 import {
     RequestAttributes,
     RequestCreationAttributes,
-} from "../../interfaces/";
-import { User } from "../models/index";
-import { RequestWiseFiles } from "./index";
+} from '../../interfaces/';
+import { User } from '../models/index';
+import { RequestWiseFiles } from './index';
 
 @Table({
     timestamps: true,
@@ -255,22 +255,22 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
     isAgreementAccepted: boolean;
 
     @BelongsTo(() => User, {
-        foreignKey: "userId",
-        targetKey: "id",
-        as: "user",
+        foreignKey: 'userId',
+        targetKey: 'id',
+        as: 'user',
     })
     user: User;
 
     @BelongsTo(() => User, {
-        foreignKey: "physicianId",
-        targetKey: "id",
-        as: "physician",
+        foreignKey: 'physicianId',
+        targetKey: 'id',
+        as: 'physician',
     })
     physician: User;
 
     @HasMany(() => RequestWiseFiles, {
-        foreignKey: "requestId",
-        sourceKey: "id",
+        foreignKey: 'requestId',
+        sourceKey: 'id',
     })
     requestWiseFiles: RequestWiseFiles[];
 }

@@ -1,7 +1,7 @@
-import { Table, Column, Model, BelongsToMany } from "sequelize-typescript";
-import { DataTypes } from "sequelize";
-import { RoleAttributes, RoleCreationAttributes } from "../../interfaces";
-import { User, UserRole } from "./index";
+import { Table, Column, Model, BelongsToMany } from 'sequelize-typescript';
+import { DataTypes } from 'sequelize';
+import { RoleAttributes, RoleCreationAttributes } from '../../interfaces';
+import { User, UserRole } from './index';
 
 @Table({
     timestamps: true,
@@ -34,7 +34,7 @@ class Role extends Model<RoleAttributes, RoleCreationAttributes> {
     })
     isDeleted: boolean;
 
-    @BelongsToMany(() => User, () => UserRole, "roleId", "userId")
+    @BelongsToMany(() => User, () => UserRole, 'roleId', 'userId')
     users: User[];
 }
 

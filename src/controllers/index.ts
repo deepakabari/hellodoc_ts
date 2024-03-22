@@ -7,3 +7,4 @@ export * as providerController from './Admin/Providers/provider.controller';
 export * as schedulingController from './Admin/Providers/scheduling.controller';
 export * as recordsController from './Admin/Records/records.controller';
 export * as partnerController from './Admin/Partners/partner.controller';
+export * as commonController from './Admin/Common/common.controller';

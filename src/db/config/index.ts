@@ -1,3 +1,3 @@
-import { dbConnection } from "./db.connection";
+import { dbConnection } from './db.connection';
 
 export { dbConnection };

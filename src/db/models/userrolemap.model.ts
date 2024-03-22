@@ -1,6 +1,6 @@
-import { Table, Column, Model } from "sequelize-typescript";
-import { DataTypes } from "sequelize";
-import { UserRoleAttributes } from "../../interfaces";
+import { Table, Column, Model } from 'sequelize-typescript';
+import { DataTypes } from 'sequelize';
+import { UserRoleAttributes } from '../../interfaces';
 
 @Table({
     timestamps: true,
@@ -8,7 +8,7 @@ import { UserRoleAttributes } from "../../interfaces";
     indexes: [
         {
             unique: true,
-            fields: ["userId", "roleId"],
+            fields: ['userId', 'roleId'],
         },
     ],
 })

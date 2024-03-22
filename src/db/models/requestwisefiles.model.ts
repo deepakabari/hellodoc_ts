@@ -1,40 +1,44 @@
-import { Table, Column, Model, BelongsTo } from "sequelize-typescript";
-import { DataTypes } from "sequelize";
+import { Table, Column, Model, BelongsTo } from 'sequelize-typescript';
+import { DataTypes } from 'sequelize';
 import {
-    RequestWiseFilesAttributes, RequestWiseFilesCreationAttributes
-} from "../../interfaces";
-import { Request } from './index'
+    RequestWiseFilesAttributes,
+    RequestWiseFilesCreationAttributes,
+} from '../../interfaces';
+import { Request } from './index';
 
 @Table({
     timestamps: true,
     paranoid: true,
 })
-class RequestWiseFiles extends Model<RequestWiseFilesAttributes, RequestWiseFilesCreationAttributes> {
+class RequestWiseFiles extends Model<
+    RequestWiseFilesAttributes,
+    RequestWiseFilesCreationAttributes
+> {
     @Column({
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
         autoIncrement: true,
     })
-    id: number
+    id: number;
 
     @Column({
         allowNull: false,
         type: DataTypes.INTEGER,
     })
-    requestId: number
+    requestId: number;
 
     @Column({
         allowNull: false,
         type: DataTypes.STRING,
     })
-    fileName: string
+    fileName: string;
 
     @Column({
         allowNull: true,
         type: DataTypes.STRING,
     })
-    docType: string
+    docType: string;
 
     @Column({
         allowNull: true,
@@ -48,8 +52,8 @@ class RequestWiseFiles extends Model<RequestWiseFilesAttributes, RequestWiseFile
     })
     documentPath?: string;
 
-    @BelongsTo(() => Request, { foreignKey: "requestId", targetKey: "id"})
-    request: Request
+    @BelongsTo(() => Request, { foreignKey: 'requestId', targetKey: 'id' })
+    request: Request;
 }
 
 export default RequestWiseFiles;

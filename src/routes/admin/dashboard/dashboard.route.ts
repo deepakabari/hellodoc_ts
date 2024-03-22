@@ -1,4 +1,7 @@
-import { dashboardController } from '../../../controllers/index';
+import {
+    // commonController,
+    dashboardController,
+} from '../../../controllers/index';
 import express from 'express';
 import isAuth from '../../../middleware/in-auth';
 import { celebrate } from 'celebrate';
@@ -134,4 +137,6 @@ router.post(
     celebrate(UserSchema.sendPatientRequest),
     dashboardController.sendPatientRequest,
 );
+
+// router.post('/downloadFile', isAuth, commonController.downloadFile);
 export default router;
