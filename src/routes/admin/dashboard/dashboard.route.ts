@@ -60,6 +60,12 @@ router.post(
     dashboardController.clearCase,
 );
 
+router.get(
+    '/viewSendAgreement/:id',
+    isAuth,
+    dashboardController.viewSendAgreement,
+);
+
 router.post(
     '/sendAgreement/:id',
     isAuth,
