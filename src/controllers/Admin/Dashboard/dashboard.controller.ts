@@ -855,8 +855,6 @@ export const uploadFile: Controller = async (req, res) => {
             requestId: id,
             fileName: req.file.originalname,
             documentPath: req.file.path,
-            createdAt: new Date(),
-            updatedAt: new Date(),
         });
 
         if (!uploadFile) {
@@ -1113,8 +1111,8 @@ export const downloadFile: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS
-        })
+            message: messageConstant.SUCCESS,
+        });
     } catch (error) {
         throw error;
     }

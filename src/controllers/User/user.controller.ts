@@ -144,45 +144,17 @@ const createAccount: Controller = async (req, res) => {
                     message: messageConstant.USER_CREATION_FAILED,
                 });
             } else {
-                const newFiles = await RequestWiseFiles.bulkCreate([
-                    {requestId: newUser.id, fileName: independentContract, docType: "Independent Contract", documentPath: req.file.path},
-                    {requestId: newUser.id, fileName: backgroundCheck, docType: "Background Check"},
-                ])
-            }
-        }
+                const files = req.files as Express.Multer.File[];
+                const filePromises = files.map((file) => {
+                    return RequestWiseFiles.create({
+                        requestId: newUser.id,
+                        fileName: file.originalname,
+                        documentPath: file.path,
+                        docType: 'MedicalReport', // Update this as needed
+                    });
+                });
+                const newFiles = await Promise.all(filePromises);
 
-        // create the user and store it in the database
-        const newUser = await User.create({
-            userName,
-            password: hashedPassword,
-            firstName,
-            lastName,
-            email,
-            phoneNumber,
-            status: ProfileStatus.Active,
-            street,
-            address1,
-            address2,
-            city,
-            state,
-            zipCode,
-            dob,
-            accountType,
-            altPhone,
-            medicalLicense,
-            NPINumber,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        });
-
-        // if newUser successfully created then give success message
-        if (newUser) {
-            // If the accountType is admin or physician, associate regions
-            if (
-                accountType === AccountType.Admin ||
-                accountType === AccountType.Physician
-            ) {
-                // Assuming req.body.regions is an array of region IDs
                 const { regions } = req.body;
 
                 // Create UserRegion instances for each region
@@ -194,28 +166,30 @@ const createAccount: Controller = async (req, res) => {
                         updatedAt: new Date(),
                     });
                 }
-            }
-            // Omit the sensitive information from response
-            const {
-                password,
-                street,
-                city,
-                state,
-                zipCode,
-                dob,
-                ...userResponse
-            } = newUser.get({ plain: true });
 
-            return res.json({
-                status: httpCode.OK,
-                message: messageConstant.USER_CREATED,
-                data: userResponse,
-            });
-            // otherwise give error message
+                // Omit the sensitive information from response
+                const {
+                    password,
+                    street,
+                    city,
+                    state,
+                    zipCode,
+                    dob,
+                    ...userResponse
+                } = newUser.get({ plain: true });
+
+                return res.status(httpCode.OK).json({
+                    status: httpCode.OK,
+                    message: messageConstant.SUCCESS,
+                    data: { userResponse, newFiles },
+                });
+            }
         } else {
-            throw new Error(messageConstant.USER_CREATION_FAILED);
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.BAD_REQUEST,
+            });
         }
-        // any error generated above then give error message
     } catch (error) {
         console.log('Catch:', error);
         throw error;

@@ -8,8 +8,9 @@ const router = express.Router();
 
 router.post(
     '/createUser',
+    upload.array('files'),
     celebrate(UserSchema.createUser),
-    userController.createUser,
+    userController.createAccount,
 );
 
 router.get(
