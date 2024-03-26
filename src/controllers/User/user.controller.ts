@@ -59,6 +59,17 @@ const createAccount: Controller = async (req, res) => {
             nonDisclosureAgreement,
         } = req.body;
 
+        const existingUser = await User.findOne({
+            where: { email },
+        });
+
+        if (existingUser) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.USER_ALREADY_EXISTS,
+            });
+        }
+
         // secure the password using bcrypt hashing algorithm
         const hashedPassword = await bcrypt.hash(password, Number(ITERATION));
 
@@ -124,7 +135,7 @@ const createAccount: Controller = async (req, res) => {
                 firstName,
                 lastName,
                 email,
-                password,
+                password: hashedPassword,
                 phoneNumber,
                 address1,
                 address2,
@@ -144,13 +155,24 @@ const createAccount: Controller = async (req, res) => {
                     message: messageConstant.USER_CREATION_FAILED,
                 });
             } else {
+                const documentTypeMap: Record<string, string> = {
+                    photo: 'Photo',
+                    independentContract: 'IndependentContract',
+                    backgroundCheck: 'BackgroundCheck',
+                    hpaaCompliance: 'HPAACompliance',
+                    nonDisclosureAgreement: 'NonDisclosureAgreement',
+                };
+
                 const files = req.files as Express.Multer.File[];
                 const filePromises = files.map((file) => {
+                    const docType =
+                        documentTypeMap[file.fieldname] || 'unknown';
+                    console.log(file);
                     return RequestWiseFiles.create({
                         requestId: newUser.id,
                         fileName: file.originalname,
                         documentPath: file.path,
-                        docType: 'MedicalReport', // Update this as needed
+                        docType,
                     });
                 });
                 const newFiles = await Promise.all(filePromises);

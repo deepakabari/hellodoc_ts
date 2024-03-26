@@ -337,7 +337,7 @@ export const viewCase: Controller = async (req, res) => {
             where: { id },
         });
 
-        if (!viewCase) {
+        if (viewCase.length === 0) {
             return res.status(httpCode.NOT_FOUND).json({
                 status: httpCode.NOT_FOUND,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -379,7 +379,7 @@ export const viewNotes: Controller = async (req, res) => {
             where: { id },
         });
 
-        if (!notes) {
+        if (notes.length === 0) {
             return res.status(httpCode.NOT_FOUND).json({
                 status: httpCode.NOT_FOUND,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -453,7 +453,7 @@ export const getPatientName: Controller = async (req, res) => {
             where: { id },
         });
 
-        if (!patientName) {
+        if (patientName.length === 0) {
             return res.status(httpCode.NOT_FOUND).json({
                 status: httpCode.NOT_FOUND,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -599,7 +599,7 @@ export const viewSendAgreement: Controller = async (req, res) => {
         });
 
         // If no agreement details are found, send a 502 Bad Gateway response with an appropriate message.
-        if (!viewSendAgreement) {
+        if (viewSendAgreement.length === 0) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_GATEWAY,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -703,6 +703,13 @@ export const getRegions: Controller = async (req, res) => {
             attributes: ['id', 'name'],
         });
 
+        if(getRegions.length === 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_GATEWAY,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
+
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
@@ -740,6 +747,13 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
             ],
             attributes: ['id', 'firstName', 'lastName'],
         });
+
+        if(getPhysicianByRegion.length === 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_GATEWAY,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -808,7 +822,7 @@ export const viewUploads: Controller = async (req, res) => {
             order: sortByModel as Order,
         });
 
-        if (!uploads) {
+        if (uploads.length === 0) {
             return res.status(httpCode.NOT_FOUND).json({
                 status: httpCode.NOT_FOUND,
                 message: messageConstant.FILE_NOT_FOUND,
@@ -927,7 +941,7 @@ export const closeCaseView: Controller = async (req, res) => {
             order: sortByModel as Order,
         });
 
-        if (!closeCase) {
+        if (closeCase.length === 0) {
             return res.status(httpCode.NOT_FOUND).json({
                 status: httpCode.NOT_FOUND,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -938,6 +952,28 @@ export const closeCaseView: Controller = async (req, res) => {
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: closeCase,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateCloseCase: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { patientPhoneNumber, patientEmail } = req.body;
+
+        await Request.update(
+            {
+                patientPhoneNumber,
+                patientEmail,
+            },
+            { where: { id } },
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
         });
     } catch (error) {
         throw error;
@@ -1072,8 +1108,7 @@ export const sendPatientRequest: Controller = async (req, res) => {
             templateData,
         );
 
-        const messageBody =
-            'Here you are selected for Maidaan. accept it otherwise we will see you.';
+        const messageBody = `Hello ${firstName}, To Create a Request on our secure online portal. Please click on the button below to create Your First Request: ${linkConstant.REQUEST_URL}.`;
         sendSMS(messageBody);
 
         const mailOptions = {

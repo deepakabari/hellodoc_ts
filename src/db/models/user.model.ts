@@ -7,7 +7,7 @@ import {
 } from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
 import { UserAttributes, UserCreationAttributes } from '../../interfaces';
-import { Role, UserRole, Request, Region, UserRegion, Shift } from './index';
+import { Role, UserRole, Request, Region, UserRegion, Shift, RequestWiseFiles } from './index';
 
 @Table({
     timestamps: true,
@@ -150,5 +150,11 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
         as: 'physicianShift',
     })
     physicianShifts: Shift[];
+
+    @HasMany(() => RequestWiseFiles, {
+        foreignKey: 'requestId',
+        sourceKey: 'id',
+    })
+    requestWiseFiles: RequestWiseFiles[];
 }
 export default User;

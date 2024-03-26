@@ -5,7 +5,7 @@ const linkConstant = {
     AGREEMENT_URL: 'http://localhost:3000/agreement',
     REQUEST_URL: 'http://localhost:3000/createRequest',
     agreementSubject: 'Action Required: Review and Sign Your Agreement',
-    createRequestSubject: 'Create your account at HalloDoc Platform',
+    createRequestSubject: 'Create your first request at HalloDoc Platform',
     contactSubject: 'I want to contact you for my treatment',
 };
 

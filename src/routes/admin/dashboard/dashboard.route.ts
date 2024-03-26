@@ -1,5 +1,4 @@
 import {
-    // commonController,
     dashboardController,
 } from '../../../controllers/index';
 import express from 'express';
@@ -115,6 +114,12 @@ router.patch(
     isAuth,
     celebrate(RequestSchema.idParams),
     dashboardController.closeCase,
+);
+
+router.patch(
+    '/updateCloseCase/:id',
+    isAuth,
+    dashboardController.updateCloseCase,
 );
 
 router.post(

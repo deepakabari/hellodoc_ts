@@ -7,7 +7,7 @@ export const BusinessSchema = {
             businessWebsite: Joi.string().required(),
             profession: Joi.string().required(),
             faxNumber: Joi.string().required(),
-            phoneNumber: Joi.string().required().min(10).max(10),
+            phoneNumber: Joi.string().required().min(11).max(13),
             email: Joi.string().email().required(),
             businessContact: Joi.string().required(),
             street: Joi.string().required(),

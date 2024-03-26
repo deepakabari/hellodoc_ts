@@ -45,7 +45,7 @@ export const RequestSchema = {
 
     closeCase: {
         [Segments.BODY]: Joi.object({
-            patientPhoneNumber: Joi.string().required().min(10).max(10),
+            patientPhoneNumber: Joi.string().required().min(11).max(13),
             patientEmail: Joi.string().required().email(),
         }),
     },
@@ -58,10 +58,10 @@ export const RequestSchema = {
             patientFirstName: Joi.string().required(),
             patientLastName: Joi.string().required(),
             patientEmail: Joi.string().required().email(),
-            patientPhoneNumber: Joi.string().required().min(10).max(10),
+            patientPhoneNumber: Joi.string().required().min(11).max(13),
             requestorFirstName: Joi.string().optional(),
             requestorLastName: Joi.string().optional(),
-            requestorPhoneNumber: Joi.string().optional().min(10).max(10),
+            requestorPhoneNumber: Joi.string().optional().min(11).max(13),
             requestorEmail: Joi.string().optional().email(),
             isEmail: Joi.boolean().required(),
             password: Joi.string()

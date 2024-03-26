@@ -4,7 +4,7 @@ import {
     RequestWiseFilesAttributes,
     RequestWiseFilesCreationAttributes,
 } from '../../interfaces';
-import { Request } from './index';
+import { Request, User } from './index';
 
 @Table({
     timestamps: true,
@@ -54,6 +54,9 @@ class RequestWiseFiles extends Model<
 
     @BelongsTo(() => Request, { foreignKey: 'requestId', targetKey: 'id' })
     request: Request;
+
+    @BelongsTo(() => User, { foreignKey: 'requestId', targetKey: 'id' })
+    user: User;
 }
 
 export default RequestWiseFiles;
