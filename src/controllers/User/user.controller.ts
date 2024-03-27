@@ -154,6 +154,7 @@ const createAccount: Controller = async (req, res) => {
                 altPhone,
                 medicalLicense,
                 NPINumber,
+                status: ProfileStatus.Active,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });
@@ -233,6 +234,7 @@ const createAccount: Controller = async (req, res) => {
                 email,
                 userName,
                 password: hashedPassword,
+                status: ProfileStatus.Active,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });

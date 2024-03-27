@@ -8,26 +8,61 @@ export const UserSchema = {
             accountType: Joi.string()
                 .required()
                 .valid(...Object.values(AccountType)),
-            userName: Joi.string().optional(),
+            userName: Joi.string().when('accountType', {
+                is: Joi.string().valid("Admin", "Physician"),
+                then: Joi.required,
+                otherwise: Joi.optional().allow('', null)
+            }),
             password: Joi.string()
                 .required()
                 .regex(RegExp(linkConstant.PASSWORD_REGEX)),
-            firstName: Joi.string().optional().min(2),
+            confirmPassword: Joi.string().when('accountType', {
+                is: 'User',
+                then: Joi.valid(Joi.ref('password')).required(),
+            }),
+            firstName: Joi.string().optional().min(2).allow('', null),
             lastName: Joi.string().allow('', null).optional().min(4),
             email: Joi.string().email().required(),
-            phoneNumber: Joi.string().min(11).max(13).optional(),
+            confirmEmail: Joi.string()
+                .email()
+                .when('accountType', {
+                    is: 'Admin',
+                    then: Joi.valid(Joi.ref('email')).required,
+                }),
+            phoneNumber: Joi.string()
+                .min(11)
+                .max(13)
+                .optional()
+                .allow('', null),
             address1: Joi.string().allow('', null).optional(),
             address2: Joi.string().allow('', null).optional(),
             street: Joi.string().allow('', null).optional(),
-            city: Joi.string().optional(),
-            state: Joi.string().optional(),
-            zipCode: Joi.string().optional().min(5).max(6),
+            city: Joi.string().optional().allow('', null),
+            state: Joi.string().optional().allow('', null),
+            zipCode: Joi.string().optional().min(5).max(6).allow('', null),
             dob: Joi.date().allow('', null).optional(),
             status: Joi.string()
                 .valid(...Object.values(ProfileStatus))
                 .optional(),
             altPhone: Joi.string().optional().min(11).max(13).allow('', null),
-            medicalLicense: Joi.string().optional().allow('', null),
+            medicalLicense: Joi.string().when('accountType', {
+                is: 'Physician',
+                then: Joi.required(),
+                otherwise: Joi.optional().allow('', null),
+            }),
+            NPINumber: Joi.string().when('accountType', {
+                is: 'Physician',
+                then: Joi.required(),
+                otherwise: Joi.optional().allow('', null),
+            }),
+            businessName: Joi.string().when('accountType', {
+                is: 'Physician',
+                then: Joi.required(),
+                otherwise: Joi.optional().allow('', null),
+            }),
+            businessWebsite: Joi.string()
+                .uri()
+                .when('accountType', { is: 'Physician', then: Joi.required() }),
             photo: Joi.string().optional().allow('', null),
             signature: Joi.string().optional().allow('', null),
             isAgreementDoc: Joi.boolean().optional(),
@@ -35,10 +70,9 @@ export const UserSchema = {
             isTrainingDoc: Joi.boolean().optional(),
             isNonDisclosureDoc: Joi.boolean().optional(),
             isLicenseDoc: Joi.boolean().optional(),
-            NPINumber: Joi.string().optional().allow('', null),
             syncEmailAddress: Joi.string().optional().allow('', null),
             regions: Joi.array().items(Joi.number().integer()).optional(),
-        }).unknown(true),
+        }).options({ abortEarly: false }),
     },
 
     isEmailFound: {

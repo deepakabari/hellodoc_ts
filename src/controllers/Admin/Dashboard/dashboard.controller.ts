@@ -89,6 +89,7 @@ export const getPatientByState: Controller = async (req, res) => {
             ],
             ['createdAt', 'Requested Date'],
             ['patientPhoneNumber', 'Phone'],
+            "requestorPhoneNumber",
             [
                 sequelize.fn(
                     'CONCAT',

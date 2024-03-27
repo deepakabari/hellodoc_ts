@@ -1,11 +1,11 @@
-import fs from 'fs';
+import * as fs from 'fs';
 import path from 'path';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
 import { Controller } from '../../../interfaces';
-import zlib from 'zlib';
 import { User } from '../../../db/models/index';
 import { Request, Response } from 'express';
+import archiver from 'archiver';
 
 /**
  * @function getLoggedData
@@ -46,29 +46,60 @@ export const getLoggedData: Controller = async (req, res) => {
 
 export const downloadFile = async (req: Request, res: Response) => {
     try {
-        const { fileName } = req.params;
-        const filePath = path.join(
-            __dirname,
-            '..',
-            '..',
-            '..',
-            'public',
-            'images',
-            `${fileName}`,
-        );
+        const { fileNames } = req.body;
+        const zip = archiver('zip', { zlib: { level: 5 } });
 
-        res.download(filePath, (err) => {
-            if (err) {
-                console.error(err);
-                if (!res.headersSent) {
-                    return res.status(500).json({
-                        status: httpCode.INTERNAL_SERVER_ERROR,
-                        message: messageConstant.ERROR,
-                    });
-                }
-            }
+        // Check if all files exist
+        const allFilesExist = fileNames.every((fileName: string) => {
+            const filePath = path.join(
+                __dirname,
+                '..',
+                '..',
+                '..',
+                'public',
+                'images',
+                fileName,
+            );
+            return fs.existsSync(filePath);
         });
+
+        if (allFilesExist) {
+            res.attachment('downloaded-files.zip');
+            zip.pipe(res);
+
+            fileNames.forEach((fileName: string) => {
+                const filePath = path.join(
+                    __dirname,
+                    '..',
+                    '..',
+                    '..',
+                    'public',
+                    'images',
+                    fileName,
+                );
+                zip.file(filePath, { name: fileName });
+            });
+
+            zip.finalize();
+        } else {
+            console.error(
+                'One or more files were not found, aborting zip operation.',
+            );
+            res.status(500).json({
+                message: messageConstant.FILE_NOT_FOUND
+            });
+        }
     } catch (error) {
         throw error;
     }
 };
+
+export const deleteFile = async (req:Request, res: Response) => {
+    try {
+        const { fileNames } = req.body;
+
+        
+    } catch (error) {
+        throw error;
+    }
+}

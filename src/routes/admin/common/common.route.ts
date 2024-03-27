@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.get('/getLoggedUser/:email', isAuth, commonController.getLoggedData);
 
-router.get("/download/:fileName", commonController.downloadFile)
+router.post("/download", commonController.downloadFile)
 
 export default router;
