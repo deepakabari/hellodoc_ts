@@ -6,9 +6,9 @@ interface BusinessAttributes {
     accountType: string;
     businessName: string;
     businessWebsite: string;
-    businessContact: string;
-    faxNumber: string;
-    profession: string;
+    businessContact?: string;
+    faxNumber?: string;
+    profession?: string;
     phoneNumber: string;
     email: string;
     street: string;

@@ -10,6 +10,7 @@ interface ShiftAttributes {
     isRepeat?: boolean;
     weekDays?: string;
     repeatUpto?: number;
+    isApproved?: boolean;
     isDeleted?: boolean;
 }
 

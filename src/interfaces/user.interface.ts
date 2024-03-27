@@ -2,22 +2,22 @@ import { Optional } from 'sequelize';
 
 interface UserAttributes {
     id: number;
-    userName: string;
+    userName?: string;
     email: string;
     password: string;
-    firstName: string;
+    firstName?: string;
     lastName?: string;
-    phoneNumber: string;
+    phoneNumber?: string;
     street?: string;
     address1?: string;
     address2?: string;
     city?: string;
     state?: string;
-    zipCode: string;
+    zipCode?: string;
     dob?: Date;
     altPhone?: string;
     status?: string;
-    accountType: string;
+    accountType?: string;
     medicalLicense?: string;
     photo?: string;
     signature?: string;
@@ -34,7 +34,7 @@ interface UserAttributes {
     isDeleted?: boolean;
     notification?: boolean;
     createdAt?: Date;
-    updatedAt: Date;
+    updatedAt?: Date;
     deletedAt?: Date | null;
 }
 

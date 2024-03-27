@@ -5,6 +5,7 @@ import messageConstant from '../../../constants/message.constant';
 import { Controller } from '../../../interfaces';
 import zlib from 'zlib';
 import { User } from '../../../db/models/index';
+import { Request, Response } from 'express';
 
 /**
  * @function getLoggedData
@@ -16,7 +17,7 @@ import { User } from '../../../db/models/index';
 export const getLoggedData: Controller = async (req, res) => {
     try {
         // Extract the email from request body
-        const { email } = req.body;
+        const { email } = req.params;
 
         // Retrieves the user details from user table
         const userDetails = await User.findAll({
@@ -43,9 +44,9 @@ export const getLoggedData: Controller = async (req, res) => {
     }
 };
 
-export const downloadFile: Controller = async (req, res) => {
+export const downloadFile = async (req: Request, res: Response) => {
     try {
-        // const { file } = req.body;
+        const { fileName } = req.params;
         const filePath = path.join(
             __dirname,
             '..',
@@ -53,34 +54,19 @@ export const downloadFile: Controller = async (req, res) => {
             '..',
             'public',
             'images',
+            `${fileName}`,
         );
 
-        const files = [
-            { path: 'file1.txt', name: 'my-file-1.txt' },
-            { path: 'file2.jpg', name: 'my-image.jpg' },
-            // Add more files as needed
-        ];
-
-        const zipStream = zlib.createGzip();
-        res.set('Content-Type', 'application/zip');
-        res.set('Content-Disposition', 'attachment; filename=my-files.zip');
-        zipStream.pipe(res);
-
-        // Add each file to the zip archive
-        files.forEach((file) => {
-            const readStream = fs.createReadStream(file.path);
-            zipStream.write(`${file.name}\n`);
-            readStream.pipe(zipStream, { end: false });
-        });
-
-        // End the zip stream
-        zipStream.end(() => {
-            console.log('Download completed!');
-        });
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+        res.download(filePath, (err) => {
+            if (err) {
+                console.error(err);
+                if (!res.headersSent) {
+                    return res.status(500).json({
+                        status: httpCode.INTERNAL_SERVER_ERROR,
+                        message: messageConstant.ERROR,
+                    });
+                }
+            }
         });
     } catch (error) {
         throw error;

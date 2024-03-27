@@ -42,4 +42,8 @@ router.post('/addNewShift', isAuth, schedulingController.addNewShift);
 
 router.get('/viewShift/:id', isAuth, schedulingController.viewShift);
 
+router.get('/location', isAuth, providerController.providerLocation)
+
+router.get('/viewShiftByDate', isAuth, schedulingController.viewShiftByDate)
+
 export default router;

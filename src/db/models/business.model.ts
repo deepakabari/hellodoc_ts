@@ -58,19 +58,19 @@ class Business extends Model<BusinessAttributes, BusinessCreationAttributes> {
     businessWebsite: string;
 
     @Column({
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.STRING,
     })
     profession: string;
 
     @Column({
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.STRING,
     })
     faxNumber: string;
 
     @Column({
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.STRING,
     })
     businessContact: string;

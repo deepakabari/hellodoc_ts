@@ -23,7 +23,7 @@ module.exports = {
             },
             firstName: {
                 type: Sequelize.STRING,
-                allowNull: false,
+                allowNull: true,
             },
             lastName: {
                 type: Sequelize.STRING,
@@ -31,11 +31,11 @@ module.exports = {
             },
             phoneNumber: {
                 type: Sequelize.STRING,
-                allowNull: false,
+                allowNull: true,
             },
             dob: {
                 type: Sequelize.DATEONLY,
-                allowNull: false,
+                allowNull: true,
             },
             address1: {
                 type: Sequelize.STRING,
@@ -59,7 +59,7 @@ module.exports = {
             },
             zipCode: {
                 type: Sequelize.STRING,
-                allowNull: false,
+                allowNull: true,
             },
             altPhone: {
                 type: Sequelize.STRING,
@@ -71,7 +71,7 @@ module.exports = {
             },
             accountType: {
                 type: Sequelize.STRING,
-                allowNull: false,
+                allowNull: true,
             },
             medicalLicense: {
                 type: Sequelize.STRING,

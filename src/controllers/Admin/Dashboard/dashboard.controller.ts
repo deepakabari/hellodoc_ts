@@ -1132,23 +1132,3 @@ export const sendPatientRequest: Controller = async (req, res) => {
         throw error;
     }
 };
-
-export const downloadFile: Controller = async (req, res) => {
-    try {
-        const selectedFiles = req.body.selectedFiles; // Array of file names
-        const filesToZip = selectedFiles.map((fileName: string) => {
-            return {
-                path: path.join(__dirname, 'files', fileName),
-                name: fileName,
-            };
-        });
-        // res.zip(filesToZip);
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-        });
-    } catch (error) {
-        throw error;
-    }
-};

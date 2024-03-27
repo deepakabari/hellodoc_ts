@@ -2,9 +2,10 @@ import { AccountType, OnCallStatus } from '../../../utils/enum.constant';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
 import { Region, Shift, User } from '../../../db/models/index';
-import { Controller } from '../../../interfaces';
+import { Controller, ShiftWhereAttributes } from '../../../interfaces';
 import dotenv from 'dotenv';
 import { Op } from 'sequelize';
+import sequelize from 'sequelize';
 dotenv.config();
 
 interface Provider {
@@ -95,7 +96,16 @@ export const providerOnCall: Controller = async (req, res) => {
 export const addNewShift: Controller = async (req, res) => {
     try {
         // Extract shift details from the request body.
-        const { region, physicianId, shiftDate, startTime, endTime } = req.body;
+        const {
+            region,
+            physicianId,
+            shiftDate,
+            startTime,
+            endTime,
+            isRepeat,
+            weekDays,
+            repeatUpto,
+        } = req.body;
 
         // Create a new shift record in the database.
         const newShift = await Shift.create({
@@ -104,6 +114,7 @@ export const addNewShift: Controller = async (req, res) => {
             shiftDate,
             startTime,
             endTime,
+            isApproved: false,
         });
 
         // If the shift creation fails, send a bad request response.
@@ -138,15 +149,106 @@ export const viewShift: Controller = async (req, res) => {
 
         // Fetch the shift details from the database using the provided ID.
         const viewShift = await Shift.findAll({
-            attributes: ['id', 'region', 'shiftDate', 'startTime', 'endTime'],
+            attributes: [
+                'id',
+                'region',
+                'shiftDate',
+                'startTime',
+                'endTime',
+                'isApproved',
+            ],
+            include: [
+                {
+                    model: User,
+                    attributes: ['id', 'firstName', 'lastName'],
+                },
+            ],
             where: { id },
         });
+
+        if (viewShift.length === 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
 
         // Send the shift details data in the response.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: viewShift,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * @function viewShiftByDate
+ * @param req 
+ * @param res 
+ * @returns 
+ */
+export const viewShiftByDate: Controller = async (req, res) => {
+    try {
+        const { date, month, week } = req.query;
+
+        const dateString: string = typeof date === 'string' ? date : '';
+
+        const monthNumber: number | undefined =
+            typeof month === 'string' ? parseInt(month, 10) - 1 : undefined;
+
+        const weekNumber: number | undefined =
+            typeof week === 'string' ? parseInt(week, 10) : undefined;
+
+        let whereCondition: ShiftWhereAttributes = {};
+
+        if (dateString) {
+            whereCondition.shiftDate = {
+                [Op.eq]: new Date(dateString),
+            };
+        } else if (monthNumber !== undefined && weekNumber === undefined) {
+            // Filter by month if only the month is provided.
+            whereCondition[Op.and] = [
+                sequelize.where(
+                    sequelize.fn('MONTH', sequelize.col('shiftDate')),
+                    monthNumber + 1,
+                ),
+            ];
+        } else if (weekNumber !== undefined) {
+            // Filter by week if the week is provided.
+            whereCondition[Op.and] = [
+                sequelize.where(
+                    sequelize.fn('WEEK', sequelize.col('shiftDate')),
+                    weekNumber,
+                ),
+            ];
+        }
+
+        const viewShiftByDate = await Shift.findAll({
+            attributes: [
+                'id',
+                'region',
+                'shiftDate',
+                'startTime',
+                'endTime',
+                'isApproved',
+            ],
+            include: [
+                {
+                    model: User,
+                    attributes: ['id', 'firstName', 'lastName'],
+                },
+            ],
+            where: whereCondition as any,
+            order: [['shiftDate', 'ASC']],
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: viewShiftByDate,
         });
     } catch (error) {
         throw error;

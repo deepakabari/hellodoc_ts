@@ -27,11 +27,11 @@ module.exports = {
             },
             profession: {
                 type: Sequelize.STRING,
-                allowNull: false,
+                allowNull: true,
             },
             faxNumber: {
                 type: Sequelize.STRING,
-                allowNull: false,
+                allowNull: true,
             },
             phoneNumber: {
                 type: Sequelize.STRING,
@@ -43,7 +43,7 @@ module.exports = {
             },
             businessContact: {
                 type: Sequelize.STRING,
-                allowNull: false,
+                allowNull: true,
             },
             street: {
                 type: Sequelize.STRING,

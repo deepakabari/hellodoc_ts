@@ -22,7 +22,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     })
     id: number;
 
-    @Column({ type: DataTypes.STRING, allowNull: false })
+    @Column({ type: DataTypes.STRING, allowNull: true })
     userName: string;
 
     @Column({ type: DataTypes.STRING, allowNull: false })
@@ -31,13 +31,13 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     @Column({ type: DataTypes.STRING, allowNull: false })
     password: string;
 
-    @Column({ type: DataTypes.STRING, allowNull: false })
+    @Column({ type: DataTypes.STRING, allowNull: true })
     firstName: string;
 
     @Column({ type: DataTypes.STRING, allowNull: true })
     lastName: string;
 
-    @Column({ type: DataTypes.STRING, allowNull: false })
+    @Column({ type: DataTypes.STRING, allowNull: true })
     phoneNumber: string;
 
     @Column({ type: DataTypes.STRING, allowNull: true })
@@ -55,7 +55,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     @Column({ type: DataTypes.STRING, allowNull: true })
     state: string;
 
-    @Column({ type: DataTypes.STRING, allowNull: false })
+    @Column({ type: DataTypes.STRING, allowNull: true })
     zipCode: string;
 
     @Column({ type: DataTypes.DATEONLY, allowNull: true })
@@ -69,7 +69,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
 
     @Column({
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
     })
     accountType: string;
 

@@ -6,6 +6,7 @@ import {
     UserRegion,
     RequestWiseFiles,
     Region,
+    Business,
 } from '../../db/models/index';
 import { Controller } from '../../interfaces';
 import bcrypt from 'bcrypt';
@@ -36,13 +37,15 @@ const createAccount: Controller = async (req, res) => {
             accountType,
             userName,
             password,
+            confirmPassword,
             firstName,
             lastName,
             email,
+            confirmEmail,
             phoneNumber,
+            street,
             address1,
             address2,
-            street,
             city,
             state,
             zipCode,
@@ -74,6 +77,12 @@ const createAccount: Controller = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, Number(ITERATION));
 
         if (accountType === 'Admin') {
+            if (email.localeCompare(confirmEmail) != 0) {
+                return res.status(httpCode.BAD_REQUEST).json({
+                    status: httpCode.BAD_REQUEST,
+                    message: messageConstant.EMAIL_NOT_MATCH,
+                });
+            }
             const newUser = await User.create({
                 accountType,
                 userName,
@@ -155,6 +164,18 @@ const createAccount: Controller = async (req, res) => {
                     message: messageConstant.USER_CREATION_FAILED,
                 });
             } else {
+                const newBusiness = await Business.create({
+                    accountType: AccountType.Vendor,
+                    userId: newUser.id,
+                    businessName,
+                    businessWebsite,
+                    phoneNumber,
+                    email,
+                    street: address1,
+                    city,
+                    state,
+                    zipCode,
+                });
                 const documentTypeMap: Record<string, string> = {
                     photo: 'Photo',
                     independentContract: 'IndependentContract',
@@ -167,7 +188,7 @@ const createAccount: Controller = async (req, res) => {
                 const filePromises = files.map((file) => {
                     const docType =
                         documentTypeMap[file.fieldname] || 'unknown';
-                    console.log(file);
+
                     return RequestWiseFiles.create({
                         requestId: newUser.id,
                         fileName: file.originalname,
@@ -190,22 +211,43 @@ const createAccount: Controller = async (req, res) => {
                 }
 
                 // Omit the sensitive information from response
-                const {
-                    password,
-                    street,
-                    city,
-                    state,
-                    zipCode,
-                    dob,
-                    ...userResponse
-                } = newUser.get({ plain: true });
+                const { password, dob, ...userResponse } = newUser.get({
+                    plain: true,
+                });
 
                 return res.status(httpCode.OK).json({
                     status: httpCode.OK,
                     message: messageConstant.SUCCESS,
-                    data: { userResponse, newFiles },
+                    data: { userResponse, newFiles, newBusiness },
                 });
             }
+        } else if (accountType === 'User') {
+            if (password.localeCompare(confirmPassword) != 0) {
+                return res.status(httpCode.BAD_REQUEST).json({
+                    status: httpCode.BAD_REQUEST,
+                    message: messageConstant.PASSWORD_NOT_MATCH,
+                });
+            }
+            const userName = email.substring(0, email.indexOf('@'));
+            const newUser = await User.create({
+                email,
+                userName,
+                password: hashedPassword,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+
+            if (!newUser) {
+                return res.status(httpCode.BAD_REQUEST).json({
+                    status: httpCode.BAD_REQUEST,
+                    message: messageConstant.USER_CREATION_FAILED,
+                });
+            }
+
+            return res.status(httpCode.OK).json({
+                status: httpCode.OK,
+                message: messageConstant.USER_CREATED,
+            });
         } else {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,

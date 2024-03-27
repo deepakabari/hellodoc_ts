@@ -142,6 +142,4 @@ router.post(
     celebrate(UserSchema.sendPatientRequest),
     dashboardController.sendPatientRequest,
 );
-
-// router.post('/downloadFile', isAuth, commonController.downloadFile);
 export default router;

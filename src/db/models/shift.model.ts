@@ -35,13 +35,13 @@ class Shift extends Model<ShiftAttributes, ShiftCreationAttributes> {
     region: string;
 
     @Column({
-        type: DataTypes.TIME,
+        type: DataTypes.STRING,
         allowNull: true,
     })
     startTime: string;
 
     @Column({
-        type: DataTypes.TIME,
+        type: DataTypes.STRING,
         allowNull: true,
     })
     endTime: string;
@@ -63,6 +63,12 @@ class Shift extends Model<ShiftAttributes, ShiftCreationAttributes> {
         allowNull: true,
     })
     repeatUpto: number;
+
+    @Column({
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+    })
+    isApproved: boolean;
 
     @Column({
         type: DataTypes.BOOLEAN,

@@ -22,11 +22,11 @@ module.exports = {
                 allowNull: false,
             },
             startTime: {
-                type: Sequelize.TIME,
+                type: Sequelize.STRING,
                 allowNull: true,
             },
             endTime: {
-                type: Sequelize.TIME,
+                type: Sequelize.STRING,
                 allowNull: true,
             },
             isRepeat: {
@@ -41,6 +41,11 @@ module.exports = {
             repeatUpto: {
                 type: Sequelize.INTEGER,
                 allowNull: true,
+            },
+            isApproved: {
+                type: Sequelize.BOOLEAN,
+                allowNull: true,
+                defaultValue: false
             },
             isDeleted: {
                 type: Sequelize.BOOLEAN,

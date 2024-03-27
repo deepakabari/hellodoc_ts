@@ -271,3 +271,19 @@ export const editPhysicianProfile: Controller = async (req, res) => {
         throw error;
     }
 };
+
+export const providerLocation: Controller = async (req, res) => {
+    try {
+        const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+        const lat = 23.034721;
+        const lng = 72.500535;
+        const address = "Ahmedabad"
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}`;
+
+        const response = await fetch(url);  
+        const data = await response.json();
+        return res.json(data);
+    } catch (error) {
+        throw error;
+    }
+}

@@ -8,20 +8,20 @@ export const UserSchema = {
             accountType: Joi.string()
                 .required()
                 .valid(...Object.values(AccountType)),
-            userName: Joi.string().required(),
+            userName: Joi.string().optional(),
             password: Joi.string()
                 .required()
                 .regex(RegExp(linkConstant.PASSWORD_REGEX)),
-            firstName: Joi.string().required().min(2),
+            firstName: Joi.string().optional().min(2),
             lastName: Joi.string().allow('', null).optional().min(4),
             email: Joi.string().email().required(),
-            phoneNumber: Joi.string().min(11).max(13).required(),
+            phoneNumber: Joi.string().min(11).max(13).optional(),
             address1: Joi.string().allow('', null).optional(),
             address2: Joi.string().allow('', null).optional(),
             street: Joi.string().allow('', null).optional(),
-            city: Joi.string().required(),
-            state: Joi.string().required(),
-            zipCode: Joi.string().required().min(5).max(6),
+            city: Joi.string().optional(),
+            state: Joi.string().optional(),
+            zipCode: Joi.string().optional().min(5).max(6),
             dob: Joi.date().allow('', null).optional(),
             status: Joi.string()
                 .valid(...Object.values(ProfileStatus))
