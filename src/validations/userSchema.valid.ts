@@ -8,11 +8,7 @@ export const UserSchema = {
             accountType: Joi.string()
                 .required()
                 .valid(...Object.values(AccountType)),
-            userName: Joi.string().when('accountType', {
-                is: Joi.string().valid("Admin", "Physician"),
-                then: Joi.required,
-                otherwise: Joi.optional().allow('', null)
-            }),
+            userName: Joi.string().required(),
             password: Joi.string()
                 .required()
                 .regex(RegExp(linkConstant.PASSWORD_REGEX)),

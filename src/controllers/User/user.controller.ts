@@ -138,6 +138,8 @@ const createAccount: Controller = async (req, res) => {
                 });
             }
         } else if (accountType === 'Physician') {
+            const files = req.files as Express.Multer.File[] || [];
+
             const newUser = await User.create({
                 accountType,
                 userName,
@@ -157,6 +159,18 @@ const createAccount: Controller = async (req, res) => {
                 status: ProfileStatus.Active,
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                isBackgroundDoc: !!((req.files as Express.Multer.File[])?.find(
+                    (file) => file.fieldname === 'backgroundCheck',
+                )),
+                isAgreementDoc: !!((req.files as Express.Multer.File[])?.find(
+                    (file) => file.fieldname === 'independentContract',
+                )),
+                isTrainingDoc: !!((req.files as Express.Multer.File[])?.find(
+                    (file) => file.fieldname === 'hpaaCompliance',
+                )),
+                isNonDisclosureDoc: !!((req.files as Express.Multer.File[])?.find(
+                    (file) => file.fieldname === 'nonDisclosureAgreement',
+                )),
             });
 
             if (!newUser) {
@@ -177,7 +191,7 @@ const createAccount: Controller = async (req, res) => {
                     state,
                     zipCode,
                 });
-                const documentTypeMap: Record<string, string> = {
+                const documentTypeMap: { [key: string]: string} = {
                     photo: 'Photo',
                     independentContract: 'IndependentContract',
                     backgroundCheck: 'BackgroundCheck',
@@ -185,8 +199,7 @@ const createAccount: Controller = async (req, res) => {
                     nonDisclosureAgreement: 'NonDisclosureAgreement',
                 };
 
-                const files = req.files as Express.Multer.File[];
-                const filePromises = files.map((file) => {
+                const filePromises = files.map((file: any) => {
                     const docType =
                         documentTypeMap[file.fieldname] || 'unknown';
 
@@ -218,7 +231,7 @@ const createAccount: Controller = async (req, res) => {
 
                 return res.status(httpCode.OK).json({
                     status: httpCode.OK,
-                    message: messageConstant.SUCCESS,
+                    message: messageConstant.USER_CREATED,
                     data: { userResponse, newFiles, newBusiness },
                 });
             }

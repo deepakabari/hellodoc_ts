@@ -1,15 +1,12 @@
 import { myProfileController } from '../../../controllers/index';
 import express from 'express';
 import isAuth from '../../../middleware/in-auth';
-import { celebrate } from 'celebrate';
-import { RequestSchema } from '../../../validations/index';
 
 const router = express.Router();
 
 router.get(
-    '/adminProfile/:id',
+    '/adminProfile',
     isAuth,
-    celebrate(RequestSchema.idParams),
     myProfileController.adminProfile,
 );
 

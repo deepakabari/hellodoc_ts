@@ -31,6 +31,7 @@ const messageConstant = {
     NOT_GET_HASHED_TOKEN: 'Hashed token cannot get, please try again',
     REQUEST_CREATED: 'Request Created Successfully',
     FILE_NOT_FOUND: 'File not found',
+    FILE_DELETED: 'File deleted successfully.',
     ERROR_DOWNLOAD_FILE: 'Error when downloading file',
     ERROR_UPLOAD_FILE: 'Error when uploading file',
     MESSAGE_SENT_SUCCESSFULLY: 'Message sent successfully',

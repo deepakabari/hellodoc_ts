@@ -1,11 +1,13 @@
 import * as fs from 'fs';
 import path from 'path';
+import { promisify } from 'util';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
 import { Controller } from '../../../interfaces';
-import { User } from '../../../db/models/index';
+import { RequestWiseFiles, User } from '../../../db/models/index';
 import { Request, Response } from 'express';
 import archiver from 'archiver';
+const unlinkAsync = promisify(fs.unlink);
 
 /**
  * @function getLoggedData
@@ -86,7 +88,7 @@ export const downloadFile = async (req: Request, res: Response) => {
                 'One or more files were not found, aborting zip operation.',
             );
             res.status(500).json({
-                message: messageConstant.FILE_NOT_FOUND
+                message: messageConstant.FILE_NOT_FOUND,
             });
         }
     } catch (error) {
@@ -94,12 +96,43 @@ export const downloadFile = async (req: Request, res: Response) => {
     }
 };
 
-export const deleteFile = async (req:Request, res: Response) => {
+export const deleteFile = async (req: Request, res: Response) => {
     try {
+        const { id } = req.params;
         const { fileNames } = req.body;
 
-        
+        fileNames.forEach(async (fileName: string) => {
+            const filePath = path.join(
+                __dirname,
+                '..',
+                '..',
+                '..',
+                'public',
+                'images',
+                fileName,
+            );
+
+            const fileRecord = await RequestWiseFiles.findOne({
+                where: { fileName, requestId: id },
+            });
+            if (!fileRecord) {
+                return res
+                    .status(404)
+                    .send(
+                        'File not found or you do not have permission to delete this file',
+                    );
+            }
+
+            await unlinkAsync(filePath);
+
+            await fileRecord.destroy();
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.FILE_DELETED,
+        });
     } catch (error) {
         throw error;
     }
-}
+};

@@ -14,7 +14,7 @@ dotenv.config();
  */
 export const adminProfile: Controller = async (req, res) => {
     try {
-        const { id } = req.params;
+        const id = req.user.id;
         const adminProfile = await User.findAll({
             attributes: [
                 'id',
@@ -24,16 +24,17 @@ export const adminProfile: Controller = async (req, res) => {
                 'lastName',
                 'email',
                 'phoneNumber',
+                'street',
                 'address1',
                 'address2',
                 'city',
+                'dob',
                 'state',
                 'zipCode',
                 'altPhone',
             ],
             where: {
                 id,
-                accountType: 'Admin',
             },
             include: [
                 {
@@ -139,3 +140,14 @@ export const editAdminProfile: Controller = async (req, res) => {
         throw error;
     }
 };
+
+export const changePassword: Controller = async (req, res) => {
+    try {
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS
+        })
+    } catch (error) {
+        throw error;
+    }
+}
