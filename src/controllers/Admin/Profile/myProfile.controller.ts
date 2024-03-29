@@ -63,7 +63,7 @@ export const adminProfile: Controller = async (req, res) => {
  */
 export const editAdminProfile: Controller = async (req, res) => {
     try {
-        const { id } = req.params;
+        const id = req.user.id;
         const { section, updatedData } = req.body;
 
         if (!section || !updatedData) {
@@ -74,7 +74,7 @@ export const editAdminProfile: Controller = async (req, res) => {
         }
 
         const updateAdminDetails = async (
-            id: string,
+            id: number,
             updates: AdminUpdates | BillingUpdates,
         ) => {
             try {

@@ -57,6 +57,7 @@ export const login: Controller = async (req, res) => {
                     firstName: user.firstName,
                     lastName: user.lastName,
                     phoneNumber: user.phoneNumber,
+                    accountType: user.accountType,
                 },
                 SECRET as string,
                 {
@@ -224,6 +225,58 @@ export const resetPassword: Controller = async (req, res) => {
             message: messageConstant.PASSWORD_RESET,
         });
     } catch (error: any) {
+        throw error;
+    }
+};
+
+export const changePassword: Controller = async (req, res) => {
+    try {
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+        const userId = req.user.id;
+
+        const user = await User.findByPk(userId)
+        if(!user) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.USER_NOT_EXIST
+            })
+        }
+
+        const passwordMatch = await bcrypt.compare(
+            currentPassword,
+            user.password,
+        );
+        console.log(passwordMatch);
+        if (!passwordMatch) {
+            return res.status(httpCode.UNAUTHORIZED).json({
+                status: httpCode.UNAUTHORIZED,
+                message: messageConstant.CURRENT_PASSWORD_WRONG,
+            });
+        }
+
+        // Check if newPassword matches confirmPassword
+        if (newPassword.localeCompare(confirmPassword) != 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.PASSWORD_NOT_MATCH,
+            });
+        }
+        
+        const hashedPassword = await bcrypt.hash(
+            newPassword,
+            Number(ITERATION),
+        );
+        
+        await User.update(
+            { password: hashedPassword },
+            { where: { id: req.user.id } },
+        );
+        
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.PASSWORD_RESET,
+        });
+    } catch (error) {
         throw error;
     }
 };

@@ -8,6 +8,7 @@ interface CustomJwtPayload extends JwtPayload {
     firstName: string;
     lastName?: string;
     phoneNumber: string;
+    accountType?: string
 }
 
 export { CustomJwtPayload };

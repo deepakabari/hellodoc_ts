@@ -106,6 +106,18 @@ export const UserSchema = {
         },
     },
 
+    changePassword: {
+        [Segments.BODY]: Joi.object({
+            currentPassword: Joi.string().required(),
+            newPassword: Joi.string()
+                .required()
+                .regex(RegExp(linkConstant.PASSWORD_REGEX)),
+            confirmPassword: Joi.string()
+                .required()
+                .regex(RegExp(linkConstant.PASSWORD_REGEX)),
+        }),
+    },
+
     sendPatientRequest: {
         [Segments.BODY]: Joi.object({
             firstName: Joi.string().required(),

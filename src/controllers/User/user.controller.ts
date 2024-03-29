@@ -138,7 +138,7 @@ const createAccount: Controller = async (req, res) => {
                 });
             }
         } else if (accountType === 'Physician') {
-            const files = req.files as Express.Multer.File[] || [];
+            const files = (req.files as Express.Multer.File[]) || [];
 
             const newUser = await User.create({
                 accountType,
@@ -159,18 +159,18 @@ const createAccount: Controller = async (req, res) => {
                 status: ProfileStatus.Active,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                isBackgroundDoc: !!((req.files as Express.Multer.File[])?.find(
+                isBackgroundDoc: !!(req.files as Express.Multer.File[])?.find(
                     (file) => file.fieldname === 'backgroundCheck',
-                )),
-                isAgreementDoc: !!((req.files as Express.Multer.File[])?.find(
+                ),
+                isAgreementDoc: !!(req.files as Express.Multer.File[])?.find(
                     (file) => file.fieldname === 'independentContract',
-                )),
-                isTrainingDoc: !!((req.files as Express.Multer.File[])?.find(
+                ),
+                isTrainingDoc: !!(req.files as Express.Multer.File[])?.find(
                     (file) => file.fieldname === 'hpaaCompliance',
-                )),
-                isNonDisclosureDoc: !!((req.files as Express.Multer.File[])?.find(
-                    (file) => file.fieldname === 'nonDisclosureAgreement',
-                )),
+                ),
+                isNonDisclosureDoc: !!(
+                    req.files as Express.Multer.File[]
+                )?.find((file) => file.fieldname === 'nonDisclosureAgreement'),
             });
 
             if (!newUser) {
@@ -191,7 +191,7 @@ const createAccount: Controller = async (req, res) => {
                     state,
                     zipCode,
                 });
-                const documentTypeMap: { [key: string]: string} = {
+                const documentTypeMap: { [key: string]: string } = {
                     photo: 'Photo',
                     independentContract: 'IndependentContract',
                     backgroundCheck: 'BackgroundCheck',
@@ -324,6 +324,17 @@ const createRequest: Controller = async (req, res) => {
         if (!req.file) {
             throw new Error(messageConstant.IMAGE_NOT_UPLOADED);
         }
+
+        if(requestType === 'Patient') {
+            req.body = {
+                ...req.body,
+                requestorFirstName: patientFirstName,
+                requestorLastName: patientLastName,
+                requestorEmail: patientEmail,
+                requestorPhoneNumber: patientPhoneNumber
+            }
+
+        }
         let userId;
 
         if (!isEmail) {
@@ -367,7 +378,6 @@ const createRequest: Controller = async (req, res) => {
                 const regionEntry = await Region.findOne({
                     where: { name },
                 });
-                console.log(regionEntry?.abbreviation);
                 return regionEntry ? regionEntry?.abbreviation : undefined;
             } catch (error) {
                 throw error;
@@ -375,7 +385,7 @@ const createRequest: Controller = async (req, res) => {
         }
 
         const regionAbbreviation = await getAbbreviationFromDb(state);
-        console.log(regionAbbreviation);
+
         const day = String(currentDate.getDate()).padStart(2, '0'); // display the date in 2 digit format
         const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // display the month in 2 digit format
 

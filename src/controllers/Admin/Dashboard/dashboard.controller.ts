@@ -1,4 +1,3 @@
-import path from 'path';
 import {
     AccountType,
     CaseTag,
@@ -80,7 +79,11 @@ export const requestCount: Controller = async (req, res) => {
 export const getPatientByState: Controller = async (req, res) => {
     try {
         // Extract variables from query parameters
-        const { state, search, sortBy, orderBy, regions } = req.query;
+        const { state, search, sortBy, orderBy, regions, page, pageSize } = req.query;
+
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
 
         // Take needed attributes and modify accordingly
         let attributes = [
@@ -302,6 +305,8 @@ export const getPatientByState: Controller = async (req, res) => {
             },
             include: includeModels as unknown as Includeable[],
             order: sortByModel as Order,
+            limit,
+            offset
         });
 
         return res.json({

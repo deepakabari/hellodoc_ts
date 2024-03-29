@@ -46,6 +46,7 @@ const messageConstant = {
     DATA_NOT_FOUND: 'Data not found...',
     INVALID_BODY: 'Invalid body parameters.',
     SHIFT_CREATION_FAILED: 'Shift Creation failed...',
+    CURRENT_PASSWORD_WRONG: 'Your current password is wrong, enter the correct password'
 };
 
 export default messageConstant;
