@@ -101,7 +101,7 @@ export const deleteFile = async (req: Request, res: Response) => {
         const { id } = req.params;
         const { fileNames } = req.body;
 
-        fileNames.forEach(async (fileName: string) => {
+        for (const fileName of fileNames) {
             const filePath = path.join(
                 __dirname,
                 '..',
@@ -115,18 +115,18 @@ export const deleteFile = async (req: Request, res: Response) => {
             const fileRecord = await RequestWiseFiles.findOne({
                 where: { fileName, requestId: id },
             });
-            if (!fileRecord) {
-                return res
-                    .status(404)
-                    .send(
-                        'File not found or you do not have permission to delete this file',
-                    );
+            
+            if (!fileRecord || fileRecord === null) {
+                return res.status(httpCode.NOT_FOUND).json({
+                    status: httpCode.NOT_FOUND,
+                    message: messageConstant.FILE_NOT_FOUND,
+                });
             }
 
             await unlinkAsync(filePath);
 
             await fileRecord.destroy();
-        });
+        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,

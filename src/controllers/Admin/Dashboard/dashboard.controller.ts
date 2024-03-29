@@ -32,18 +32,37 @@ dotenv.config();
  */
 export const requestCount: Controller = async (req, res) => {
     try {
-        const requestCounts = await Request.count({
+        const allCaseTags: CaseTag[] = Object.values(CaseTag);
+
+        const requestCounts = await Request.findAll({
             attributes: [
                 'caseTag',
                 [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
             ],
+            where: {
+                caseTag: {
+                    [Op.in]: allCaseTags,
+                },
+            },
             group: 'caseTag',
+            raw: true,
         });
+
+        const countMap: any = {};
+
+        requestCounts.forEach((row: any) => {
+            countMap[row.caseTag] = row.count;
+        });
+
+        const result = allCaseTags.map((caseTag) => ({
+            caseTag,
+            count: countMap[caseTag] || 0,
+        }));
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: requestCounts,
+            data: result,
         });
     } catch (error) {
         throw error;
@@ -89,7 +108,7 @@ export const getPatientByState: Controller = async (req, res) => {
             ],
             ['createdAt', 'Requested Date'],
             ['patientPhoneNumber', 'Phone'],
-            "requestorPhoneNumber",
+            'requestorPhoneNumber',
             [
                 sequelize.fn(
                     'CONCAT',
@@ -704,7 +723,7 @@ export const getRegions: Controller = async (req, res) => {
             attributes: ['id', 'name'],
         });
 
-        if(getRegions.length === 0) {
+        if (getRegions.length === 0) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_GATEWAY,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -749,7 +768,7 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
             attributes: ['id', 'firstName', 'lastName'],
         });
 
-        if(getPhysicianByRegion.length === 0) {
+        if (getPhysicianByRegion.length === 0) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_GATEWAY,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -866,9 +885,27 @@ export const uploadFile: Controller = async (req, res) => {
             });
         }
 
+        let newFileName = req.file.originalname;
+        
+        const existingFile = await RequestWiseFiles.findOne({
+            where: { fileName: newFileName, requestId: id },
+        });
+
+        if (existingFile) {
+            let counter = 1;
+            let filenameParts = newFileName.split('.');
+            const extension = filenameParts.pop();
+            const baseFilename = filenameParts.join('.');
+
+            while(await RequestWiseFiles.findOne({ where: { fileName: newFileName }})) {
+                newFileName = `${baseFilename} (${counter}).${extension}`
+                counter++;
+            }
+        }
+
         const uploadFile = await RequestWiseFiles.create({
             requestId: id,
-            fileName: req.file.originalname,
+            fileName: newFileName,
             documentPath: req.file.path,
         });
 
