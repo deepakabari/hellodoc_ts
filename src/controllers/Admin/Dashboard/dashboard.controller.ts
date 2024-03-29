@@ -79,7 +79,8 @@ export const requestCount: Controller = async (req, res) => {
 export const getPatientByState: Controller = async (req, res) => {
     try {
         // Extract variables from query parameters
-        const { state, search, sortBy, orderBy, regions, page, pageSize } = req.query;
+        const { state, search, sortBy, orderBy, regions, page, pageSize } =
+            req.query;
 
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
@@ -306,7 +307,7 @@ export const getPatientByState: Controller = async (req, res) => {
             include: includeModels as unknown as Includeable[],
             order: sortByModel as Order,
             limit,
-            offset
+            offset,
         });
 
         return res.json({
@@ -891,7 +892,7 @@ export const uploadFile: Controller = async (req, res) => {
         }
 
         let newFileName = req.file.originalname;
-        
+
         const existingFile = await RequestWiseFiles.findOne({
             where: { fileName: newFileName, requestId: id },
         });
@@ -902,8 +903,12 @@ export const uploadFile: Controller = async (req, res) => {
             const extension = filenameParts.pop();
             const baseFilename = filenameParts.join('.');
 
-            while(await RequestWiseFiles.findOne({ where: { fileName: newFileName }})) {
-                newFileName = `${baseFilename} (${counter}).${extension}`
+            while (
+                await RequestWiseFiles.findOne({
+                    where: { fileName: newFileName },
+                })
+            ) {
+                newFileName = `${baseFilename} (${counter}).${extension}`;
                 counter++;
             }
         }

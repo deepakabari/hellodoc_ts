@@ -19,6 +19,10 @@ import { CaseTag } from '../../utils/enum.constant';
 import { Op } from 'sequelize';
 
 import dotenv from 'dotenv';
+import linkConstant from '../../constants/link.constant';
+import { compileEmailTemplate } from '../../utils/hbsCompiler';
+import transporter from '../../utils/email';
+import { sendSMS } from '../../utils/smsSender';
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
@@ -325,47 +329,98 @@ const createRequest: Controller = async (req, res) => {
             throw new Error(messageConstant.IMAGE_NOT_UPLOADED);
         }
 
-        if(requestType === 'Patient') {
+        if (requestType === 'Patient') {
             req.body = {
                 ...req.body,
                 requestorFirstName: patientFirstName,
                 requestorLastName: patientLastName,
                 requestorEmail: patientEmail,
-                requestorPhoneNumber: patientPhoneNumber
-            }
-
+                requestorPhoneNumber: patientPhoneNumber,
+            };
         }
         let userId;
 
-        if (!isEmail) {
-            // hash the password
-            const hashedPassword = await bcrypt.hash(
-                password,
-                Number(ITERATION),
-            );
-
-            // find or create a user with the given email
-            const user = await User.create({
+        if(requestType !== 'Patient') {
+            const newUser = await User.create({
                 ...req.body,
-                status: ProfileStatus.Active,
-                userName: patientFirstName,
-                email: patientEmail,
-                firstName: patientFirstName,
-                lastName: patientLastName,
-                phoneNumber: patientPhoneNumber,
-                password: hashedPassword,
+                status: ProfileStatus.Pending,
                 accountType: AccountType.User,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-            });
-            // get the user id from the user object
-            userId = user.id;
+            })
+            userId = newUser.id;
+
+            const templateData = {
+                createAccountLink: linkConstant.CREATE_ACCOUNT_URL
+            }
+
+            const data = await compileEmailTemplate(
+                'createAccountEmail',
+                templateData
+            )
+
+            let mailOptions = {
+                from: process.env.EMAIL_FROM,
+                to: newUser.email,
+                subject: linkConstant.createAccountSubject,
+                html: data
+            }
+
+            transporter.sendMail(mailOptions, async (error: Error) => {
+                if (error) {
+                    throw error;
+                } else {
+                    console.log('Agreement email Sent Successfully');
+    
+                    // Update the Request table to reflect that the agreement has been sent.
+                    await Request.update(
+                        { isAgreementSent: true },
+                        { where: { id: req.params.id } },
+                    );
+    
+                    // Prepare the SMS message body with a link to the agreement.
+                    const messageBody = `Hello ${newUser.firstName}, \n\n please create your account. Visit our website or contact us for assistance. ${linkConstant.CREATE_ACCOUNT_URL}`;
+                    sendSMS(messageBody);
+    
+                    // Return a 200 OK status with a message indicating the email was sent successfully.
+                    return res.json({
+                        status: httpCode.OK,
+                        message: messageConstant.AGREEMENT_EMAIL_SENT,
+                    });
+                }
+            })
         } else {
-            const existingUser = await User.findOne({
-                where: { email: patientEmail },
-            });
-            userId = existingUser ? existingUser.id : null;
+            if (!isEmail) {
+                // hash the password
+                const hashedPassword = await bcrypt.hash(
+                    password,
+                    Number(ITERATION),
+                );
+    
+                // find or create a user with the given email
+                const user = await User.create({
+                    ...req.body,
+                    status: ProfileStatus.Active,
+                    userName: patientFirstName,
+                    email: patientEmail,
+                    firstName: patientFirstName,
+                    lastName: patientLastName,
+                    phoneNumber: patientPhoneNumber,
+                    password: hashedPassword,
+                    accountType: AccountType.User,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                });
+                // get the user id from the user object
+                userId = user.id;
+            } else {
+                const existingUser = await User.findOne({
+                    where: { email: patientEmail },
+                });
+                userId = existingUser ? existingUser.id : null;
+            }
         }
+
 
         // Get the current date
         const currentDate = new Date();
