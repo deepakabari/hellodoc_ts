@@ -246,7 +246,7 @@ export const changePassword: Controller = async (req, res) => {
             currentPassword,
             user.password,
         );
-        console.log(passwordMatch);
+        
         if (!passwordMatch) {
             return res.status(httpCode.UNAUTHORIZED).json({
                 status: httpCode.UNAUTHORIZED,

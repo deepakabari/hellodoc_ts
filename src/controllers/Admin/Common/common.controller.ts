@@ -4,10 +4,12 @@ import { promisify } from 'util';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
 import { Controller } from '../../../interfaces';
-import { RequestWiseFiles, User } from '../../../db/models/index';
-import { Request, Response } from 'express';
+import { Request, RequestWiseFiles, User } from '../../../db/models/index';
+import { Request as ExpressRequest, Response } from 'express';
 import archiver from 'archiver';
 const unlinkAsync = promisify(fs.unlink);
+import ExcelJS from 'exceljs';
+import sequelize, { FindAttributeOptions } from 'sequelize';
 
 /**
  * @function getLoggedData
@@ -46,7 +48,7 @@ export const getLoggedData: Controller = async (req, res) => {
     }
 };
 
-export const downloadFile = async (req: Request, res: Response) => {
+export const downloadFile: Controller = async (req, res) => {
     try {
         const { fileNames } = req.body;
         const zip = archiver('zip', { zlib: { level: 5 } });
@@ -91,12 +93,17 @@ export const downloadFile = async (req: Request, res: Response) => {
                 message: messageConstant.FILE_NOT_FOUND,
             });
         }
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.FILE_DOWNLOADED,
+        });
     } catch (error) {
         throw error;
     }
 };
 
-export const deleteFile = async (req: Request, res: Response) => {
+export const deleteFile: Controller = async (req, res) => {
     try {
         const { id } = req.params;
         const { fileNames } = req.body;
@@ -115,7 +122,7 @@ export const deleteFile = async (req: Request, res: Response) => {
             const fileRecord = await RequestWiseFiles.findOne({
                 where: { fileName, requestId: id },
             });
-            
+
             if (!fileRecord || fileRecord === null) {
                 return res.status(httpCode.NOT_FOUND).json({
                     status: httpCode.NOT_FOUND,
@@ -136,3 +143,119 @@ export const deleteFile = async (req: Request, res: Response) => {
         throw error;
     }
 };
+
+export const exportFile = async (req: ExpressRequest, res: Response) => {
+    try {
+        const { state } = req.params
+        let attributes = [
+            ['requestType', 'Request Type'],
+            ['patientFirstName', 'Patient First Name'],
+            ['patientLastName', 'Patient Last Name'],
+            ['patientPhoneNumber', 'Patient Phonenumber'],
+            ['dob', 'Date of birth'],
+            ['requestorFirstName', 'Requestor First Name'],
+            ['requestorLastName', 'Requestor Last Name'],
+            ['requestorPhoneNumber', 'Requestor phonenumber'],
+            ['street', 'Street'],
+            ['city', 'City'],
+            ['state', 'State'],
+            ['zipCode', 'Zip Code'],
+            ['caseTag', 'State of Request'],
+            ['patientNote', 'Patient Note'],
+            ['transferNote', 'Transfer Note'],
+            ['createdAt', 'Requested Date'],
+            ['updatedAt', 'Date Of Service'],
+        ];
+
+        const patients = await Request.findAll({
+            attributes: attributes.map((attr) => attr[0]),
+            where: { caseTag: state },
+        });
+        
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Requests');
+
+        const headers = attributes.map((attr) =>
+            typeof attr === 'string' ? attr : attr[1],
+        );
+        worksheet.addRow(headers);
+
+        patients.forEach((patient: any) => {
+            const rowData = attributes.map((attr) => {
+                if (typeof attr === 'string') {
+                    return patient[attr];
+                } else {
+                    return patient[attr[0]];
+                }
+            });
+            worksheet.addRow(rowData);
+        });
+
+        const filename = `${state}_patients_${Date.now()}.xlsx`;
+        await workbook.xlsx.writeFile(filename);
+
+        return res.download(filename, filename, () => {
+            // Delete the file after download completes
+            fs.unlinkSync(filename);
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const exportAll = async (req: ExpressRequest, res: Response) => {
+    try {
+        let attributes = [
+            ['requestType', 'Request Type'],
+            ['patientFirstName', 'Patient First Name'],
+            ['patientLastName', 'Patient Last Name'],
+            ['patientPhoneNumber', 'Patient Phonenumber'],
+            ['dob', 'Date of birth'],
+            ['requestorFirstName', 'Requestor First Name'],
+            ['requestorLastName', 'Requestor Last Name'],
+            ['requestorPhoneNumber', 'Requestor phonenumber'],
+            ['street', 'Street'],
+            ['city', 'City'],
+            ['state', 'State'],
+            ['zipCode', 'Zip Code'],
+            ['caseTag', 'State of Request'],
+            ['patientNote', 'Patient Note'],
+            ['transferNote', 'Transfer Note'],
+            ['createdAt', 'Requested Date'],
+            ['updatedAt', 'Date Of Service'],
+        ];
+
+        const patients = await Request.findAll({
+            attributes: attributes.map((attr) => attr[0]),
+        });
+        
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Requests');
+
+        const headers = attributes.map((attr) =>
+            typeof attr === 'string' ? attr : attr[1],
+        );
+        worksheet.addRow(headers);
+
+        patients.forEach((patient: any) => {
+            const rowData = attributes.map((attr) => {
+                if (typeof attr === 'string') {
+                    return patient[attr];
+                } else {
+                    return patient[attr[0]];
+                }
+            });
+            worksheet.addRow(rowData);
+        });
+
+        const filename = `all_patients_${Date.now()}.xlsx`;
+        await workbook.xlsx.writeFile(filename);
+
+        return res.download(filename, filename, () => {
+            // Delete the file after download completes
+            fs.unlinkSync(filename);
+        });
+    } catch (error) {
+        throw error;
+    }
+}

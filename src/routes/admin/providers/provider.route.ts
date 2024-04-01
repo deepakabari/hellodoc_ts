@@ -44,6 +44,10 @@ router.get('/viewShift/:id', isAuth, schedulingController.viewShift);
 
 router.get('/location', isAuth, providerController.providerLocation)
 
-router.get('/viewShiftByDate', isAuth, schedulingController.viewShiftByDate)
+router.get('/viewShiftFilter', isAuth, schedulingController.viewShiftFilter)
+
+router.get('/unApprovedShift', isAuth, schedulingController.unApprovedViewShift)
+
+router.put('/approveShift', isAuth, schedulingController.approveShift)
 
 export default router;

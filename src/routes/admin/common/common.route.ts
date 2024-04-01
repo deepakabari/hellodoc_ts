@@ -8,6 +8,10 @@ router.get('/getLoggedUser/:email', isAuth, commonController.getLoggedData);
 
 router.post("/download", isAuth, commonController.downloadFile)
 
-router.post('/deleteFile/:id', isAuth, commonController.deleteFile)
+router.delete('/deleteFile/:id', isAuth, commonController.deleteFile)
+
+router.get('/export/:state', isAuth, commonController.exportFile)
+
+router.get("/exportAll", isAuth, commonController.exportAll)
 
 export default router;

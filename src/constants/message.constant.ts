@@ -19,6 +19,7 @@ const messageConstant = {
     FILE_NOT_UPLOADED:
         'Please Upload the file with valid extension(.pdf, .png, .jpg, .jpeg)',
     FILE_UPLOADED: 'File uploaded Successfully',
+    FILE_DOWNLOADED: 'File downloaded successfully.',
     WRONG_PASSWORD: 'Wrong password',
     NOT_AUTHORIZED: 'Not authorized',
     USER_HAVE_3_POSTS: 'User have more than 3 posts',
@@ -46,7 +47,9 @@ const messageConstant = {
     DATA_NOT_FOUND: 'Data not found...',
     INVALID_BODY: 'Invalid body parameters.',
     SHIFT_CREATION_FAILED: 'Shift Creation failed...',
-    CURRENT_PASSWORD_WRONG: 'Your current password is wrong, enter the correct password'
+    CURRENT_PASSWORD_WRONG:
+        'Your current password is wrong, enter the correct password',
+    SHIFT_APPROVED: 'Shift Approved successfully.',
 };
 
 export default messageConstant;
