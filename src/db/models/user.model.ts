@@ -28,7 +28,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     @Column({ type: DataTypes.STRING, allowNull: false })
     email: string;
 
-    @Column({ type: DataTypes.STRING, allowNull: false })
+    @Column({ type: DataTypes.STRING, allowNull: true })
     password: string;
 
     @Column({ type: DataTypes.STRING, allowNull: true })

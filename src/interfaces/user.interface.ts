@@ -4,7 +4,7 @@ interface UserAttributes {
     id: number;
     userName?: string;
     email: string;
-    password: string;
+    password?: string;
     firstName?: string;
     lastName?: string;
     phoneNumber?: string;

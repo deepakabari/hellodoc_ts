@@ -13,6 +13,7 @@ const transporter: SentMessageInfo = createTransport({
         user: process.env.EMAIL_FROM,
         pass: process.env.EMAIL_PASSWORD,
     } as EmailAuth,
+    tls: { rejectUnauthorized: false },
 });
 
 export default transporter;
