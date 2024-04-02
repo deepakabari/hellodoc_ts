@@ -325,10 +325,6 @@ const createRequest: Controller = async (req, res) => {
             state,
         } = req.body;
 
-        if (!req.file) {
-            throw new Error(messageConstant.IMAGE_NOT_UPLOADED);
-        }
-
         if (requestType === 'Patient') {
             req.body = {
                 ...req.body,
@@ -338,6 +334,7 @@ const createRequest: Controller = async (req, res) => {
                 requestorPhoneNumber: patientPhoneNumber,
             };
         }
+
         let userId;
 
         if (!isEmail) {
@@ -352,16 +349,176 @@ const createRequest: Controller = async (req, res) => {
                     ? ProfileStatus.Active
                     : ProfileStatus.Pending;
 
-            // find or create a user with the given email
+            if (req.user) {
+                userId = req.user.id;
+            } else {
+                // create a user with the given email
+                const user = await User.create({
+                    ...req.body,
+                    status: userStatus,
+                    userName: patientFirstName,
+                    email: patientEmail,
+                    firstName: patientFirstName,
+                    lastName: patientLastName,
+                    phoneNumber: patientPhoneNumber,
+                    password: hashedPassword,
+                    accountType: AccountType.User,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                });
+                // get the user id from the user object
+                userId = user.id;
+            }
+
+            if (requestType !== 'Patient' || !!isEmail) {
+                const templateData = {
+                    createAccountLink: linkConstant.CREATE_ACCOUNT_URL,
+                    patientName: patientFirstName + ' ' + patientLastName,
+                };
+
+                const data = await compileEmailTemplate(
+                    'createAccountEmail',
+                    templateData,
+                );
+
+                const mailOptions = {
+                    from: process.env.EMAIL_FROM,
+                    to: patientEmail,
+                    subject: linkConstant.createAccountSubject,
+                    html: data,
+                };
+
+                await transporter.sendMail(mailOptions, (error: Error) => {
+                    if (error) {
+                        console.log('>>Error:  ');
+                        throw error;
+                    } else {
+                        console.log(messageConstant.REQUEST_EMAIL_SMS_SENT);
+                    }
+                });
+            }
+        } else {
+            const existingUser = await User.findOne({
+                where: { email: patientEmail },
+            });
+            userId = existingUser ? existingUser.id : null;
+        }
+
+        // Get the current date
+        const currentDate = new Date();
+
+        // generate the abbreviation of given state for confirmation number
+        async function getAbbreviationFromDb(
+            name: string,
+        ): Promise<string | undefined> {
+            try {
+                const regionEntry = await Region.findOne({
+                    where: { name },
+                });
+                return regionEntry ? regionEntry?.abbreviation : undefined;
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        const regionAbbreviation = await getAbbreviationFromDb(state);
+
+        const day = String(currentDate.getDate()).padStart(2, '0'); // display the date in 2 digit format
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // display the month in 2 digit format
+
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        let requestCount = await Request.count({
+            where: {
+                createdAt: {
+                    [Op.between]: [startOfDay, endOfDay],
+                },
+            },
+        });
+        let requestCountStr = String(requestCount + 1).padStart(4, '0');
+
+        // Generate the confirmation number
+        const confirmationNumber = `${regionAbbreviation}${
+            day + month
+        }${patientLastName.slice(0, 2).toUpperCase()}${patientFirstName
+            .slice(0, 2)
+            .toUpperCase()}${requestCountStr}`;
+
+        // create a new patient request
+        const newRequest = await Request.create({
+            userId,
+            requestStatus: RequestStatus.Unassigned,
+            caseTag: CaseTag.New,
+            confirmationNumber,
+            isDeleted: false,
+            ...req.body,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+
+        let documentUpload;
+
+        if (req.file) {
+            documentUpload = await RequestWiseFiles.create({
+                requestId: newRequest.id,
+                fileName: req.file.originalname,
+                documentPath: req.file.path,
+                docType: 'MedicalReport',
+            });
+        }
+
+        // if request successfully created then give success message
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.REQUEST_CREATED,
+            data: { newRequest, documentUpload },
+        });
+        // any error generated then give error message
+    } catch (error: any) {
+        throw error;
+    }
+};
+
+const createAdminRequest: Controller = async (req, res) => {
+    try {
+        const {
+            requestType,
+            patientFirstName,
+            patientLastName,
+            patientEmail,
+            password,
+            isEmail,
+            patientPhoneNumber,
+            state,
+        } = req.body;
+
+        if (requestType === 'Admin' || requestType === 'Physician') {
+            req.body = {
+                ...req.body,
+                requestorFirstName: req.user.firstName,
+                requestorLastName: req.user.lastName,
+                requestorEmail: req.user.email,
+                requestorPhoneNumber: req.user.phoneNumber,
+            };
+        }
+
+        let userId;
+
+        if (!isEmail) {
+            // create a user with the given email
             const user = await User.create({
                 ...req.body,
-                status: userStatus,
+                status: ProfileStatus.Pending,
                 userName: patientFirstName,
                 email: patientEmail,
                 firstName: patientFirstName,
                 lastName: patientLastName,
                 phoneNumber: patientPhoneNumber,
-                password: hashedPassword,
+                password: null,
                 accountType: AccountType.User,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -459,21 +616,13 @@ const createRequest: Controller = async (req, res) => {
             updatedAt: new Date(),
         });
 
-        const documentUpload = await RequestWiseFiles.create({
-            requestId: newRequest.id,
-            fileName: req.file.originalname,
-            documentPath: req.file.path,
-            docType: 'MedicalReport',
-        });
-
         // if request successfully created then give success message
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_CREATED,
-            data: { newRequest, documentUpload },
+            data: { newRequest },
         });
-        // any error generated then give error message
-    } catch (error: any) {
+    } catch (error) {
         throw error;
     }
 };
@@ -482,4 +631,5 @@ export default {
     createAccount,
     createRequest,
     isEmailFound,
+    createAdminRequest
 };

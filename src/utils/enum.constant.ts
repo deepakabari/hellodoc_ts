@@ -4,6 +4,8 @@ export enum RequestType {
     Concierge = 'Concierge',
     Business = 'Business',
     Vip = 'VIP',
+    Admin = 'Admin',
+    Physician = 'Physician',
 }
 
 export enum AccountType {

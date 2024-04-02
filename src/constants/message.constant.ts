@@ -46,10 +46,13 @@ const messageConstant = {
     BUSINESS_ALREADY_EXISTS: 'Your business already exists in platform.',
     DATA_NOT_FOUND: 'Data not found...',
     INVALID_BODY: 'Invalid body parameters.',
-    SHIFT_CREATION_FAILED: 'Shift Creation failed...',
     CURRENT_PASSWORD_WRONG:
         'Your current password is wrong, enter the correct password',
-    SHIFT_APPROVED: 'Shift Approved successfully.',
+    SHIFT_CREATION_FAILED: 'Shift Creation failed...',
+    SHIFT_CREATED: 'Shift Created Successfully.',
+    SHIFT_RETRIEVED: 'Shifts Retrieved Successfully.',
+    SHIFT_APPROVED: 'Shifts Approved Successfully.',
+    SHIFT_DELETED: 'Shifts Deleted Successfully.',
 };
 
 export default messageConstant;

@@ -5,7 +5,7 @@ import {
 import express from 'express';
 import isAuth from '../../../middleware/in-auth';
 import { celebrate } from 'celebrate';
-import { RequestSchema, UserSchema } from '../../../validations/index';
+import { RequestSchema, ShiftSchema, UserSchema } from '../../../validations/index';
 import { upload } from '../../../utils/multerConfig';
 
 const router = express.Router();
@@ -38,7 +38,7 @@ router.patch(
     providerController.editPhysicianProfile,
 );
 
-router.post('/addNewShift', isAuth, schedulingController.addNewShift);
+router.post('/addNewShift', isAuth, celebrate(ShiftSchema.createShift), schedulingController.addNewShift);
 
 router.get('/viewShift/:id', isAuth, schedulingController.viewShift);
 
@@ -49,5 +49,7 @@ router.get('/viewShiftFilter', isAuth, schedulingController.viewShiftFilter)
 router.get('/unApprovedShift', isAuth, schedulingController.unApprovedViewShift)
 
 router.put('/approveShift', isAuth, schedulingController.approveShift)
+
+router.delete('/deleteShift', isAuth, schedulingController.deleteShift)
 
 export default router;

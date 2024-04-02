@@ -12,3 +12,4 @@ export * from './orderDetails.interface';
 export * from './isAuth.interface';
 export * from './shift.interface';
 export * from './viewShift.controller'
+export * from './scheduling.interface'

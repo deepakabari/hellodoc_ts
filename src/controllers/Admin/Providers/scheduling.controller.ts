@@ -2,23 +2,12 @@ import { AccountType, OnCallStatus } from '../../../utils/enum.constant';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
 import { Region, Shift, User } from '../../../db/models/index';
-import { Controller, ShiftWhereAttributes } from '../../../interfaces';
+import { Controller, ShiftWhereAttributes, Group } from '../../../interfaces';
 import dotenv from 'dotenv';
 import { Op } from 'sequelize';
 import sequelize from 'sequelize';
+import { any } from 'joi';
 dotenv.config();
-
-interface Provider {
-    id: number;
-    firstName: string;
-    lastName: string;
-    photo: string;
-    regions: object;
-}
-
-interface Group {
-    [key: string]: Provider[];
-}
 
 /**
  * @function providerOnCall
@@ -28,6 +17,8 @@ interface Group {
  */
 export const providerOnCall: Controller = async (req, res) => {
     try {
+        const { regions } = req.query;
+
         // Fetch providers with 'onCallStatus' of either 'OnCall' or 'UnAvailable'.
         const providers = await User.findAll({
             attributes: [
@@ -48,6 +39,7 @@ export const providerOnCall: Controller = async (req, res) => {
                     model: Region,
                     attributes: ['id', 'name'],
                     through: { attributes: [] }, // This will exclude the join table attributes
+                    where: { ...(regions ? { name: regions as string } : {}) },
                 },
             ],
             order: ['onCallStatus'],
@@ -79,7 +71,7 @@ export const providerOnCall: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: groupedProvider,
+            data: providers,
         });
     } catch (error) {
         // In case of an error, throw it to be handled by the error middleware.
@@ -128,7 +120,7 @@ export const addNewShift: Controller = async (req, res) => {
         // Send the newly created shift data in the response.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.SHIFT_CREATED,
             data: newShift,
         });
     } catch (error) {
@@ -176,7 +168,7 @@ export const viewShift: Controller = async (req, res) => {
         // Send the shift details data in the response.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.SHIFT_RETRIEVED,
             data: viewShift,
         });
     } catch (error) {
@@ -194,11 +186,12 @@ export const viewShift: Controller = async (req, res) => {
 export const viewShiftFilter: Controller = async (req, res) => {
     try {
         // Extract data from request params
-        const { date, month, week, regions } = req.query as {
+        const { date, month, startDate, endDate, regions } = req.query as {
             date: string;
             month: string;
-            week: string;
             regions: string;
+            startDate: string;
+            endDate: string;
         };
 
         // Extract query parameters
@@ -207,18 +200,22 @@ export const viewShiftFilter: Controller = async (req, res) => {
         const monthNumber: number | undefined =
             typeof month === 'string' ? parseInt(month, 10) - 1 : undefined;
 
-        const weekNumber: number | undefined =
-            typeof week === 'string' ? parseInt(week, 10) : undefined;
+        const startDateString: string =
+            typeof startDate === 'string' ? startDate : '';
+        const endDateString: string =
+            typeof endDate === 'string' ? endDate : '';
 
         // Initialize the WHERE condition for the database query
-        let whereCondition: ShiftWhereAttributes = {};
+        let whereCondition: ShiftWhereAttributes = {
+            isDeleted: false
+        };
 
         if (dateString) {
             // Filter by specific date if provided
             whereCondition.shiftDate = {
                 [Op.eq]: new Date(dateString),
             };
-        } else if (monthNumber !== undefined && weekNumber === undefined) {
+        } else if (monthNumber !== undefined) {
             // Filter by month if only the month is provided
             whereCondition[Op.and] = [
                 sequelize.where(
@@ -226,14 +223,14 @@ export const viewShiftFilter: Controller = async (req, res) => {
                     monthNumber + 1,
                 ),
             ];
-        } else if (weekNumber !== undefined) {
+        } else if (startDateString && endDateString) {
             // Filter by week if the week is provided.
-            whereCondition[Op.and] = [
-                sequelize.where(
-                    sequelize.fn('WEEK', sequelize.col('shiftDate')),
-                    weekNumber,
-                ),
-            ];
+            whereCondition.shiftDate = {
+                [Op.between]: [
+                    new Date(startDateString),
+                    new Date(endDateString),
+                ],
+            };
         }
 
         // Add region-based filtering if regions are provided
@@ -261,10 +258,17 @@ export const viewShiftFilter: Controller = async (req, res) => {
             order: [['shiftDate', 'ASC']],
         });
 
+        if (viewShiftByDate.length === 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
+
         // Return the results as a JSON response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.SHIFT_RETRIEVED,
             data: viewShiftByDate,
         });
     } catch (error) {
@@ -281,11 +285,16 @@ export const viewShiftFilter: Controller = async (req, res) => {
  */
 export const unApprovedViewShift: Controller = async (req, res) => {
     try {
-        const { regions } = req.query as { regions: any };
+        const regions = req.query.regions as string;
+
         // Retrieve unapproved shifts with specific attributes and include physician details
         const unApprovedViewShift = await Shift.findAll({
             attributes: ['id', 'shiftDate', 'startTime', 'endTime', 'region'],
-            where: { isApproved: false, region: regions },
+            where: {
+                isApproved: false,
+                isDeleted: false,
+                ...(regions ? { state: regions as string } : {}),
+            },
             include: {
                 model: User,
                 as: 'physician',
@@ -306,10 +315,17 @@ export const unApprovedViewShift: Controller = async (req, res) => {
             },
         });
 
+        if (unApprovedViewShift.length === 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
+
         // Respond with the unapproved shifts data
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.SHIFT_RETRIEVED,
             data: unApprovedViewShift,
         });
     } catch (error) {
@@ -329,7 +345,7 @@ export const approveShift: Controller = async (req, res) => {
         const { shiftIds } = req.body;
 
         // Update 'isApproved' to true for each selected shift
-        shiftIds.forEach(async (shiftId: any) => {
+        shiftIds.forEach(async (shiftId: string) => {
             await Shift.update(
                 {
                     isApproved: true,
@@ -347,3 +363,27 @@ export const approveShift: Controller = async (req, res) => {
         throw error;
     }
 };
+
+export const deleteShift: Controller = async (req, res) => {
+    try {
+        const { shiftIds } = req.body;
+
+        // Update 'isDeleted' to true for each selected shift
+        shiftIds.forEach(async (shiftId: string) => {
+            await Shift.update(
+                {
+                    isDeleted: true,
+                },
+                { where: { id: shiftId } },
+            );
+        });
+
+        // Respond with a success message
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SHIFT_DELETED,
+        });
+    } catch (error) {
+        throw error;
+    }
+}

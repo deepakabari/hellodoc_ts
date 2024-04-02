@@ -12,6 +12,9 @@ interface ShiftAttributes {
     repeatUpto?: number;
     isApproved?: boolean;
     isDeleted?: boolean;
+    startDate?: string
+    endDate?: string
+    regions?: any
 }
 
 type ShiftCreationAttributes = Optional<ShiftAttributes, 'id'>;
