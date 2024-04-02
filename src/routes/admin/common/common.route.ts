@@ -14,4 +14,6 @@ router.get('/export/:state', isAuth, commonController.exportFile)
 
 router.get("/exportAll", isAuth, commonController.exportAll)
 
+router.post('/verifyRegion', isAuth, commonController.verifyState)
+
 export default router;

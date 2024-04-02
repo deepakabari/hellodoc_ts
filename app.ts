@@ -1,7 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import router from './src/routes/index';
 import { dbConnection } from './src/db/config/index';
-import swaggerDoc from './src/swagger/swagger';
 import path from 'path';
 import bodyParser from 'body-parser';
 import { errors } from 'celebrate';
@@ -57,4 +56,3 @@ dbConnection();
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-swaggerDoc(app);

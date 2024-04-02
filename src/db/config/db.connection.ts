@@ -3,13 +3,13 @@ import {
     User,
     Role,
     Request,
-    UserRole,
     Region,
     UserRegion,
     RequestWiseFiles,
     Business,
     OrderDetail,
     Shift,
+    Permission
 } from '../models/index';
 
 import dotenv from 'dotenv';
@@ -30,13 +30,13 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
         User,
         Role,
         Request,
-        UserRole,
         Region,
         UserRegion,
         RequestWiseFiles,
         Business,
         OrderDetail,
         Shift,
+        Permission
     ],
 });
 

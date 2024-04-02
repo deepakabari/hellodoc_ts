@@ -5,7 +5,6 @@ import {
     Request,
     UserRegion,
     RequestWiseFiles,
-    Region,
     Business,
 } from '../../db/models/index';
 import { Controller } from '../../interfaces';
@@ -17,15 +16,25 @@ import {
 } from '../../utils/enum.constant';
 import { CaseTag } from '../../utils/enum.constant';
 import { Op } from 'sequelize';
-
 import dotenv from 'dotenv';
 import linkConstant from '../../constants/link.constant';
 import { compileEmailTemplate } from '../../utils/hbsCompiler';
 import transporter from '../../utils/email';
-import { sendSMS } from '../../utils/smsSender';
+import { getAbbreviationFromDb } from '../../utils/regionAbbreviation';
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
+// Get the current date
+const currentDate = new Date();
+
+const day = String(currentDate.getDate()).padStart(2, '0'); // display the date in 2 digit format
+const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // display the month in 2 digit format
+
+const startOfDay = new Date();
+startOfDay.setHours(0, 0, 0, 0);
+
+const endOfDay = new Date();
+endOfDay.setHours(23, 59, 59, 999);
 
 /**
  * @function createUser
@@ -388,14 +397,7 @@ const createRequest: Controller = async (req, res) => {
                     html: data,
                 };
 
-                await transporter.sendMail(mailOptions, (error: Error) => {
-                    if (error) {
-                        console.log('>>Error:  ');
-                        throw error;
-                    } else {
-                        console.log(messageConstant.REQUEST_EMAIL_SMS_SENT);
-                    }
-                });
+                await transporter.sendMail(mailOptions);
             }
         } else {
             const existingUser = await User.findOne({
@@ -404,33 +406,7 @@ const createRequest: Controller = async (req, res) => {
             userId = existingUser ? existingUser.id : null;
         }
 
-        // Get the current date
-        const currentDate = new Date();
-
-        // generate the abbreviation of given state for confirmation number
-        async function getAbbreviationFromDb(
-            name: string,
-        ): Promise<string | undefined> {
-            try {
-                const regionEntry = await Region.findOne({
-                    where: { name },
-                });
-                return regionEntry ? regionEntry?.abbreviation : undefined;
-            } catch (error) {
-                throw error;
-            }
-        }
-
         const regionAbbreviation = await getAbbreviationFromDb(state);
-
-        const day = String(currentDate.getDate()).padStart(2, '0'); // display the date in 2 digit format
-        const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // display the month in 2 digit format
-
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-
-        const endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
 
         let requestCount = await Request.count({
             where: {
@@ -483,6 +459,14 @@ const createRequest: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function createAdminRequest
+ * @param req - Express request object, expects user details and a file in the body.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the created request data if the request is successfully created. If the request is not created, it returns an error message.
+ * @throws - Throws an error if there's an issue in the execution of the function.
+ * @description This function is an Express controller that handles request creation. It validates the request body, checks if the user already exists, hashes the password, creates the user if they don't exist, generates a confirmation number, creates the request, uploads the document, and sends the created request data in the response.
+ */
 const createAdminRequest: Controller = async (req, res) => {
     try {
         const {
@@ -490,13 +474,16 @@ const createAdminRequest: Controller = async (req, res) => {
             patientFirstName,
             patientLastName,
             patientEmail,
-            password,
             isEmail,
             patientPhoneNumber,
             state,
         } = req.body;
 
-        if (requestType === 'Admin' || requestType === 'Physician') {
+        if (
+            requestType === 'Admin' ||
+            requestType === 'Physician' ||
+            requestType === 'User'
+        ) {
             req.body = {
                 ...req.body,
                 requestorFirstName: req.user.firstName,
@@ -560,33 +547,7 @@ const createAdminRequest: Controller = async (req, res) => {
             userId = existingUser ? existingUser.id : null;
         }
 
-        // Get the current date
-        const currentDate = new Date();
-
-        // generate the abbreviation of given state for confirmation number
-        async function getAbbreviationFromDb(
-            name: string,
-        ): Promise<string | undefined> {
-            try {
-                const regionEntry = await Region.findOne({
-                    where: { name },
-                });
-                return regionEntry ? regionEntry?.abbreviation : undefined;
-            } catch (error) {
-                throw error;
-            }
-        }
-
         const regionAbbreviation = await getAbbreviationFromDb(state);
-
-        const day = String(currentDate.getDate()).padStart(2, '0'); // display the date in 2 digit format
-        const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // display the month in 2 digit format
-
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-
-        const endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
 
         let requestCount = await Request.count({
             where: {
@@ -616,11 +577,22 @@ const createAdminRequest: Controller = async (req, res) => {
             updatedAt: new Date(),
         });
 
+        let documentUpload;
+
+        if (req.file) {
+            documentUpload = await RequestWiseFiles.create({
+                requestId: newRequest.id,
+                fileName: req.file.originalname,
+                documentPath: req.file.path,
+                docType: 'MedicalReport',
+            });
+        }
+
         // if request successfully created then give success message
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_CREATED,
-            data: { newRequest },
+            data: { newRequest, documentUpload },
         });
     } catch (error) {
         throw error;
@@ -631,5 +603,5 @@ export default {
     createAccount,
     createRequest,
     isEmailFound,
-    createAdminRequest
+    createAdminRequest,
 };

@@ -1,6 +1,6 @@
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
-import { Role, User } from '../../../db/models/index';
+import { Permission, Role, User } from '../../../db/models/index';
 import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -40,8 +40,8 @@ export const accountAccess: Controller = async (req, res) => {
  */
 export const accountAccessByAccountType: Controller = async (req, res) => {
     try {
-        const roles = await Role.findAll({
-            attributes: ['accountType', 'Name'],
+        const roles = await Permission.findAll({
+            attributes: ['accountType', 'name'],
             order: ['accountType'],
         });
 
@@ -51,7 +51,7 @@ export const accountAccessByAccountType: Controller = async (req, res) => {
                 if (!result[key]) {
                     result[key] = [];
                 }
-                result[key].push(role.Name);
+                result[key].push(role.name);
                 return result;
             },
             {} as RoleGroup,

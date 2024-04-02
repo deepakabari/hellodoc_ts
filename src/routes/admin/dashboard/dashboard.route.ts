@@ -1,6 +1,4 @@
-import {
-    dashboardController,
-} from '../../../controllers/index';
+import { dashboardController } from '../../../controllers/index';
 import express from 'express';
 import isAuth from '../../../middleware/in-auth';
 import { celebrate } from 'celebrate';
@@ -141,5 +139,11 @@ router.post(
     isAuth,
     celebrate(UserSchema.sendPatientRequest),
     dashboardController.sendPatientRequest,
+);
+
+router.post(
+    '/sendFilesByEmail',
+    isAuth,
+    dashboardController.sendFileThroughMail,
 );
 export default router;

@@ -4,10 +4,19 @@ import {
     Model,
     BelongsToMany,
     HasMany,
+    HasOne,
+    BelongsTo,
 } from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
 import { UserAttributes, UserCreationAttributes } from '../../interfaces';
-import { Role, UserRole, Request, Region, UserRegion, Shift, RequestWiseFiles } from './index';
+import {
+    Role,
+    Request,
+    Region,
+    UserRegion,
+    Shift,
+    RequestWiseFiles,
+} from './index';
 
 @Table({
     timestamps: true,
@@ -30,6 +39,9 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
 
     @Column({ type: DataTypes.STRING, allowNull: true })
     password: string;
+
+    @Column({ type: DataTypes.INTEGER, allowNull: true })
+    roleId: number;
 
     @Column({ type: DataTypes.STRING, allowNull: true })
     firstName: string;
@@ -124,9 +136,6 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     })
     notification: boolean;
 
-    @BelongsToMany(() => Role, () => UserRole, 'userId', 'roleId')
-    roles: Role[];
-
     @HasMany(() => Request, {
         foreignKey: 'userId',
         sourceKey: 'id',
@@ -156,5 +165,11 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
         sourceKey: 'id',
     })
     requestWiseFiles: RequestWiseFiles[];
+
+    @BelongsTo(() => Role, {
+        foreignKey: 'roleId',
+        as: 'role'
+    })
+    role: Role;
 }
 export default User;

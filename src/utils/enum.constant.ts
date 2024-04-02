@@ -6,6 +6,7 @@ export enum RequestType {
     Vip = 'VIP',
     Admin = 'Admin',
     Physician = 'Physician',
+    User = 'User',
 }
 
 export enum AccountType {

@@ -4,12 +4,16 @@ import { promisify } from 'util';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
 import { Controller } from '../../../interfaces';
-import { Request, RequestWiseFiles, User } from '../../../db/models/index';
+import {
+    Region,
+    Request,
+    RequestWiseFiles,
+    User,
+} from '../../../db/models/index';
 import { Request as ExpressRequest, Response } from 'express';
 import archiver from 'archiver';
 const unlinkAsync = promisify(fs.unlink);
 import ExcelJS from 'exceljs';
-import sequelize, { FindAttributeOptions } from 'sequelize';
 
 /**
  * @function getLoggedData
@@ -53,19 +57,26 @@ export const downloadFile: Controller = async (req, res) => {
         const { fileNames } = req.body;
         const zip = archiver('zip', { zlib: { level: 5 } });
 
-        // Check if all files exist
-        const allFilesExist = fileNames.every((fileName: string) => {
-            const filePath = path.join(
-                __dirname,
-                '..',
-                '..',
-                '..',
-                'public',
-                'images',
-                fileName,
-            );
-            return fs.existsSync(filePath);
-        });
+        let allFilesExist;
+
+        if (fileNames === null) {
+            allFilesExist = fileNames.every((fileName: string) => {
+                const filePath = path.join(
+                    __dirname,
+                    '..',
+                    '..',
+                    '..',
+                    'public',
+                    'images',
+                    fileName,
+                );
+                return fs.existsSync(filePath);
+            });
+        } else {
+            return res.status(httpCode.BAD_REQUEST).json({
+                message: messageConstant.FILE_NOT_FOUND,
+            });
+        }
 
         if (allFilesExist) {
             res.attachment('downloaded-files.zip');
@@ -89,7 +100,7 @@ export const downloadFile: Controller = async (req, res) => {
             console.error(
                 'One or more files were not found, aborting zip operation.',
             );
-            res.status(500).json({
+            return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
                 message: messageConstant.FILE_NOT_FOUND,
             });
         }
@@ -146,7 +157,7 @@ export const deleteFile: Controller = async (req, res) => {
 
 export const exportFile = async (req: ExpressRequest, res: Response) => {
     try {
-        const { state } = req.params
+        const { state } = req.params;
         let attributes = [
             ['requestType', 'Request Type'],
             ['patientFirstName', 'Patient First Name'],
@@ -171,9 +182,9 @@ export const exportFile = async (req: ExpressRequest, res: Response) => {
             attributes: attributes.map((attr) => attr[0]),
             where: { caseTag: state },
         });
-        
+
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Requests');
+        const worksheet = workbook.addWorksheet('State Wise Requests');
 
         const headers = attributes.map((attr) =>
             typeof attr === 'string' ? attr : attr[1],
@@ -228,9 +239,9 @@ export const exportAll = async (req: ExpressRequest, res: Response) => {
         const patients = await Request.findAll({
             attributes: attributes.map((attr) => attr[0]),
         });
-        
+
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Requests');
+        const worksheet = workbook.addWorksheet('All Requests');
 
         const headers = attributes.map((attr) =>
             typeof attr === 'string' ? attr : attr[1],
@@ -258,4 +269,25 @@ export const exportAll = async (req: ExpressRequest, res: Response) => {
     } catch (error) {
         throw error;
     }
-}
+};
+
+export const verifyState: Controller = async (req, res) => {
+    try {
+        // Extract data from request body
+        const { state } = req.body;
+
+        const regionExists = await Region.findOne({ where: { name: state } });
+
+        if (!regionExists) {
+            return res
+                .status(httpCode.NOT_FOUND)
+                .json({ message: messageConstant.INVALID_REGION });
+        }
+
+        return res
+            .status(httpCode.OK)
+            .json({ message: messageConstant.VALID_REGION });
+    } catch (error) {
+        throw error;
+    }
+};

@@ -39,6 +39,7 @@ const messageConstant = {
     ERROR_SEND_MESSAGE: 'Error while sending message',
     ROLE_ALREADY_EXISTS: 'Role already exists',
     REQUEST_EMAIL_SMS_SENT: 'Request email and sms sent successfully',
+    EMAIL_SENT: 'Email sent successfully.',
     MISSING_SECTION_OR_UPDATED_DATA: 'Missing section or updates data',
     UPDATE_FAILED: 'Update failed...',
     AGREEMENT_EMAIL_SENT: 'Agreement email sent successfully',
@@ -53,6 +54,9 @@ const messageConstant = {
     SHIFT_RETRIEVED: 'Shifts Retrieved Successfully.',
     SHIFT_APPROVED: 'Shifts Approved Successfully.',
     SHIFT_DELETED: 'Shifts Deleted Successfully.',
+    INVALID_REGION:
+        'Invalid region. Please select from following ( Maryland, Virginia, District of Columbia, New York )',
+    VALID_REGION: 'Valid Region.',
 };
 
 export default messageConstant;

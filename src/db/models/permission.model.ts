@@ -1,20 +1,12 @@
-import {
-    Table,
-    Column,
-    Model,
-    BelongsToMany,
-    BelongsTo,
-    HasMany,
-} from 'sequelize-typescript';
+import { Table, Column, Model } from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
-import { RoleAttributes, RoleCreationAttributes } from '../../interfaces';
-import { User } from './index';
+import { PermissionAttributes, PermissionCreationAttributes } from '../../interfaces';
 
 @Table({
     timestamps: true,
     paranoid: true,
 })
-class Role extends Model<RoleAttributes, RoleCreationAttributes> {
+class Permission extends Model<PermissionAttributes, PermissionCreationAttributes> {
     @Column({
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -27,7 +19,7 @@ class Role extends Model<RoleAttributes, RoleCreationAttributes> {
         type: DataTypes.STRING,
         allowNull: false,
     })
-    Name: string;
+    name: string;
 
     @Column({
         type: DataTypes.STRING,
@@ -40,12 +32,6 @@ class Role extends Model<RoleAttributes, RoleCreationAttributes> {
         allowNull: true,
     })
     isDeleted: boolean;
-
-    @HasMany(() => User, {
-        foreignKey: 'roleId',
-        as: 'users'
-    })
-    users: User[]
 }
 
-export default Role;
+export default Permission;

@@ -473,6 +473,7 @@ export const getPatientName: Controller = async (req, res) => {
                 'id',
                 'patientFirstName',
                 'patientLastName',
+                'patientEmail',
                 'confirmationNumber',
                 'requestType',
             ],
@@ -874,6 +875,34 @@ export const viewUploads: Controller = async (req, res) => {
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: uploads,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const sendFileThroughMail: Controller = async (req, res) => {
+    try {
+        const { email, files } = req.body;
+
+        // Construct email message
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: email,
+            subject: 'Files Attached',
+            text: 'Please find attached files.',
+            attachments: files.map((file: any) => ({
+                filename: file.originalname,
+                content: file.buffer,
+            })),
+        };
+
+        // Send email
+        await transporter.sendMail(mailOptions);
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.EMAIL_SENT,
         });
     } catch (error) {
         throw error;
