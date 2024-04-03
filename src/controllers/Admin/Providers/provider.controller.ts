@@ -37,7 +37,7 @@ export const providerInformation: Controller = async (req, res) => {
             },
             include: {
                 model: Region,
-                attributes: ['id', 'name'],
+                attributes: [],
                 through: { attributes: [] },
                 where: {
                     ...(regions ? { name: regions as string } : {}),
@@ -138,8 +138,6 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
                 'state',
                 'zipCode',
                 'altPhone',
-                'businessName',
-                'businessWebsite',
                 'photo',
                 'signature',
                 'isAgreementDoc',
@@ -147,10 +145,22 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
                 'isNonDisclosureDoc',
                 'isLicenseDoc',
             ],
+            include: {
+                model: Region,
+                attributes: ["id", 'name'],
+                through: { attributes: [] },
+            },
             where: { id },
         });
 
-        if (!physicianProfile) {
+        const businessDetails = await Business.findAll({
+            attributes: ['id', 'businessName', 'businessWebsite'],
+            where: { userId: id },
+        });
+
+        
+
+        if (!physicianProfile && !businessDetails) {
             return res.status(httpCode.NOT_FOUND).json({
                 status: httpCode.NOT_FOUND,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -160,7 +170,7 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: physicianProfile,
+            data: { physicianProfile, businessDetails },
         });
     } catch (error) {
         throw error;
@@ -277,13 +287,13 @@ export const providerLocation: Controller = async (req, res) => {
         const apiKey = process.env.GOOGLE_MAPS_API_KEY;
         const lat = 23.034721;
         const lng = 72.500535;
-        const address = "Ahmedabad"
+        const address = 'Ahmedabad';
         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}`;
 
-        const response = await fetch(url);  
+        const response = await fetch(url);
         const data = await response.json();
         return res.json(data);
     } catch (error) {
         throw error;
     }
-}
+};

@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import httpCode from '../../../constants/http.constant';
@@ -52,63 +52,46 @@ export const getLoggedData: Controller = async (req, res) => {
     }
 };
 
-export const downloadFile: Controller = async (req, res) => {
+export const downloadFile = async (req: ExpressRequest, res: Response) => {
     try {
         const { fileNames } = req.body;
-        const zip = archiver('zip', { zlib: { level: 5 } });
 
-        let allFilesExist;
-
-        if (fileNames === null) {
-            allFilesExist = fileNames.every((fileName: string) => {
-                const filePath = path.join(
-                    __dirname,
-                    '..',
-                    '..',
-                    '..',
-                    'public',
-                    'images',
-                    fileName,
-                );
-                return fs.existsSync(filePath);
-            });
-        } else {
-            return res.status(httpCode.BAD_REQUEST).json({
-                message: messageConstant.FILE_NOT_FOUND,
-            });
+        // Validate fileNames array
+        if (!Array.isArray(fileNames) || fileNames.length === 0) {
+            return res
+                .status(httpCode.NOT_FOUND)
+                .json({ error: messageConstant.INVALID_INPUT });
         }
 
-        if (allFilesExist) {
-            res.attachment('downloaded-files.zip');
-            zip.pipe(res);
-
-            fileNames.forEach((fileName: string) => {
-                const filePath = path.join(
-                    __dirname,
-                    '..',
-                    '..',
-                    '..',
-                    'public',
-                    'images',
-                    fileName,
-                );
-                zip.file(filePath, { name: fileName });
-            });
-
-            zip.finalize();
-        } else {
-            console.error(
-                'One or more files were not found, aborting zip operation.',
-            );
-            return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
-                message: messageConstant.FILE_NOT_FOUND,
-            });
-        }
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.FILE_DOWNLOADED,
+        const archive = archiver('zip', {
+            zlib: { level: 9 },
         });
+
+        res.attachment('downloaded-files.zip');
+        // const fileStream = fs.createWriteStream('downloaded-files.zip');
+        archive.pipe(res);
+
+        fileNames.forEach((fileName: string) => {
+            const filePath = path.join(
+                __dirname,
+                '..',
+                '..',
+                '..',
+                'public',
+                'images',
+                fileName,
+            );
+
+            if (fs.existsSync(filePath)) {
+                archive.append(fs.createReadStream(filePath), {
+                    name: fileName,
+                });
+            } else {
+                console.warn(`${messageConstant.FILE_NOT_FOUND}: ${fileName}`);
+            }
+        });
+
+        await archive.finalize();
     } catch (error) {
         throw error;
     }
