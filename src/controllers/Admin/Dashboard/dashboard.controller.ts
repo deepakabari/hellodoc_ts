@@ -19,6 +19,7 @@ import dotenv from 'dotenv';
 import { compileEmailTemplate } from '../../../utils/hbsCompiler';
 import linkConstant from '../../../constants/link.constant';
 import { sendSMS } from '../../../utils/smsSender';
+import path from 'path';
 dotenv.config();
 
 /**
@@ -885,6 +886,15 @@ export const sendFileThroughMail: Controller = async (req, res) => {
     try {
         const { email, files } = req.body;
 
+        const filePath = path.join(
+            __dirname,
+            '..',
+            '..',
+            '..',
+            'public',
+            'images',
+        );
+
         // Construct email message
         const mailOptions = {
             from: process.env.EMAIL_FROM,
@@ -892,8 +902,8 @@ export const sendFileThroughMail: Controller = async (req, res) => {
             subject: 'Files Attached',
             text: 'Please find attached files.',
             attachments: files.map((file: any) => ({
-                filename: file.originalname,
-                content: file.buffer,
+                filename: file,
+                path: `${filePath}/${file}`,
             })),
         };
 
