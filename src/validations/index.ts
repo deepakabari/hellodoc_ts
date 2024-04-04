@@ -4,3 +4,4 @@ export * from './userSchema.valid';
 export * from './businessSchema.valid';
 export * from './recordSchema.valid';
 export * from './shiftSchema.valid'
+export * from './partnerSchema.valid'

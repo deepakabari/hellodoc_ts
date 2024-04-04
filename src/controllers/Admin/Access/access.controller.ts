@@ -1,6 +1,11 @@
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
-import { Permission, Role, User } from '../../../db/models/index';
+import {
+    Permission,
+    Role,
+    RolePermissionMap,
+    User,
+} from '../../../db/models/index';
 import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -44,7 +49,11 @@ export const accountAccessByAccountType: Controller = async (req, res) => {
         const roles = await Permission.findAll({
             attributes: ['accountType', 'name'],
             order: ['accountType'],
-            where: { ...(accountTypes ? { accountType: accountTypes as string } : {}), },
+            where: {
+                ...(accountTypes
+                    ? { accountType: accountTypes as string }
+                    : {}),
+            },
         });
 
         const groupedRoles: RoleGroup = roles.reduce(
@@ -77,7 +86,7 @@ export const accountAccessByAccountType: Controller = async (req, res) => {
  */
 export const createRole: Controller = async (req, res) => {
     try {
-        const { roleName, accountType } = req.body;
+        const { roleName, accountType, permissionIds } = req.body;
 
         const existingRole = await Role.findOne({ where: { Name: roleName } });
 
@@ -94,6 +103,13 @@ export const createRole: Controller = async (req, res) => {
             createdAt: new Date(),
             updatedAt: new Date(),
         });
+
+        for (const permissionId of permissionIds) {
+            await RolePermissionMap.create({
+                roleId: createRole.id,
+                permissionId,
+            });
+        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,

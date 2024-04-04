@@ -1,12 +1,13 @@
 import { AccountType } from '../../../utils/enum.constant';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
-import { Business, Region, User } from '../../../db/models/index';
+import { Business, Region, User, UserRegion } from '../../../db/models/index';
 import { Controller, FieldUpdates } from '../../../interfaces';
 import dotenv from 'dotenv';
 import linkConstant from '../../../constants/link.constant';
 import transporter from '../../../utils/email';
 import { sendSMS } from '../../../utils/smsSender';
+import { sequelize } from '../../../db/config/db.connection';
 import bcrypt from 'bcrypt';
 dotenv.config();
 
@@ -44,7 +45,7 @@ export const providerInformation: Controller = async (req, res) => {
                 },
             },
         });
-    
+
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
@@ -184,7 +185,7 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
 export const editPhysicianProfile: Controller = async (req, res) => {
     try {
         const { id } = req.params;
-        const { businessName, businessWebsite } = req.body;
+        const { businessName, businessWebsite, regions } = req.body;
         const files = req.files as {
             [fieldName: string]: Express.Multer.File[];
         };
@@ -194,6 +195,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             fieldUpdates: FieldUpdates,
             files?: { [fieldName: string]: Express.Multer.File[] },
         ) => {
+            const transaction = await sequelize.transaction();
             try {
                 if (files) {
                     if (files.photo && files.photo[0]) {
@@ -206,15 +208,35 @@ export const editPhysicianProfile: Controller = async (req, res) => {
 
                 await User.update(fieldUpdates, {
                     where: { id },
+                    transaction,
                 });
 
                 await Business.update(
                     { businessName, businessWebsite },
-                    { where: { userId: id } },
+                    { where: { userId: id }, transaction },
                 );
 
+                await UserRegion.destroy({
+                    where: { userId: id },
+                    force: true,
+                    transaction,
+                });
+
+                for (const regionId of regions) {
+                    await UserRegion.create(
+                        {
+                            userId: id as unknown as number,
+                            regionId: regionId,
+                        },
+                        { transaction },
+                    );
+                }
+
+                await transaction.commit();
                 return true;
             } catch (error) {
+                await transaction.rollback();
+                console.error('Transaction failed:', error);
                 return false;
             }
         };
@@ -250,11 +272,10 @@ export const editPhysicianProfile: Controller = async (req, res) => {
 
         for (const field of fields) {
             if (req.body[field] !== undefined) {
-                if (field === 'password') {
-                    fieldUpdates[field] = await hashPassword(req.body[field]);
-                } else {
-                    fieldUpdates[field] = req.body[field];
-                }
+                fieldUpdates[field] =
+                    field === 'password'
+                        ? await hashPassword(req.body[field])
+                        : req.body[field];
             }
         }
 

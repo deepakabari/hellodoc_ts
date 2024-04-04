@@ -2,7 +2,11 @@ import { partnerController } from '../../../controllers/index';
 import express from 'express';
 import isAuth from '../../../middleware/in-auth';
 import { celebrate } from 'celebrate';
-import { BusinessSchema } from '../../../validations/index';
+import {
+    BusinessSchema,
+    PartnerSchema,
+    RequestSchema,
+} from '../../../validations/index';
 const router = express.Router();
 
 router.post(
@@ -12,18 +16,34 @@ router.post(
     partnerController.addBusiness,
 );
 
-router.get('/viewBusiness/:id', isAuth, partnerController.viewBusiness);
+router.get(
+    '/viewBusiness/:id',
+    isAuth,
+    celebrate(RequestSchema.idParams),
+    partnerController.viewBusiness,
+);
 
 router.get('/professions', isAuth, partnerController.professions);
 
 router.get(
     '/businessByProfession/:profession',
     isAuth,
+    celebrate(RequestSchema.idParams),
     partnerController.businessByProfession,
 );
 
-router.get('/viewSendOrder/:id', isAuth, partnerController.viewSendOrder);
+router.get(
+    '/viewSendOrder/:id',
+    isAuth,
+    celebrate(RequestSchema.idParams),
+    partnerController.viewSendOrder,
+);
 
-router.post('/sendOrder/:id', isAuth, partnerController.sendOrder);
+router.post(
+    '/sendOrder/:id',
+    isAuth,
+    celebrate(PartnerSchema.sendOrder),
+    partnerController.sendOrder,
+);
 
 export default router;

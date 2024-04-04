@@ -6,10 +6,18 @@ module.exports = {
             roleId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
+                references: {
+                    model: 'Role',
+                    key: 'id',
+                },
             },
             permissionId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
+                references: {
+                    model: 'Permission',
+                    key: 'id',
+                },
             },
             createdAt: {
                 allowNull: false,
@@ -23,6 +31,12 @@ module.exports = {
                 type: Sequelize.DATE,
                 allowNull: true,
             },
+        });
+
+        await queryInterface.addConstraint('RolePermissionMap', {
+            fields: ['roleId', 'permissionId'],
+            type: 'unique',
+            name: 'role_permission_unique_constraint',
         });
     },
     async down(queryInterface) {

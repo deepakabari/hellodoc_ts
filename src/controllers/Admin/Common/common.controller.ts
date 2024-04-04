@@ -15,8 +15,6 @@ import archiver from 'archiver';
 const unlinkAsync = promisify(fs.unlink);
 import ExcelJS from 'exceljs';
 import json2xls from 'json2xls';
-import { saveAs } from 'file-saver';
-import * as XLSX from 'xlsx';
 
 /**
  * @function getLoggedData

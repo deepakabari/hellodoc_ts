@@ -107,6 +107,7 @@ export const editAdminProfile: Controller = async (req, res) => {
                 if (updatedData.regions) {
                     await UserRegion.destroy({
                         where: { userId: id },
+                        force: true
                     });
 
                     // Add new regions for the user
@@ -147,17 +148,6 @@ export const editAdminProfile: Controller = async (req, res) => {
             });
         }
 
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-export const changePassword: Controller = async (req, res) => {
-    try {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,

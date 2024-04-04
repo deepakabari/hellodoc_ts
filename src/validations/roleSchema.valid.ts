@@ -8,12 +8,21 @@ export const RoleSchema = {
             accountType: Joi.string()
                 .required()
                 .valid(...Object.values(AccountType)),
+            permissionIds: Joi.array().items(Joi.number().integer()).optional(),
         }),
     },
 
     userAccess: {
         [Segments.QUERY]: {
             accountType: Joi.string()
+                .required()
+                .valid(...Object.values(AccountType)),
+        },
+    },
+
+    accountAccessByAccountType: {
+        [Segments.QUERY]: {
+            accountTypes: Joi.string()
                 .required()
                 .valid(...Object.values(AccountType)),
         },

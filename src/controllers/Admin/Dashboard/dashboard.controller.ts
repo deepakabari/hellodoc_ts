@@ -148,10 +148,18 @@ export const getPatientByState: Controller = async (req, res) => {
 
         switch (state) {
             case 'new':
-                condition = { caseTag: 'New', deletedAt: null };
+                condition = {
+                    caseTag: 'New',
+                    deletedAt: null,
+                    isDeleted: false,
+                };
                 break;
             case 'pending':
-                condition = { caseTag: 'Pending', deletedAt: null };
+                condition = {
+                    caseTag: 'Pending',
+                    deletedAt: null,
+                    isDeleted: false,
+                };
                 includeModels = [
                     {
                         model: User,
@@ -178,6 +186,7 @@ export const getPatientByState: Controller = async (req, res) => {
                     caseTag: 'Active',
                     isAgreementAccepted: true,
                     deletedAt: null,
+                    isDeleted: false,
                 };
                 includeModels = [
                     {
@@ -201,7 +210,11 @@ export const getPatientByState: Controller = async (req, res) => {
                 ];
                 break;
             case 'conclude':
-                condition = { caseTag: 'Conclude', deletedAt: null };
+                condition = {
+                    caseTag: 'Conclude',
+                    deletedAt: null,
+                    isDeleted: false,
+                };
                 includeModels = [
                     {
                         model: User,
@@ -231,6 +244,7 @@ export const getPatientByState: Controller = async (req, res) => {
                             [Op.or]: [
                                 { physicianId: null },
                                 { deletedAt: null },
+                                { isDeleted: false },
                             ],
                         },
                     ],
@@ -257,7 +271,7 @@ export const getPatientByState: Controller = async (req, res) => {
                 ];
                 break;
             case 'unpaid':
-                condition = { caseTag: 'UnPaid', deletedAt: null };
+                condition = { caseTag: 'UnPaid', deletedAt: null, isDeleted: false };
                 includeModels = [
                     {
                         model: User,
@@ -561,7 +575,7 @@ export const blockCase: Controller = async (req, res) => {
             {
                 reasonForCancellation,
                 requestStatus: RequestStatus.Blocked,
-                deletedAt: new Date(),
+                isDeleted: true,
             },
             { where: { id } },
         );
