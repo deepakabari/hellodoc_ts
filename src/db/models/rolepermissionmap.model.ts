@@ -1,22 +1,22 @@
 import { Table, Column, Model } from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
-import { UserRegionAttributes } from '../../interfaces';
+import { RolePermissionMapAttributes } from '../../interfaces';
 
 @Table({
     timestamps: true,
     paranoid: true,
 })
-class UserRegion extends Model<UserRegionAttributes> {
+class RolePermissionMap extends Model<RolePermissionMapAttributes> {
     @Column({
         type: DataTypes.INTEGER,
         allowNull: false,
     })
-    userId: number;
+    roleId: number;
 
     @Column({
         type: DataTypes.INTEGER,
         allowNull: false,
     })
-    regionId: number;
+    permissionId: number;
 }
-export default UserRegion;
+export default RolePermissionMap;

@@ -7,6 +7,7 @@ import { errors } from 'celebrate';
 import { errorHandler } from './src/utils/errorHandler';
 import { engine } from 'express-handlebars';
 import dotenv from 'dotenv';
+import json2xls from 'json2xls';
 dotenv.config();
 
 const PORT = process.env.PORT;
@@ -21,6 +22,7 @@ app.use(
     express.static(path.join(__dirname, 'src', 'public', 'images')),
 );
 
+app.use(json2xls.middleware);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 

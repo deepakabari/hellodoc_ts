@@ -2,22 +2,14 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('UserRegion', {
-            userId: {
-                allowNull: false,
+        await queryInterface.createTable('RolePermissionMap', {
+            roleId: {
                 type: Sequelize.INTEGER,
-                references: {
-                    model: 'User',
-                    key: 'id',
-                },
+                allowNull: false,
             },
-            regionId: {
+            permissionId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
-                references: {
-                    model: 'Region',
-                    key: 'id',
-                },
             },
             createdAt: {
                 allowNull: false,
@@ -34,6 +26,6 @@ module.exports = {
         });
     },
     async down(queryInterface) {
-        await queryInterface.dropTable('UserRegion');
+        await queryInterface.dropTable('RolePermissionMap');
     },
 };

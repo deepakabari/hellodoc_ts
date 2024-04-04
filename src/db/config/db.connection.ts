@@ -9,7 +9,8 @@ import {
     Business,
     OrderDetail,
     Shift,
-    Permission
+    Permission,
+    RolePermissionMap
 } from '../models/index';
 
 import dotenv from 'dotenv';
@@ -36,7 +37,8 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
         Business,
         OrderDetail,
         Shift,
-        Permission
+        Permission,
+        RolePermissionMap
     ],
 });
 

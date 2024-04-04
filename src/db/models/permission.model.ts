@@ -1,12 +1,19 @@
-import { Table, Column, Model } from 'sequelize-typescript';
+import { Table, Column, Model, BelongsToMany } from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
-import { PermissionAttributes, PermissionCreationAttributes } from '../../interfaces';
+import {
+    PermissionAttributes,
+    PermissionCreationAttributes,
+} from '../../interfaces';
+import { RolePermissionMap, Role } from './index';
 
 @Table({
     timestamps: true,
     paranoid: true,
 })
-class Permission extends Model<PermissionAttributes, PermissionCreationAttributes> {
+class Permission extends Model<
+    PermissionAttributes,
+    PermissionCreationAttributes
+> {
     @Column({
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -32,6 +39,14 @@ class Permission extends Model<PermissionAttributes, PermissionCreationAttribute
         allowNull: true,
     })
     isDeleted: boolean;
+
+    @BelongsToMany(
+        () => Role,
+        () => RolePermissionMap,
+        'roleId',
+        'permissionId',
+    )
+    role: Role[];
 }
 
 export default Permission;

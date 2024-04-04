@@ -8,6 +8,7 @@ import Business from './business.model';
 import OrderDetail from './orderDetails.model';
 import Shift from './shift.model';
 import Permission from './permission.model';
+import RolePermissionMap from './rolepermissionmap.model';
 
 export {
     Role,
@@ -19,5 +20,6 @@ export {
     Business,
     OrderDetail,
     Shift,
-    Permission
+    Permission,
+    RolePermissionMap,
 };

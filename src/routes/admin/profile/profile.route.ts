@@ -11,7 +11,7 @@ router.get(
 );
 
 router.patch(
-    '/editAdminProfile/:id',
+    '/editAdminProfile',
     isAuth,
     myProfileController.editAdminProfile,
 );

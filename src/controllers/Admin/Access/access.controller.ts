@@ -40,9 +40,11 @@ export const accountAccess: Controller = async (req, res) => {
  */
 export const accountAccessByAccountType: Controller = async (req, res) => {
     try {
+        const { accountTypes } = req.query;
         const roles = await Permission.findAll({
             attributes: ['accountType', 'name'],
             order: ['accountType'],
+            where: { ...(accountTypes ? { accountType: accountTypes as string } : {}), },
         });
 
         const groupedRoles: RoleGroup = roles.reduce(

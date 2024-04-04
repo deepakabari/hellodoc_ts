@@ -231,7 +231,7 @@ export const resetPassword: Controller = async (req, res) => {
 
 export const changePassword: Controller = async (req, res) => {
     try {
-        const { currentPassword, newPassword, confirmPassword } = req.body;
+        const { password } = req.body;
         const userId = req.user.id;
 
         const user = await User.findByPk(userId)
@@ -241,35 +241,15 @@ export const changePassword: Controller = async (req, res) => {
                 message: messageConstant.USER_NOT_EXIST
             })
         }
-
-        const passwordMatch = await bcrypt.compare(
-            currentPassword,
-            user.password,
-        );
-        
-        if (!passwordMatch) {
-            return res.status(httpCode.UNAUTHORIZED).json({
-                status: httpCode.UNAUTHORIZED,
-                message: messageConstant.CURRENT_PASSWORD_WRONG,
-            });
-        }
-
-        // Check if newPassword matches confirmPassword
-        if (newPassword.localeCompare(confirmPassword) != 0) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.PASSWORD_NOT_MATCH,
-            });
-        }
         
         const hashedPassword = await bcrypt.hash(
-            newPassword,
+            password,
             Number(ITERATION),
         );
         
         await User.update(
             { password: hashedPassword },
-            { where: { id: req.user.id } },
+            { where: { id: userId } },
         );
         
         return res.status(httpCode.OK).json({

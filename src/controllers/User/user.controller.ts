@@ -128,8 +128,6 @@ const createAccount: Controller = async (req, res) => {
                     await UserRegion.create({
                         userId: newUser.id,
                         regionId,
-                        createdAt: new Date(),
-                        updatedAt: new Date(),
                     });
                 }
 
@@ -208,8 +206,9 @@ const createAccount: Controller = async (req, res) => {
                     photo: 'Photo',
                     independentContract: 'IndependentContract',
                     backgroundCheck: 'BackgroundCheck',
-                    hpaaCompliance: 'HPAACompliance',
+                    hipaaCompliance: 'HIPAACompliance',
                     nonDisclosureAgreement: 'NonDisclosureAgreement',
+                    licenseDocument: 'LicenseDocument'
                 };
 
                 const filePromises = files.map((file: any) => {
@@ -232,8 +231,6 @@ const createAccount: Controller = async (req, res) => {
                     await UserRegion.create({
                         userId: newUser.id,
                         regionId,
-                        createdAt: new Date(),
-                        updatedAt: new Date(),
                     });
                 }
 

@@ -44,7 +44,7 @@ export const providerInformation: Controller = async (req, res) => {
                 },
             },
         });
-
+    
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
@@ -147,7 +147,7 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
             ],
             include: {
                 model: Region,
-                attributes: ["id", 'name'],
+                attributes: ['id', 'name'],
                 through: { attributes: [] },
             },
             where: { id },
@@ -157,8 +157,6 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
             attributes: ['id', 'businessName', 'businessWebsite'],
             where: { userId: id },
         });
-
-        
 
         if (!physicianProfile && !businessDetails) {
             return res.status(httpCode.NOT_FOUND).json({

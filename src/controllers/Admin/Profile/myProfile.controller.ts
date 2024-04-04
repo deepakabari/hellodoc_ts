@@ -1,6 +1,6 @@
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
-import { Region, User } from '../../../db/models/index';
+import { Region, User, UserRegion } from '../../../db/models/index';
 import { Controller, AdminUpdates, BillingUpdates } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -103,6 +103,21 @@ export const editAdminProfile: Controller = async (req, res) => {
                         adminUpdates[field] = updatedData[field];
                     }
                 });
+                
+                if (updatedData.regions) {
+                    await UserRegion.destroy({
+                        where: { userId: id },
+                    });
+
+                    // Add new regions for the user
+                    for (const regionId of updatedData.regions) {
+                        await UserRegion.create({
+                            userId: id,
+                            regionId: regionId,
+                        });
+                    }
+                }
+
                 updateResult = await updateAdminDetails(id, adminUpdates);
                 break;
 
@@ -145,9 +160,9 @@ export const changePassword: Controller = async (req, res) => {
     try {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS
-        })
+            message: messageConstant.SUCCESS,
+        });
     } catch (error) {
         throw error;
     }
-}
+};
