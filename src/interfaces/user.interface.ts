@@ -32,7 +32,7 @@ interface UserAttributes {
     expireToken?: Date | null;
     onCallStatus?: string;
     isDeleted?: boolean;
-    notification?: boolean;
+    stopNotification?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
     deletedAt?: Date | null;

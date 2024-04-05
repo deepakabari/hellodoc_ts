@@ -12,14 +12,6 @@ export const RoleSchema = {
         }),
     },
 
-    userAccess: {
-        [Segments.QUERY]: {
-            accountType: Joi.string()
-                .required()
-                .valid(...Object.values(AccountType)),
-        },
-    },
-
     accountAccessByAccountType: {
         [Segments.QUERY]: {
             accountTypes: Joi.string()

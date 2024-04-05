@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: auto;
+            background: #ffffff;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 20px;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background-color: #ddd;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #008CBA;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="email-container">
+        <div class="header">
+            <h1>Urgent Coverage Needed</h1>
+        </div>
+        <div class="content">
+            <p>Dear Dr. {{physicianName}}</p>
+            <p>We are currently experiencing a shortage in our on-call coverage and urgently require additional support.
+                Your assistance in responding to patient requests would be greatly appreciated during this time.</p>
+            <p><b>Admin message: </b></p>
+            <p>{{message}}</p>
+            <p>Thank you for your prompt attention to this matter and for your continued dedication to patient care.</p>
+            <p>Sincerely,</p>
+            <p>Hallodoc Platform</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated message, please do not reply directly to this email. If you have any questions,
+                contact our office at Call: <a href="tel:+919876543210">+919876543210</a> or Email: <a
+                    href="mailto:admin@yopmail.com">admin@yopmail.com</a></p>
+        </div>
+    </div>
+
+</body>
+
+</html>

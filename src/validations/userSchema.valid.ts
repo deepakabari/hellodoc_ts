@@ -133,6 +133,12 @@ export const UserSchema = {
         }),
     },
 
+    updateNotification: {
+        [Segments.BODY]: Joi.object({
+            physicianIds: Joi.array().items(Joi.number().integer()).required(),
+        })
+    },
+
     editPhysicianProfile: {
         [Segments.PARAMS]: {
             id: Joi.string().required(),

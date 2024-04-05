@@ -58,7 +58,7 @@ export const getPatientHistory: Controller = async (req, res) => {
 };
 
 /**
- * Retrieves a list of blocked requests from the database.
+ * @function blockHistory - Retrieves a list of blocked requests from the database.
  * @param req - The Express Request object containing the incoming request data.
  * @param res - The Express Response object used to send back the desired HTTP response.
  * @returns - A promise that resolves to the Express Response object, which sends a JSON response containing the status code, success message, and the data of blocked requests.

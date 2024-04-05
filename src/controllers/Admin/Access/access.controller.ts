@@ -1,3 +1,4 @@
+import { Order } from 'sequelize';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
 import {
@@ -22,8 +23,22 @@ interface RoleGroup {
  */
 export const accountAccess: Controller = async (req, res) => {
     try {
+        const { sortBy, orderBy, page, pageSize } = req.query;
+
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        let sortByModel: Order = [];
+
+        if (sortBy && orderBy) {
+            sortByModel = [[sortBy, orderBy]] as Order;
+        }
         const accountAccess = await Role.findAll({
             attributes: ['id', 'Name', 'accountType'],
+            order: sortByModel,
+            limit,
+            offset,
         });
 
         return res.status(httpCode.OK).json({
@@ -130,7 +145,17 @@ export const createRole: Controller = async (req, res) => {
  */
 export const userAccess: Controller = async (req, res) => {
     try {
-        const accountType = req.query.accountType as string;
+        const { accountType, sortBy, orderBy, page, pageSize } = req.query;
+
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        let sortByModel: Order = [];
+
+        if (sortBy && orderBy) {
+            sortByModel = [[sortBy, orderBy]] as Order;
+        }
 
         let whereCondition: { [key: string]: any } = {};
         if (accountType && accountType !== 'All') {
@@ -147,6 +172,9 @@ export const userAccess: Controller = async (req, res) => {
                 'status',
             ],
             where: whereCondition,
+            order: sortByModel,
+            limit,
+            offset,
         });
 
         return res.status(httpCode.OK).json({

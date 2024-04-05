@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.addColumn('User', 'notification', {
+        await queryInterface.addColumn('User', 'stopNotification', {
             type: Sequelize.BOOLEAN,
             allowNull: true,
             defaultValue: false,
@@ -21,7 +21,7 @@ module.exports = {
     },
 
     async down(queryInterface) {
-        await queryInterface.removeColumn('User', 'notification');
+        await queryInterface.removeColumn('User', 'stopNotification');
         await queryInterface.removeColumn('Request', 'isAgreementSent');
         await queryInterface.removeColumn('Request', 'isAgreementAccepted');
     },

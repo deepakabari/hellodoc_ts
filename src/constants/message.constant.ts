@@ -57,7 +57,8 @@ const messageConstant = {
     INVALID_REGION:
         'Invalid region. Please select from following ( Maryland, Virginia, District of Columbia, New York )',
     VALID_REGION: 'Valid Region.',
-    INVALID_INPUT: 'Invalid file names array.'
+    INVALID_INPUT: 'Invalid file names array.',
+    NOTIFICATION_UPDATED: 'Notification Updated Successfully.',
 };
 
 export default messageConstant;

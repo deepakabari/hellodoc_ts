@@ -232,26 +232,20 @@ export const resetPassword: Controller = async (req, res) => {
 export const changePassword: Controller = async (req, res) => {
     try {
         const { password } = req.body;
-        const userId = req.user.id;
+        const id = req.params.id;
 
-        const user = await User.findByPk(userId)
-        if(!user) {
+        const user = await User.findByPk(id);
+        if (!user) {
             return res.status(httpCode.NOT_FOUND).json({
                 status: httpCode.NOT_FOUND,
-                message: messageConstant.USER_NOT_EXIST
-            })
+                message: messageConstant.USER_NOT_EXIST,
+            });
         }
-        
-        const hashedPassword = await bcrypt.hash(
-            password,
-            Number(ITERATION),
-        );
-        
-        await User.update(
-            { password: hashedPassword },
-            { where: { id: userId } },
-        );
-        
+
+        const hashedPassword = await bcrypt.hash(password, Number(ITERATION));
+
+        await User.update({ password: hashedPassword }, { where: { id } });
+
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PASSWORD_RESET,

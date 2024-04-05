@@ -9,6 +9,8 @@ import transporter from '../../../utils/email';
 import { sendSMS } from '../../../utils/smsSender';
 import { sequelize } from '../../../db/config/db.connection';
 import bcrypt from 'bcrypt';
+import { Order } from 'sequelize';
+import { Op } from 'sequelize';
 dotenv.config();
 
 /**
@@ -20,7 +22,18 @@ dotenv.config();
  */
 export const providerInformation: Controller = async (req, res) => {
     try {
-        const { regions } = req.query;
+        const { regions, sortBy, orderBy, page, pageSize } = req.query;
+
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        let sortByModel: Order = [];
+
+        if (sortBy && orderBy) {
+            sortByModel = [[sortBy, orderBy]] as Order;
+        }
+
         const providerInformation = await User.findAll({
             attributes: [
                 'id',
@@ -31,7 +44,7 @@ export const providerInformation: Controller = async (req, res) => {
                 'status',
                 'email',
                 'phoneNumber',
-                'notification',
+                'stopNotification',
             ],
             where: {
                 accountType: AccountType.Physician,
@@ -44,6 +57,9 @@ export const providerInformation: Controller = async (req, res) => {
                     ...(regions ? { name: regions as string } : {}),
                 },
             },
+            order: sortByModel,
+            limit,
+            offset,
         });
 
         return res.status(httpCode.OK).json({
@@ -312,6 +328,36 @@ export const providerLocation: Controller = async (req, res) => {
         const response = await fetch(url);
         const data = await response.json();
         return res.json(data);
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateNotification: Controller = async (req, res) => {
+    try {
+        const { physicianIds } = req.body;
+
+        // Set stopNotification to false for all physicians
+        await User.update(
+            { stopNotification: false },
+            { where: { accountType: AccountType.Physician } },
+        );
+
+        // Set stopNotification to true for the provided physicianIds
+        await User.update(
+            { stopNotification: true },
+            {
+                where: {
+                    id: { [Op.in]: physicianIds },
+                    accountType: AccountType.Physician,
+                },
+            },
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.NOTIFICATION_UPDATED,
+        });
     } catch (error) {
         throw error;
     }

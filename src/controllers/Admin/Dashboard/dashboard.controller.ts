@@ -271,7 +271,11 @@ export const getPatientByState: Controller = async (req, res) => {
                 ];
                 break;
             case 'unpaid':
-                condition = { caseTag: 'UnPaid', deletedAt: null, isDeleted: false };
+                condition = {
+                    caseTag: 'UnPaid',
+                    deletedAt: null,
+                    isDeleted: false,
+                };
                 includeModels = [
                     {
                         model: User,
@@ -864,13 +868,6 @@ export const viewUploads: Controller = async (req, res) => {
             order: sortByModel as Order,
         });
 
-        if (uploads.length === 0) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
-                message: messageConstant.FILE_NOT_FOUND,
-            });
-        }
-
         // To format the date in MM(string) DD YYYY format
         // const formattedUploads = uploads.map((upload) => {
         //     const date = new Date(upload.createdAt);
@@ -1152,9 +1149,25 @@ export const requestSupport: Controller = async (req, res) => {
         });
 
         for (const physician of unScheduledPhysician) {
-            console.log(
-                `Sending message to ${physician.firstName}, \n ${message}`,
+            const templateData = {
+                physicianName: physician.firstName + ' ' + physician.lastName,
+                message: message
+            };
+
+            const data = await compileEmailTemplate(
+                'requestSupport',
+                templateData,
             );
+
+            const mailOptions = {
+                from: process.env.EMAIL_FROM,
+                to: physician.email,
+                subject:
+                    'Immediate On-Call Support Required - Your Assistance Needed',
+                html: data,
+            };
+
+            await transporter.sendMail(mailOptions);
         }
 
         return res.status(httpCode.OK).json({

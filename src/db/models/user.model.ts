@@ -134,7 +134,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
         allowNull: true,
         type: DataTypes.BOOLEAN,
     })
-    notification: boolean;
+    stopNotification: boolean;
 
     @HasMany(() => Request, {
         foreignKey: 'userId',

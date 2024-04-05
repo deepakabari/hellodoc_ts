@@ -28,7 +28,6 @@ router.get('/professions', isAuth, partnerController.professions);
 router.get(
     '/businessByProfession/:profession',
     isAuth,
-    celebrate(RequestSchema.idParams),
     partnerController.businessByProfession,
 );
 

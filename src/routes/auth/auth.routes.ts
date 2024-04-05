@@ -21,7 +21,7 @@ router.post(
 );
 
 router.post(
-    '/changePassword',
+    '/changePassword/:id',
     isAuth,
     celebrate(UserSchema.changePassword),
     authLogin.changePassword,

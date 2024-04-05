@@ -5,7 +5,11 @@ import {
 import express from 'express';
 import isAuth from '../../../middleware/in-auth';
 import { celebrate } from 'celebrate';
-import { RequestSchema, ShiftSchema, UserSchema } from '../../../validations/index';
+import {
+    RequestSchema,
+    ShiftSchema,
+    UserSchema,
+} from '../../../validations/index';
 import { upload } from '../../../utils/multerConfig';
 
 const router = express.Router();
@@ -38,18 +42,34 @@ router.patch(
     providerController.editPhysicianProfile,
 );
 
-router.post('/addNewShift', isAuth, celebrate(ShiftSchema.createShift), schedulingController.addNewShift);
+router.patch(
+    '/updateNotification',
+    isAuth,
+    celebrate(UserSchema.updateNotification),
+    providerController.updateNotification,
+);
+
+router.post(
+    '/addNewShift',
+    isAuth,
+    celebrate(ShiftSchema.createShift),
+    schedulingController.addNewShift,
+);
 
 router.get('/viewShift/:id', isAuth, schedulingController.viewShift);
 
-router.get('/location', isAuth, providerController.providerLocation)
+router.get('/location', isAuth, providerController.providerLocation);
 
-router.get('/viewShiftFilter', isAuth, schedulingController.viewShiftFilter)
+router.get('/viewShiftFilter', isAuth, schedulingController.viewShiftFilter);
 
-router.get('/unApprovedShift', isAuth, schedulingController.unApprovedViewShift)
+router.get(
+    '/unApprovedShift',
+    isAuth,
+    schedulingController.unApprovedViewShift,
+);
 
-router.put('/approveShift', isAuth, schedulingController.approveShift)
+router.put('/approveShift', isAuth, schedulingController.approveShift);
 
-router.delete('/deleteShift', isAuth, schedulingController.deleteShift)
+router.delete('/deleteShift', isAuth, schedulingController.deleteShift);
 
 export default router;

@@ -21,11 +21,6 @@ router.post(
     accessController.createRole,
 );
 
-router.get(
-    '/userAccess',
-    isAuth,
-    celebrate(RoleSchema.userAccess),
-    accessController.userAccess,
-);
+router.get('/userAccess', isAuth, accessController.userAccess);
 
 export default router;
