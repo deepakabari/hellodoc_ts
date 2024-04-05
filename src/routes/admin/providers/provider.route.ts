@@ -72,4 +72,6 @@ router.put('/approveShift', isAuth, schedulingController.approveShift);
 
 router.delete('/deleteShift', isAuth, schedulingController.deleteShift);
 
+router.delete('/deleteProvider/:id', isAuth, providerController.deleteAccount)
+
 export default router;

@@ -6,6 +6,7 @@ const messageConstant = {
     INTERNAL_SERVER_ERROR: 'Internal server error',
     USER_CREATED: 'User created successfully',
     USER_CREATION_FAILED: 'User creation failed',
+    USER_DELETED: 'User deleted successfully.',
     USER_NOT_EXIST: 'User not exist on this email',
     USER_ALREADY_EXISTS: 'User already exists',
     POST_CREATED: 'Post created successfully',

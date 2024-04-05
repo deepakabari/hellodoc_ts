@@ -34,6 +34,11 @@ export const providerInformation: Controller = async (req, res) => {
             sortByModel = [[sortBy, orderBy]] as Order;
         }
 
+        let regionWhereClause = {};
+        if (regions && regions !== 'all') {
+            regionWhereClause = { name: regions as string };
+        }
+
         const providerInformation = await User.findAll({
             attributes: [
                 'id',
@@ -48,14 +53,13 @@ export const providerInformation: Controller = async (req, res) => {
             ],
             where: {
                 accountType: AccountType.Physician,
+                isDeleted: false,
             },
             include: {
                 model: Region,
                 attributes: [],
                 through: { attributes: [] },
-                where: {
-                    ...(regions ? { name: regions as string } : {}),
-                },
+                where: regionWhereClause,
             },
             order: sortByModel,
             limit,
@@ -211,7 +215,6 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             fieldUpdates: FieldUpdates,
             files?: { [fieldName: string]: Express.Multer.File[] },
         ) => {
-            const transaction = await sequelize.transaction();
             try {
                 if (files) {
                     if (files.photo && files.photo[0]) {
@@ -224,34 +227,15 @@ export const editPhysicianProfile: Controller = async (req, res) => {
 
                 await User.update(fieldUpdates, {
                     where: { id },
-                    transaction,
                 });
 
                 await Business.update(
                     { businessName, businessWebsite },
-                    { where: { userId: id }, transaction },
+                    { where: { userId: id } },
                 );
 
-                await UserRegion.destroy({
-                    where: { userId: id },
-                    force: true,
-                    transaction,
-                });
-
-                for (const regionId of regions) {
-                    await UserRegion.create(
-                        {
-                            userId: id as unknown as number,
-                            regionId: regionId,
-                        },
-                        { transaction },
-                    );
-                }
-
-                await transaction.commit();
                 return true;
             } catch (error) {
-                await transaction.rollback();
                 console.error('Transaction failed:', error);
                 return false;
             }
@@ -300,6 +284,20 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             fieldUpdates,
             files,
         );
+
+        if (regions) {
+            await UserRegion.destroy({
+                where: { userId: id },
+                force: true,
+            });
+
+            for (const regionId of regions) {
+                await UserRegion.create({
+                    userId: id as unknown as number,
+                    regionId: regionId,
+                });
+            }
+        }
 
         if (!updateResult) {
             return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
@@ -357,6 +355,23 @@ export const updateNotification: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.NOTIFICATION_UPDATED,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const deleteAccount: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await User.destroy({
+            where: { id },
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.USER_DELETED,
         });
     } catch (error) {
         throw error;
