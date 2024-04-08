@@ -9,6 +9,8 @@ import {
 } from '../../../db/models/index';
 import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
+import { sequelize } from '../../../db/config/db.connection';
+
 dotenv.config();
 
 interface RoleGroup {
@@ -61,32 +63,22 @@ export const accountAccess: Controller = async (req, res) => {
 export const accountAccessByAccountType: Controller = async (req, res) => {
     try {
         const { accountTypes } = req.query;
-        const roles = await Permission.findAll({
-            attributes: ['accountType', 'name'],
-            order: ['accountType'],
-            where: {
-                ...(accountTypes
-                    ? { accountType: accountTypes as string }
-                    : {}),
-            },
-        });
 
-        const groupedRoles: RoleGroup = roles.reduce(
-            (result: RoleGroup, role) => {
-                const key = role.accountType;
-                if (!result[key]) {
-                    result[key] = [];
-                }
-                result[key].push(role.name);
-                return result;
-            },
-            {} as RoleGroup,
-        );
+        let whereCondition: { [key: string]: any } = {};
+        if (accountTypes && accountTypes !== 'All') {
+            whereCondition['accountType'] = accountTypes;
+        }
+
+        const roles = await Permission.findAll({
+            attributes: ['id', 'accountType', 'name'],
+            order: ['accountType'],
+            where: whereCondition,
+        });
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: groupedRoles,
+            data: roles,
         });
     } catch (error) {
         throw error;
@@ -123,6 +115,8 @@ export const createRole: Controller = async (req, res) => {
             await RolePermissionMap.create({
                 roleId: createRole.id,
                 permissionId,
+                createdAt: new Date(),
+                updatedAt: new Date(),
             });
         }
 
@@ -183,6 +177,79 @@ export const userAccess: Controller = async (req, res) => {
             data: users,
         });
     } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * @function viewRole
+ * @param req - Express request object.
+ * @param res - Express response object used to send back the HTTP response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the HTTP status code, a success message, and an array of user data.
+ */
+export const viewRole: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const viewRole = await Role.findAll({
+            attributes: ['id', 'Name', 'accountType'],
+            where: { id },
+            include: [
+                {
+                    model: Permission,
+                    attributes: ['id', 'name', 'accountType'],
+                    through: { attributes: [] },
+                },
+            ],
+        });
+
+        // Check if the role exists
+        if (!viewRole) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.ROLE_NOT_FOUND,
+            });
+        }
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.ROLE_RETRIEVED,
+            data: viewRole,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateRole: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { permissionIds } = req.body;
+
+        // Remove all existing permissions associated with the role
+        await RolePermissionMap.destroy({
+            where: { roleId: id },
+            force: true,
+        });
+
+        // Add new permissions to the role
+        for (const permissionId of permissionIds) {
+            await RolePermissionMap.create(
+                {
+                    roleId: id as unknown as number,
+                    permissionId: permissionId,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                },
+            );
+        }
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.ROLE_UPDATED,
+        });
+    } catch (error) {
+
         throw error;
     }
 };

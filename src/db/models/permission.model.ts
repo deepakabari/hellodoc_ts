@@ -38,15 +38,15 @@ class Permission extends Model<
         type: DataTypes.DATE,
         allowNull: true,
     })
-    isDeleted: boolean;
+    isDeleted?: boolean;
 
     @BelongsToMany(
         () => Role,
         () => RolePermissionMap,
-        'roleId',
         'permissionId',
+        'roleId',
     )
-    role: Role[];
+    roles: Role[];
 }
 
 export default Permission;

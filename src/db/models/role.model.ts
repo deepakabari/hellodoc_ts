@@ -50,10 +50,10 @@ class Role extends Model<RoleAttributes, RoleCreationAttributes> {
     @BelongsToMany(
         () => Permission,
         () => RolePermissionMap,
-        'permissionId',
         'roleId',
+        'permissionId',
     )
-    permission: Permission[];
+    permissions: Permission[];
 }
 
 export default Role;

@@ -21,6 +21,10 @@ router.post(
     accessController.createRole,
 );
 
+router.get('/viewRole/:id', isAuth, accessController.viewRole);
+
+router.patch('/updateRole/:id', isAuth, accessController.updateRole);
+
 router.get('/userAccess', isAuth, accessController.userAccess);
 
 export default router;

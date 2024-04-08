@@ -1151,7 +1151,7 @@ export const requestSupport: Controller = async (req, res) => {
         for (const physician of unScheduledPhysician) {
             const templateData = {
                 physicianName: physician.firstName + ' ' + physician.lastName,
-                message: message
+                message: message,
             };
 
             const data = await compileEmailTemplate(
