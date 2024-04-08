@@ -38,10 +38,12 @@ const messageConstant = {
     ERROR_UPLOAD_FILE: 'Error when uploading file',
     MESSAGE_SENT_SUCCESSFULLY: 'Message sent successfully',
     ERROR_SEND_MESSAGE: 'Error while sending message',
+    ROLE_CREATED: 'Role created successfully',
     ROLE_ALREADY_EXISTS: 'Role already exists',
     ROLE_RETRIEVED: 'Role retrieved successfully.',
     ROLE_NOT_FOUND: 'Role not found',
     ROLE_UPDATED: 'Role updated successfully.',
+    ROLE_DELETED: 'Role deleted successfully',
     REQUEST_EMAIL_SMS_SENT: 'Request email and sms sent successfully',
     EMAIL_SENT: 'Email sent successfully.',
     MISSING_SECTION_OR_UPDATED_DATA: 'Missing section or updates data',
@@ -63,6 +65,7 @@ const messageConstant = {
     VALID_REGION: 'Valid Region.',
     INVALID_INPUT: 'Invalid file names array.',
     NOTIFICATION_UPDATED: 'Notification Updated Successfully.',
+    PATIENT_UNBLOCK: 'Patient unblock successfully.'
 };
 
 export default messageConstant;

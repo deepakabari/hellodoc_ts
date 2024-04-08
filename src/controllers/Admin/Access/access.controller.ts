@@ -122,7 +122,7 @@ export const createRole: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.ROLE_CREATED,
             data: createRole,
         });
     } catch (error) {
@@ -221,10 +221,28 @@ export const viewRole: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function updateRole
+ * @param req - The request object containing the parameters and body data.
+ * @param res - The response object used to send back the HTTP response.
+ * @returns - A promise that resolves to the response object.
+ * @description Updates the permissions associated with a specific role. It first removes all existing permissions and then adds the new permissions provided in the request body.
+ */
 export const updateRole: Controller = async (req, res) => {
     try {
+        // Extract the role ID from the request parameters.
         const { id } = req.params;
-        const { permissionIds } = req.body;
+
+        // Extract the list of permission IDs from the request body.
+        const { roleName, accountType, permissionIds } = req.body;
+
+        const updateRole = await Role.update(
+            {
+                Name: roleName,
+                accountType,
+            },
+            { where: { id } },
+        );
 
         // Remove all existing permissions associated with the role
         await RolePermissionMap.destroy({
@@ -234,22 +252,47 @@ export const updateRole: Controller = async (req, res) => {
 
         // Add new permissions to the role
         for (const permissionId of permissionIds) {
-            await RolePermissionMap.create(
-                {
-                    roleId: id as unknown as number,
-                    permissionId: permissionId,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                },
-            );
+            await RolePermissionMap.create({
+                roleId: id as unknown as number,
+                permissionId: permissionId,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
         }
 
+        // Send a success response with a status message.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.ROLE_UPDATED,
         });
     } catch (error) {
+        throw error;
+    }
+};
 
+/**
+ * @function deleteRole
+ * @param req - The request object containing the parameters.
+ * @param res - The response object used to send back the HTTP response.
+ * @returns - A promise that resolves to the response object.
+ * @description Deletes a specific role from the database based on the role ID provided in the request parameters.
+ */
+export const deleteRole: Controller = async (req, res) => {
+    try {
+        // Extract the role ID from the request parameters.
+        const { id } = req.params;
+
+        // Delete the role from the database.
+        await Role.destroy({
+            where: { id }, // Specify the condition to find the role to delete.
+        });
+
+        // Send a success response with a status message.
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.ROLE_DELETED,
+        });
+    } catch (error) {
         throw error;
     }
 };

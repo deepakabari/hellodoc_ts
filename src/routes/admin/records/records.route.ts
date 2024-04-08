@@ -10,7 +10,7 @@ router.get('/patientHistory', isAuth, recordsController.getPatientHistory);
 
 router.get('/blockHistory', isAuth, recordsController.blockHistory);
 
-router.get('/patientRecord', isAuth, recordsController.patientRecord);
+router.get('/patientRecord/:id', isAuth, recordsController.patientRecord);
 
 router.get(
     '/searchRecord',
@@ -18,5 +18,7 @@ router.get(
     celebrate(RecordSchema.searchRecord),
     recordsController.searchRecord,
 );
+
+router.patch('/unBlockPatient/:id', isAuth, recordsController.unBlockPatient);
 
 export default router;

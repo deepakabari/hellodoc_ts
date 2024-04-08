@@ -20,6 +20,7 @@ export const getPatientHistory: Controller = async (req, res) => {
         const patientsHistory = await Request.findAll({
             attributes: [
                 'id',
+                'userId',
                 'patientFirstName',
                 'patientLastName',
                 'patientEmail',
@@ -65,6 +66,8 @@ export const getPatientHistory: Controller = async (req, res) => {
  */
 export const blockHistory: Controller = async (req, res) => {
     try {
+        const { search } = req.query;
+
         const blockRequests = await Request.findAll({
             attributes: [
                 'id',
@@ -75,7 +78,24 @@ export const blockHistory: Controller = async (req, res) => {
                 'createdAt',
                 'patientNote',
             ],
-            where: { requestStatus: RequestStatus.Blocked },
+            where: {
+                requestStatus: RequestStatus.Blocked,
+                ...(search
+                    ? {
+                          [Op.or]: [
+                              'patientFirstName',
+                              'patientLastName',
+                              'patientEmail',
+                              'patientPhoneNumber',
+                              'createdAt',
+                          ].map((field) => ({
+                              [field]: {
+                                  [Op.like]: `%${search}%`,
+                              },
+                          })),
+                      }
+                    : {}),
+            },
         });
 
         return res.status(httpCode.OK).json({
@@ -97,6 +117,7 @@ export const blockHistory: Controller = async (req, res) => {
  */
 export const patientRecord: Controller = async (req, res) => {
     try {
+        const { id } = req.params;
         const patients = await Request.findAll({
             attributes: [
                 'id',
@@ -113,6 +134,7 @@ export const patientRecord: Controller = async (req, res) => {
                 attributes: ['id', 'firstName', 'lastName'],
                 where: { id: sequelize.col('Request.physicianId') },
             },
+            where: { userId: id },
         });
 
         return res.status(httpCode.OK).json({
@@ -178,6 +200,27 @@ export const searchRecord: Controller = async (req, res) => {
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: patientData,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const unBlockPatient: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await Request.update(
+            {
+                requestStatus: RequestStatus.Unassigned,
+                isDeleted: false,
+            },
+            { where: { id } },
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.PATIENT_UNBLOCK,
         });
     } catch (error) {
         throw error;

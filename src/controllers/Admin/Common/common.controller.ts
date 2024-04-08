@@ -13,7 +13,6 @@ import {
 import { Request as ExpressRequest, Response } from 'express';
 import archiver from 'archiver';
 const unlinkAsync = promisify(fs.unlink);
-import ExcelJS from 'exceljs';
 import json2xls from 'json2xls';
 
 /**
@@ -69,7 +68,6 @@ export const downloadFile = async (req: ExpressRequest, res: Response) => {
         });
 
         res.attachment('downloaded-files.zip');
-        // const fileStream = fs.createWriteStream('downloaded-files.zip');
         archive.pipe(res);
 
         fileNames.forEach((fileName: string) => {
@@ -219,27 +217,22 @@ export const exportAll = async (req: ExpressRequest, res: Response) => {
             attributes: attributes.map((attr) => attr[0]),
         });
 
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('All Requests');
-
-        const headers = attributes.map((attr) =>
-            typeof attr === 'string' ? attr : attr[1],
-        );
-        worksheet.addRow(headers);
-
-        patients.forEach((patient: any) => {
-            const rowData = attributes.map((attr) => {
+        const jsonPatients = patients.map((patient: any) => {
+            const patientData: any = {};
+            attributes.forEach((attr) => {
                 if (typeof attr === 'string') {
-                    return patient[attr];
+                    patientData[attr] = patient[attr];
                 } else {
-                    return patient[attr[0]];
+                    patientData[attr[1]] = patient[attr[0]];
                 }
             });
-            worksheet.addRow(rowData);
+            return patientData;
         });
 
+        const xls = json2xls(jsonPatients);
+
         const filename = `all_patients_${Date.now()}.xlsx`;
-        await workbook.xlsx.writeFile(filename);
+        fs.writeFileSync(filename, xls, 'binary');
 
         return res.download(filename, filename, () => {
             // Delete the file after download completes

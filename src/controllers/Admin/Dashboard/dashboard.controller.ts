@@ -32,39 +32,46 @@ dotenv.config();
  */
 export const requestCount: Controller = async (req, res) => {
     try {
+        // Retrieve all possible values of CaseTag as an array
         const allCaseTags: CaseTag[] = Object.values(CaseTag);
 
+        // Perform a database query to count requests grouped by caseTag
         const requestCounts = await Request.findAll({
             attributes: [
-                'caseTag',
-                [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+                'caseTag', // Attribute to group by
+                [sequelize.fn('COUNT', sequelize.col('id')), 'count'], // Count the number of IDs for each caseTag
             ],
             where: {
                 caseTag: {
-                    [Op.in]: allCaseTags,
+                    [Op.in]: allCaseTags, // Filter to include only the caseTags present in allCaseTags array
                 },
             },
-            group: 'caseTag',
-            raw: true,
+            group: 'caseTag', // Group the results by caseTag
+            raw: true, // Return raw query results
         });
 
+        // Initialize an object to map caseTags to their counts
         const countMap: any = {};
 
+        // Populate countMap with counts for each caseTag
         requestCounts.forEach((row: any) => {
             countMap[row.caseTag] = row.count;
         });
 
+        // Map allCaseTags to an array of objects containing caseTag and its count
         const result = allCaseTags.map((caseTag) => ({
             caseTag,
-            count: countMap[caseTag] || 0,
+            count: countMap[caseTag] || 0, // Use the count from countMap or default to 0 if not present
         }));
 
+        // Send a response with the status code 200 and the result in JSON format
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: result,
         });
     } catch (error) {
+        // In case of an error, throw the error to be handled by the error middleware
         throw error;
     }
 };

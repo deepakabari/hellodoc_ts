@@ -14,7 +14,10 @@ dotenv.config();
  */
 export const adminProfile: Controller = async (req, res) => {
     try {
+        // Extract the authenticated user's ID from the request object.
         const id = req.user.id;
+
+        // Extract the authenticated user's ID from the request object.
         const adminProfile = await User.findAll({
             attributes: [
                 'id',
@@ -34,23 +37,25 @@ export const adminProfile: Controller = async (req, res) => {
                 'altPhone',
             ],
             where: {
-                id,
+                id, // Use the authenticated user's ID as the search criterion.
             },
             include: [
                 {
-                    model: Region,
-                    attributes: ['id', 'name'],
+                    model: Region, // Include associated regions in the response.
+                    attributes: ['id', 'name'], // Select specific attributes from the Region model.
                     through: { attributes: [] }, // This will exclude the join table attributes
                 },
             ],
         });
 
+        // Send a success response with the admin's profile data.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: adminProfile,
+            data: adminProfile, // Include the retrieved profile data in the response.
         });
     } catch (error) {
+        // If an error occurs, throw it to be handled by the error middleware.
         throw error;
     }
 };
@@ -63,33 +68,42 @@ export const adminProfile: Controller = async (req, res) => {
  */
 export const editAdminProfile: Controller = async (req, res) => {
     try {
+        // Extract the authenticated user's ID and the updated data from the request body.
         const id = req.user.id;
         const { section, updatedData } = req.body;
 
+        // Check if the required fields 'section' and 'updatedData' are provided.
         if (!section || !updatedData) {
+            // If not, return a 'Not Found' status with an error message.
             return res.status(httpCode.NOT_FOUND).json({
                 status: httpCode.NOT_FOUND,
                 message: messageConstant.MISSING_SECTION_OR_UPDATED_DATA,
             });
         }
 
+        // Define a function to update admin details in the database.
         const updateAdminDetails = async (
             id: number,
             updates: AdminUpdates | BillingUpdates,
         ) => {
             try {
+                // Attempt to update the user with the provided updates.
                 await User.update(updates, {
                     where: { id },
                 });
-                return true;
+                return true; // Return true if the update is successful.
             } catch (error) {
-                return false;
+                return false; // Return false if there's an error during the update.
             }
         };
 
+        // Initialize a variable to track the result of the update operation.
         let updateResult = false;
+
+        // Use a switch statement to handle different sections of the profile.
         switch (section) {
             case 'administration':
+                // Define the fields that can be updated in the administration section.
                 const adminFields = [
                     'firstName',
                     'lastName',
@@ -97,17 +111,23 @@ export const editAdminProfile: Controller = async (req, res) => {
                     'confirmEmail',
                     'phoneNumber',
                 ];
+
+                // Initialize an object to hold the updates for the administration section.
                 let adminUpdates: any = {};
+
+                // Iterate over the admin fields and add them to the updates object if they are provided.
                 adminFields.forEach((field) => {
                     if (updatedData[field] != undefined) {
                         adminUpdates[field] = updatedData[field];
                     }
                 });
-                
+
+                // If regions are provided, update the user's regions.
                 if (updatedData.regions) {
+                    // Remove all existing regions associated with the user.
                     await UserRegion.destroy({
                         where: { userId: id },
-                        force: true
+                        force: true,
                     });
 
                     // Add new regions for the user
@@ -119,10 +139,12 @@ export const editAdminProfile: Controller = async (req, res) => {
                     }
                 }
 
+                // Perform the update operation and store the result.
                 updateResult = await updateAdminDetails(id, adminUpdates);
                 break;
 
             case 'billing':
+                // Define the fields that can be updated in the billing section.
                 const billingFields = [
                     'address1',
                     'address2',
@@ -131,23 +153,32 @@ export const editAdminProfile: Controller = async (req, res) => {
                     'zipCode',
                     'altPhone',
                 ];
+
+                // Initialize an object to hold the updates for the billing section.
                 let billingUpdates: any = {};
+
+                // Iterate over the billing fields and add them to the updates object if they are provided.
                 billingFields.forEach((field) => {
                     if (updatedData[field] !== undefined) {
                         billingUpdates[field] = updatedData[field];
                     }
                 });
+
+                // Perform the update operation and store the result.
                 updateResult = await updateAdminDetails(id, billingUpdates);
                 break;
         }
 
+        // Check the result of the update operation.
         if (!updateResult) {
+            // If the update failed, return an 'Internal Server Error' status with an error message.
             return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
                 status: httpCode.INTERNAL_SERVER_ERROR,
                 message: messageConstant.UPDATE_FAILED,
             });
         }
 
+        // If the update was successful, return an 'OK' status with a success message.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,

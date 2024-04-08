@@ -27,4 +27,6 @@ router.patch('/updateRole/:id', isAuth, accessController.updateRole);
 
 router.get('/userAccess', isAuth, accessController.userAccess);
 
+router.delete('/deleteRole/:id', isAuth, accessController.deleteRole)
+
 export default router;
