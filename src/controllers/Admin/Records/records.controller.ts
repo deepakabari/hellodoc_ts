@@ -3,8 +3,8 @@ import { RequestStatus } from '../../../utils/enum.constant';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
 import { Request, User } from '../../../db/models/index';
-import { Controller } from '../../../interfaces';
-import sequelize, { Order, col, where } from 'sequelize';
+import { Controller, RequestAttributes } from '../../../interfaces';
+import sequelize, { Order, WhereOptions, col, where } from 'sequelize';
 import { Op } from 'sequelize';
 import json2xls from 'json2xls';
 import { Request as ExpressRequest, Response } from 'express';
@@ -19,24 +19,24 @@ dotenv.config();
  */
 export const getPatientHistory: Controller = async (req, res) => {
     try {
-        const { patientName, email, phone, page, pageSize } = req.query;
+        const { firstName, lastName, email, phone, page, pageSize } = req.query;
 
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
-        const whereClause: any = {};
-        if (patientName) {
-            whereClause[Op.or] = [
-                { patientFirstName: { [Op.like]: `%${patientName}%` } },
-                { patientLastName: { [Op.like]: `%${patientName}%` } },
-            ];
+        const whereClause: WhereOptions<RequestAttributes> = {};
+        if (firstName) {
+            whereClause.patientFirstName = { [Op.substring]: `${firstName}` };
+        }
+        if (lastName) {
+            whereClause.patientLastName = { [Op.substring]: `${lastName}` };
         }
         if (email) {
-            whereClause.patientEmail = { [Op.like]: `%${email}%` };
+            whereClause.patientEmail = { [Op.substring]: `${email}` };
         }
         if (phone) {
-            whereClause.patientPhoneNumber = { [Op.like]: `%${phone}%` };
+            whereClause.patientPhoneNumber = { [Op.substring]: `${phone}` };
         }
 
         const patientsHistory = await Request.findAndCountAll({
@@ -94,18 +94,18 @@ export const blockHistory: Controller = async (req, res) => {
 
         if (name) {
             whereClause[Op.or] = [
-                { patientFirstName: { [Op.like]: `%${name}%` } },
-                { patientLastName: { [Op.like]: `%${name}%` } },
+                { patientFirstName: { [Op.substring]: `${name}` } },
+                { patientLastName: { [Op.substring]: `${name}` } },
             ];
         }
         if (email) {
-            whereClause.patientEmail = { [Op.like]: `%${email}%` };
+            whereClause.patientEmail = { [Op.substring]: `${email}` };
         }
         if (phone) {
-            whereClause.patientPhoneNumber = { [Op.like]: `%${phone}%` };
+            whereClause.patientPhoneNumber = { [Op.substring]: `${phone}` };
         }
         if (date) {
-            whereClause.createdAt = { [Op.like]: `%${date}%` };
+            whereClause.createdAt = { [Op.substring]: `${date}` };
         }
 
         const blockRequests = await Request.findAndCountAll({
@@ -119,6 +119,9 @@ export const blockHistory: Controller = async (req, res) => {
                 'patientNote',
             ],
             where: whereClause,
+            include: [
+                { model: User, as: 'user', attributes: ['id', 'status'] },
+            ],
             order: sortByModel,
             limit,
             offset,
@@ -144,7 +147,11 @@ export const blockHistory: Controller = async (req, res) => {
 export const patientRecord: Controller = async (req, res) => {
     try {
         const { id } = req.params;
-        const { sortBy, orderBy } = req.query;
+        const { sortBy, orderBy, page, pageSize } = req.query;
+
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
 
         let sortByModel: Order = [];
 
@@ -170,12 +177,14 @@ export const patientRecord: Controller = async (req, res) => {
             },
             where: { userId: id },
             order: sortByModel,
+            limit,
+            offset,
         });
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
-            data: patients,
+            data: { patients, id },
         });
     } catch (error) {
         throw error;
@@ -222,21 +231,23 @@ export const searchRecord: Controller = async (req, res) => {
 
         if (patientName) {
             whereClause[Op.or] = [
-                { patientFirstName: { [Op.like]: `%${patientName}%` } },
-                { patientLastName: { [Op.like]: `%${patientName}%` } },
+                { patientFirstName: { [Op.substring]: `${patientName}` } },
+                { patientLastName: { [Op.substring]: `${patientName}` } },
             ];
         }
         if (requestStatus) {
-            whereClause.requestStatus = { [Op.like]: `%${requestStatus}%` };
+            whereClause.requestStatus = { [Op.substring]: `${requestStatus}` };
         }
         if (requestType) {
-            whereClause.requestType = { [Op.like]: `%${requestType}%` };
+            whereClause.requestType = { [Op.substring]: `${requestType}` };
         }
         if (email) {
-            whereClause.patientEmail = { [Op.like]: `%${email}%` };
+            whereClause.patientEmail = { [Op.substring]: `${email}` };
         }
         if (phoneNumber) {
-            whereClause.patientPhoneNumber = { [Op.like]: `%${phoneNumber}%` };
+            whereClause.patientPhoneNumber = {
+                [Op.substring]: `${phoneNumber}`,
+            };
         }
 
         const patientData = await Request.findAndCountAll({
@@ -264,11 +275,23 @@ export const searchRecord: Controller = async (req, res) => {
                 as: 'physician',
                 attributes: ['id', 'firstName', 'lastName'],
                 where: {
-                    [Op.or]: [
-                        {
-                            id: sequelize.col('Request.physicianId'),
-                        },
-                    ],
+                    id: sequelize.col('Request.physicianId'),
+                    ...(physicianName
+                        ? {
+                              [Op.or]: [
+                                  {
+                                      firstName: {
+                                          [Op.substring]: `${physicianName}`,
+                                      },
+                                  },
+                                  {
+                                      lastName: {
+                                          [Op.substring]: `${physicianName}`,
+                                      },
+                                  },
+                              ],
+                          }
+                        : {}),
                 },
             },
             order: sortByModel,
@@ -344,7 +367,16 @@ export const exportToExcel = async (req: ExpressRequest, res: Response) => {
 
         const jsonData: any = await response.json();
 
-        const xls = json2xls(jsonData.data);
+        const formattedData = jsonData.data.rows.map((row: any) => {
+            return {
+                ...row,
+                physicianId: row.physician.id,
+                physicianFirstName: row.physician.firstName,
+                physicianLastName: row.physician.lastName,
+            };
+        });
+
+        const xls = json2xls(formattedData);
 
         const filename = `records_patients_${Date.now()}.xlsx`;
         fs.writeFileSync(filename, xls, 'binary');
