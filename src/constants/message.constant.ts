@@ -31,7 +31,8 @@ const messageConstant = {
     EMAIL_NOT_MATCH: 'Email and Confirm Email are not the same',
     PASSWORD_NOT_MATCH: 'Password and Confirm Password are not the same',
     NOT_GET_HASHED_TOKEN: 'Hashed token cannot get, please try again',
-    REQUEST_CREATED: 'Request Created Successfully',
+    REQUEST_CREATED: 'Request Created Successfully.',
+    REQUEST_DELETED: 'Request Deleted Successfully.',
     FILE_NOT_FOUND: 'File not found',
     FILE_DELETED: 'File deleted successfully.',
     ERROR_DOWNLOAD_FILE: 'Error when downloading file',
@@ -65,7 +66,7 @@ const messageConstant = {
     VALID_REGION: 'Valid Region.',
     INVALID_INPUT: 'Invalid file names array.',
     NOTIFICATION_UPDATED: 'Notification Updated Successfully.',
-    PATIENT_UNBLOCK: 'Patient unblock successfully.'
+    PATIENT_UNBLOCK: 'Patient unblock successfully.',
 };
 
 export default messageConstant;

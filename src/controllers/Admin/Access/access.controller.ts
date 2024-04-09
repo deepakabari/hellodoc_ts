@@ -36,7 +36,7 @@ export const accountAccess: Controller = async (req, res) => {
         if (sortBy && orderBy) {
             sortByModel = [[sortBy, orderBy]] as Order;
         }
-        const accountAccess = await Role.findAll({
+        const accountAccess = await Role.findAndCountAll({
             attributes: ['id', 'Name', 'accountType'],
             order: sortByModel,
             limit,
@@ -156,7 +156,7 @@ export const userAccess: Controller = async (req, res) => {
             whereCondition['accountType'] = accountType;
         }
 
-        const users = await User.findAll({
+        const users = await User.findAndCountAll({
             attributes: [
                 'id',
                 'accountType',

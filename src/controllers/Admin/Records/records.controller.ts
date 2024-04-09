@@ -1,11 +1,14 @@
+import fs from 'fs';
 import { RequestStatus } from '../../../utils/enum.constant';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
 import { Request, User } from '../../../db/models/index';
 import { Controller } from '../../../interfaces';
-import sequelize, { Order } from 'sequelize';
-import dotenv from 'dotenv';
+import sequelize, { Order, col, where } from 'sequelize';
 import { Op } from 'sequelize';
+import json2xls from 'json2xls';
+import { Request as ExpressRequest, Response } from 'express';
+import dotenv from 'dotenv';
 dotenv.config();
 
 /**
@@ -16,8 +19,27 @@ dotenv.config();
  */
 export const getPatientHistory: Controller = async (req, res) => {
     try {
-        const { search } = req.query;
-        const patientsHistory = await Request.findAll({
+        const { patientName, email, phone, page, pageSize } = req.query;
+
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        const whereClause: any = {};
+        if (patientName) {
+            whereClause[Op.or] = [
+                { patientFirstName: { [Op.like]: `%${patientName}%` } },
+                { patientLastName: { [Op.like]: `%${patientName}%` } },
+            ];
+        }
+        if (email) {
+            whereClause.patientEmail = { [Op.like]: `%${email}%` };
+        }
+        if (phone) {
+            whereClause.patientPhoneNumber = { [Op.like]: `%${phone}%` };
+        }
+
+        const patientsHistory = await Request.findAndCountAll({
             attributes: [
                 'id',
                 'userId',
@@ -30,22 +52,9 @@ export const getPatientHistory: Controller = async (req, res) => {
                 'state',
                 'zipCode',
             ],
-            where: {
-                ...(search
-                    ? {
-                          [Op.or]: [
-                              'patientFirstName',
-                              'patientLastName',
-                              'patientEmail',
-                              'patientPhoneNumber',
-                          ].map((field) => ({
-                              [field]: {
-                                  [Op.like]: `%${search}%`,
-                              },
-                          })),
-                      }
-                    : {}),
-            },
+            where: whereClause,
+            limit,
+            offset,
         });
 
         return res.status(httpCode.OK).json({
@@ -66,9 +75,40 @@ export const getPatientHistory: Controller = async (req, res) => {
  */
 export const blockHistory: Controller = async (req, res) => {
     try {
-        const { search } = req.query;
+        const { name, email, phone, date, sortBy, orderBy, page, pageSize } =
+            req.query;
 
-        const blockRequests = await Request.findAll({
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        let sortByModel: Order = [];
+
+        if (sortBy && orderBy) {
+            sortByModel = [[sortBy, orderBy]] as Order;
+        }
+
+        const whereClause: any = {
+            requestStatus: RequestStatus.Blocked,
+        };
+
+        if (name) {
+            whereClause[Op.or] = [
+                { patientFirstName: { [Op.like]: `%${name}%` } },
+                { patientLastName: { [Op.like]: `%${name}%` } },
+            ];
+        }
+        if (email) {
+            whereClause.patientEmail = { [Op.like]: `%${email}%` };
+        }
+        if (phone) {
+            whereClause.patientPhoneNumber = { [Op.like]: `%${phone}%` };
+        }
+        if (date) {
+            whereClause.createdAt = { [Op.like]: `%${date}%` };
+        }
+
+        const blockRequests = await Request.findAndCountAll({
             attributes: [
                 'id',
                 'patientFirstName',
@@ -78,24 +118,10 @@ export const blockHistory: Controller = async (req, res) => {
                 'createdAt',
                 'patientNote',
             ],
-            where: {
-                requestStatus: RequestStatus.Blocked,
-                ...(search
-                    ? {
-                          [Op.or]: [
-                              'patientFirstName',
-                              'patientLastName',
-                              'patientEmail',
-                              'patientPhoneNumber',
-                              'createdAt',
-                          ].map((field) => ({
-                              [field]: {
-                                  [Op.like]: `%${search}%`,
-                              },
-                          })),
-                      }
-                    : {}),
-            },
+            where: whereClause,
+            order: sortByModel,
+            limit,
+            offset,
         });
 
         return res.status(httpCode.OK).json({
@@ -118,7 +144,15 @@ export const blockHistory: Controller = async (req, res) => {
 export const patientRecord: Controller = async (req, res) => {
     try {
         const { id } = req.params;
-        const patients = await Request.findAll({
+        const { sortBy, orderBy } = req.query;
+
+        let sortByModel: Order = [];
+
+        if (sortBy && orderBy) {
+            sortByModel = [[sortBy, orderBy]] as Order;
+        }
+
+        const patients = await Request.findAndCountAll({
             attributes: [
                 'id',
                 'patientFirstName',
@@ -135,6 +169,7 @@ export const patientRecord: Controller = async (req, res) => {
                 where: { id: sequelize.col('Request.physicianId') },
             },
             where: { userId: id },
+            order: sortByModel,
         });
 
         return res.status(httpCode.OK).json({
@@ -149,9 +184,62 @@ export const patientRecord: Controller = async (req, res) => {
 
 export const searchRecord: Controller = async (req, res) => {
     try {
-        const { search, sortBy, orderBy } = req.query;
+        const {
+            requestStatus,
+            patientName,
+            requestType,
+            email,
+            phoneNumber,
+            sortBy,
+            orderBy,
+            fromDate,
+            toDate,
+            page,
+            pageSize,
+            physicianName,
+        } = req.query;
 
-        const patientData = await Request.findAll({
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        const whereClause: any = {};
+
+        if (fromDate && toDate) {
+            whereClause.updatedAt = {
+                [Op.between]: [
+                    new Date(fromDate as string),
+                    new Date(toDate as string),
+                ],
+            };
+        }
+
+        let sortByModel: Order = [];
+
+        if (sortBy && orderBy) {
+            sortByModel = [[sortBy, orderBy]] as Order;
+        }
+
+        if (patientName) {
+            whereClause[Op.or] = [
+                { patientFirstName: { [Op.like]: `%${patientName}%` } },
+                { patientLastName: { [Op.like]: `%${patientName}%` } },
+            ];
+        }
+        if (requestStatus) {
+            whereClause.requestStatus = { [Op.like]: `%${requestStatus}%` };
+        }
+        if (requestType) {
+            whereClause.requestType = { [Op.like]: `%${requestType}%` };
+        }
+        if (email) {
+            whereClause.patientEmail = { [Op.like]: `%${email}%` };
+        }
+        if (phoneNumber) {
+            whereClause.patientPhoneNumber = { [Op.like]: `%${phoneNumber}%` };
+        }
+
+        const patientData = await Request.findAndCountAll({
             attributes: [
                 'id',
                 'patientFirstName',
@@ -175,25 +263,18 @@ export const searchRecord: Controller = async (req, res) => {
                 model: User,
                 as: 'physician',
                 attributes: ['id', 'firstName', 'lastName'],
-                where: { id: sequelize.col('Request.physicianId') },
+                where: {
+                    [Op.or]: [
+                        {
+                            id: sequelize.col('Request.physicianId'),
+                        },
+                    ],
+                },
             },
-            order: [[sortBy, orderBy]] as Order,
-            where: {
-                ...(search
-                    ? {
-                          [Op.or]: [
-                              'patientFirstName',
-                              'patientLastName',
-                              'patientEmail',
-                              'patientPhoneNumber',
-                          ].map((field) => ({
-                              [field]: {
-                                  [Op.like]: `%${search}%`,
-                              },
-                          })),
-                      }
-                    : {}),
-            },
+            order: sortByModel,
+            where: whereClause,
+            limit,
+            offset,
         });
 
         return res.status(httpCode.OK).json({
@@ -221,6 +302,56 @@ export const unBlockPatient: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PATIENT_UNBLOCK,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const deleteRecord: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await Request.destroy({
+            where: { id },
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.REQUEST_DELETED,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const exportToExcel = async (req: ExpressRequest, res: Response) => {
+    try {
+        const token = req.headers.authorization as string;
+
+        const response = await fetch(
+            'http://localhost:4000/admin/records/searchRecord',
+            {
+                headers: {
+                    Authorization: token,
+                },
+            },
+        );
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch data: ${response.statusText}`);
+        }
+
+        const jsonData: any = await response.json();
+
+        const xls = json2xls(jsonData.data);
+
+        const filename = `records_patients_${Date.now()}.xlsx`;
+        fs.writeFileSync(filename, xls, 'binary');
+
+        return res.download(filename, filename, () => {
+            // Delete the file after download completes
+            fs.unlinkSync(filename);
         });
     } catch (error) {
         throw error;

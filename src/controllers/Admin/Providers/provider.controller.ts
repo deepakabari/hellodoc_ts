@@ -39,7 +39,7 @@ export const providerInformation: Controller = async (req, res) => {
             regionWhereClause = { name: regions as string };
         }
 
-        const providerInformation = await User.findAll({
+        const providerInformation = await User.findAndCountAll({
             attributes: [
                 'id',
                 'firstName',

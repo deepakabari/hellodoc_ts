@@ -21,4 +21,8 @@ router.get(
 
 router.patch('/unBlockPatient/:id', isAuth, recordsController.unBlockPatient);
 
+router.delete('/deleteRecord/:id', isAuth, recordsController.deleteRecord);
+
+router.get('/exportToExcel', isAuth, recordsController.exportToExcel);
+
 export default router;
