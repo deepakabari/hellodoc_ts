@@ -9,6 +9,8 @@ import OrderDetail from './orderDetails.model';
 import Shift from './shift.model';
 import Permission from './permission.model';
 import RolePermissionMap from './rolepermissionmap.model';
+import EmailLog from './emaillog.model'
+import SMSLog from './smslog.model';
 
 export {
     Role,
@@ -22,4 +24,6 @@ export {
     Shift,
     Permission,
     RolePermissionMap,
+    EmailLog,
+    SMSLog
 };

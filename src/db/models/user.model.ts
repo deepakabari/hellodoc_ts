@@ -16,6 +16,8 @@ import {
     UserRegion,
     Shift,
     RequestWiseFiles,
+    EmailLog,
+    SMSLog,
 } from './index';
 
 @Table({
@@ -168,8 +170,36 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
 
     @BelongsTo(() => Role, {
         foreignKey: 'roleId',
-        as: 'role'
+        as: 'role',
     })
     role: Role;
+
+    @HasMany(() => EmailLog, {
+        foreignKey: 'senderId',
+        sourceKey: 'id',
+        as: 'senderEmailLogs',
+    })
+    senderEmailLogs: EmailLog[];
+
+    @HasMany(() => EmailLog, {
+        foreignKey: 'receiverId',
+        sourceKey: 'id',
+        as: 'receiverEmailLogs',
+    })
+    receiverEmailLogs: EmailLog[];
+
+    @HasMany(() => SMSLog, {
+        foreignKey: 'senderId',
+        sourceKey: 'id',
+        as: 'senderSMSLogs',
+    })
+    senderSMSLogs: SMSLog[];
+
+    @HasMany(() => SMSLog, {
+        foreignKey: 'receiverId',
+        sourceKey: 'id',
+        as: 'receiverSMSLogs',
+    })
+    receiverSMSLogs: SMSLog[];
 }
 export default User;

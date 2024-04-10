@@ -68,7 +68,7 @@ export const UserSchema = {
             isLicenseDoc: Joi.boolean().optional(),
             syncEmailAddress: Joi.string().optional().allow('', null),
             regions: Joi.array().items(Joi.number().integer()).optional(),
-        }).options({ abortEarly: false }),
+        }).unknown(true),
     },
 
     isEmailFound: {

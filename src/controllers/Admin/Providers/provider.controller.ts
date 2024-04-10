@@ -1,13 +1,19 @@
 import { AccountType } from '../../../utils/enum.constant';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
-import { Business, Region, User, UserRegion } from '../../../db/models/index';
+import {
+    Business,
+    EmailLog,
+    Region,
+    SMSLog,
+    User,
+    UserRegion,
+} from '../../../db/models/index';
 import { Controller, FieldUpdates } from '../../../interfaces';
 import dotenv from 'dotenv';
 import linkConstant from '../../../constants/link.constant';
 import transporter from '../../../utils/email';
 import { sendSMS } from '../../../utils/smsSender';
-import { sequelize } from '../../../db/config/db.connection';
 import bcrypt from 'bcrypt';
 import { Order } from 'sequelize';
 import { Op } from 'sequelize';
@@ -61,6 +67,7 @@ export const providerInformation: Controller = async (req, res) => {
                 through: { attributes: [] },
                 where: regionWhereClause,
             },
+            distinct: true,
             order: sortByModel,
             limit,
             offset,
@@ -100,10 +107,19 @@ export const contactProvider: Controller = async (req, res) => {
                 text: message,
             };
 
-            return transporter.sendMail(mailOptions, (error: Error) => {
+            return transporter.sendMail(mailOptions, async (error: Error) => {
                 if (error) {
                     throw error;
                 } else {
+                    await EmailLog.create({
+                        email: user?.email as string,
+                        senderId: req.user.id,
+                        receiverId: user?.id,
+                        sentDate: new Date(),
+                        isEmailSent: true,
+                        sentTries: 1,
+                        action: 'Provider Contact',
+                    });
                     console.log('Email Sent Successfully');
                 }
             });
@@ -121,6 +137,16 @@ export const contactProvider: Controller = async (req, res) => {
                 sendEmail(messageBody);
                 break;
         }
+
+        await SMSLog.create({
+            phoneNumber: user?.phoneNumber as string,
+            senderId: req.user.id,
+            receiverId: user?.id,
+            sentDate: new Date(),
+            isSMSSent: true,
+            sentTries: 1,
+            action: 'Provider Contact',
+        });
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,

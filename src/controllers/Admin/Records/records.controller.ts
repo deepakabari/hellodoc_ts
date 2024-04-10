@@ -2,7 +2,13 @@ import fs from 'fs';
 import { RequestStatus } from '../../../utils/enum.constant';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
-import { Request, User } from '../../../db/models/index';
+import {
+    EmailLog,
+    Request,
+    Role,
+    SMSLog,
+    User,
+} from '../../../db/models/index';
 import { Controller, RequestAttributes } from '../../../interfaces';
 import sequelize, { Order, WhereOptions, col, where } from 'sequelize';
 import { Op } from 'sequelize';
@@ -384,6 +390,222 @@ export const exportToExcel = async (req: ExpressRequest, res: Response) => {
         return res.download(filename, filename, () => {
             // Delete the file after download completes
             fs.unlinkSync(filename);
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const emailLog: Controller = async (req, res) => {
+    try {
+        const {
+            roleName,
+            receiverName,
+            email,
+            createdDate,
+            sentDate,
+            sortBy,
+            orderBy,
+            page,
+            pageSize,
+        } = req.query;
+
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        let sortByModel: Order = [];
+
+        if (sortBy && orderBy) {
+            sortByModel = [[sortBy, orderBy]] as Order;
+        }
+
+        const whereClause: any = {};
+
+        if (email) {
+            whereClause.email = {
+                [Op.substring]: `${email}`,
+            };
+        }
+        if (createdDate) {
+            whereClause.createdAt = {
+                [Op.substring]: `${createdDate}`,
+            };
+        }
+        if (sentDate) {
+            whereClause.sentDate = {
+                [Op.substring]: `${sentDate}`,
+            };
+        }
+
+        const emailLog = await EmailLog.findAll({
+            attributes: [
+                'id',
+                'email',
+                'confirmationNumber',
+                'createdAt',
+                'sentDate',
+                'isEmailSent',
+                'sentTries',
+                'action',
+            ],
+            include: [
+                {
+                    model: User,
+                    as: 'receiver',
+                    attributes: ['id', 'firstName', 'lastName'],
+                    include: [
+                        {
+                            model: Role,
+                            as: 'role',
+                            attributes: ['Name'],
+                            where: {
+                                ...(roleName
+                                    ? {
+                                          Name: roleName,
+                                      }
+                                    : {}),
+                            },
+                        },
+                    ],
+                    where: {
+                        ...(receiverName
+                            ? {
+                                  [Op.or]: [
+                                      {
+                                          firstName: {
+                                              [Op.substring]: `${receiverName}`,
+                                          },
+                                      },
+                                      {
+                                          lastName: {
+                                              [Op.substring]: `${receiverName}`,
+                                          },
+                                      },
+                                  ],
+                              }
+                            : {}),
+                    },
+                },
+            ],
+            where: whereClause,
+            order: sortByModel,
+            limit,
+            offset,
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.EMAIL_LOG_RETRIEVED,
+            data: emailLog,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const smsLog: Controller = async (req, res) => {
+    try {
+        const {
+            roleName,
+            receiverName,
+            phoneNumber,
+            createdDate,
+            sentDate,
+            sortBy,
+            orderBy,
+            page,
+            pageSize,
+        } = req.query;
+
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        let sortByModel: Order = [];
+
+        if (sortBy && orderBy) {
+            sortByModel = [[sortBy, orderBy]] as Order;
+        }
+
+        const whereClause: any = {};
+
+        if (phoneNumber) {
+            whereClause.phoneNumber = {
+                [Op.substring]: `${phoneNumber}`,
+            };
+        }
+        if (createdDate) {
+            whereClause.createdAt = {
+                [Op.substring]: `${createdDate}`,
+            };
+        }
+        if (sentDate) {
+            whereClause.sentDate = {
+                [Op.substring]: `${sentDate}`,
+            };
+        }
+
+        const smsLog = await SMSLog.findAll({
+            attributes: [
+                'id',
+                'phoneNumber',
+                'confirmationNumber',
+                'createdAt',
+                'sentDate',
+                'isSMSSent',
+                'sentTries',
+                'action',
+            ],
+            include: [
+                {
+                    model: User,
+                    as: 'receiver',
+                    attributes: ['id', 'firstName', 'lastName'],
+                    include: [
+                        {
+                            model: Role,
+                            as: 'role',
+                            attributes: ['Name'],
+                            where: {
+                                ...(roleName
+                                    ? {
+                                          Name: roleName,
+                                      }
+                                    : {}),
+                            },
+                        },
+                    ],
+                    where: {
+                        ...(receiverName
+                            ? {
+                                  [Op.or]: [
+                                      {
+                                          firstName: {
+                                              [Op.substring]: `${receiverName}`,
+                                          },
+                                      },
+                                      {
+                                          lastName: {
+                                              [Op.substring]: `${receiverName}`,
+                                          },
+                                      },
+                                  ],
+                              }
+                            : {}),
+                    },
+                },
+            ],
+            where: whereClause,
+            order: sortByModel,
+            limit,
+            offset,
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SMS_LOG_RETRIEVED,
+            data: smsLog,
         });
     } catch (error) {
         throw error;

@@ -6,6 +6,7 @@
         "Akabari",
         "codepaths",
         "DATEONLY",
+        "Emaillog",
         "exceljs",
         "exphbs",
         "fieldname",
@@ -23,6 +24,7 @@
         "rahte",
         "requeststatuslog",
         "requesttype",
+        "rolepermissionmap",
         "splitdata",
         "tsbuildinfo"
     ],

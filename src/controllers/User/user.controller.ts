@@ -6,6 +6,7 @@ import {
     UserRegion,
     RequestWiseFiles,
     Business,
+    EmailLog,
 } from '../../db/models/index';
 import { Controller } from '../../interfaces';
 import bcrypt from 'bcrypt';
@@ -67,6 +68,7 @@ const createAccount: Controller = async (req, res) => {
             medicalLicense,
             NPINumber,
             dob,
+            roleId,
             businessName,
             businessWebsite,
             photo,
@@ -209,7 +211,7 @@ const createAccount: Controller = async (req, res) => {
                     backgroundCheck: 'BackgroundCheck',
                     hipaaCompliance: 'HIPAACompliance',
                     nonDisclosureAgreement: 'NonDisclosureAgreement',
-                    licenseDocument: 'LicenseDocument'
+                    licenseDocument: 'LicenseDocument',
                 };
 
                 const filePromises = files.map((file: any) => {
@@ -396,6 +398,16 @@ const createRequest: Controller = async (req, res) => {
                 };
 
                 await transporter.sendMail(mailOptions);
+
+                await EmailLog.create({
+                    email: patientEmail,
+                    senderId: userId,
+                    receiverId: userId,
+                    sentDate: new Date(),
+                    isEmailSent: true,
+                    sentTries: 1,
+                    action: 'Create Request',
+                });
             }
         } else {
             const existingUser = await User.findOne({
@@ -529,14 +541,26 @@ const createAdminRequest: Controller = async (req, res) => {
                     html: data,
                 };
 
-                await transporter.sendMail(mailOptions, (error: Error) => {
-                    if (error) {
-                        console.log('>>Error:  ');
-                        throw error;
-                    } else {
-                        console.log(messageConstant.REQUEST_EMAIL_SMS_SENT);
-                    }
-                });
+                await transporter.sendMail(
+                    mailOptions,
+                    async (error: Error) => {
+                        if (error) {
+                            console.log('>>Error:  ');
+                            throw error;
+                        } else {
+                            await EmailLog.create({
+                                email: patientEmail,
+                                senderId: user.id,
+                                receiverId: user.id,
+                                sentDate: new Date(),
+                                isEmailSent: true,
+                                sentTries: 1,
+                                action: 'Create Request',
+                            });
+                            console.log(messageConstant.REQUEST_EMAIL_SMS_SENT);
+                        }
+                    },
+                );
             }
         } else {
             const existingUser = await User.findOne({
@@ -596,8 +620,6 @@ const createAdminRequest: Controller = async (req, res) => {
         throw error;
     }
 };
-
-
 
 export default {
     createAccount,

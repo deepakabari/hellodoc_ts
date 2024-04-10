@@ -1,9 +1,10 @@
-import { Table, Column, Model } from 'sequelize-typescript';
+import { Table, Column, Model, BelongsTo } from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
 import {
     EmailLogAttributes,
     EmailLogCreationAttributes,
 } from '../../interfaces';
+import { Role, User } from './index';
 
 @Table({
     timestamps: true,
@@ -25,10 +26,10 @@ class EmailLog extends Model<EmailLogAttributes, EmailLogCreationAttributes> {
     confirmationNumber: string;
 
     @Column({ type: DataTypes.INTEGER, allowNull: false })
-    userId: number;
+    senderId: number;
 
-    @Column({ type: DataTypes.INTEGER, allowNull: true })
-    requestId: number;
+    @Column({ type: DataTypes.INTEGER, allowNull: false })
+    receiverId: number;
 
     @Column({ type: DataTypes.DATE, allowNull: false })
     sentDate: Date;
@@ -44,6 +45,20 @@ class EmailLog extends Model<EmailLogAttributes, EmailLogCreationAttributes> {
         allowNull: true,
     })
     action: string;
+
+    @BelongsTo(() => User, {
+        foreignKey: 'senderId',
+        targetKey: 'id',
+        as: 'sender',
+    })
+    sender: User;
+
+    @BelongsTo(() => User, {
+        foreignKey: 'receiverId',
+        targetKey: 'id',
+        as: 'receiver',
+    })
+    receiver: User;
 }
 
 export default EmailLog;

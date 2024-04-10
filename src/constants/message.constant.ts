@@ -33,6 +33,7 @@ const messageConstant = {
     NOT_GET_HASHED_TOKEN: 'Hashed token cannot get, please try again',
     REQUEST_CREATED: 'Request Created Successfully.',
     REQUEST_DELETED: 'Request Deleted Successfully.',
+    NO_FILE_SELECTED: 'File not selected.',
     FILE_NOT_FOUND: 'File not found',
     FILE_DELETED: 'File deleted successfully.',
     ERROR_DOWNLOAD_FILE: 'Error when downloading file',
@@ -52,6 +53,8 @@ const messageConstant = {
     AGREEMENT_EMAIL_SENT: 'Agreement email sent successfully',
     INVALID_SORT_PARAMETER: 'Invalid sort parameter...',
     BUSINESS_ALREADY_EXISTS: 'Your business already exists in platform.',
+    BUSINESS_UPDATED: 'Business updated successfully.',
+    BUSINESS_DELETED: 'Business deleted successfully.',
     DATA_NOT_FOUND: 'Data not found...',
     INVALID_BODY: 'Invalid body parameters.',
     CURRENT_PASSWORD_WRONG:
@@ -67,6 +70,9 @@ const messageConstant = {
     INVALID_INPUT: 'Invalid file names array.',
     NOTIFICATION_UPDATED: 'Notification Updated Successfully.',
     PATIENT_UNBLOCK: 'Patient unblock successfully.',
+    EMAIL_LOG_RETRIEVED: 'Email log retrieved successfully.',
+    SMS_LOG_RETRIEVED: 'SMS log retrieved successfully.',
+    VENDOR_RETRIEVED: 'Vendor retrieved successfully.'
 };
 
 export default messageConstant;

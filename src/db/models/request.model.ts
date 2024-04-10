@@ -4,7 +4,7 @@ import {
     RequestAttributes,
     RequestCreationAttributes,
 } from '../../interfaces/';
-import { User } from '../models/index';
+import { EmailLog, SMSLog, User } from '../models/index';
 import { RequestWiseFiles } from './index';
 
 @Table({
@@ -273,6 +273,20 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
         sourceKey: 'id',
     })
     requestWiseFiles: RequestWiseFiles[];
+
+    @HasMany(() => EmailLog, {
+        foreignKey: 'requestId',
+        sourceKey: 'id',
+        as: 'requestEmailLog',
+    })
+    requestEmailLogs: EmailLog[];
+
+    @HasMany(() => SMSLog, {
+        foreignKey: 'requestId',
+        sourceKey: 'id',
+        as: 'requestSMSLog',
+    })
+    requestSMSLogs: SMSLog[];
 }
 
 export default Request;

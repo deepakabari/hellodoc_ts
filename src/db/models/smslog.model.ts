@@ -1,9 +1,7 @@
-import { Table, Column, Model } from 'sequelize-typescript';
+import { Table, Column, Model, BelongsTo } from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
-import {
-    SMSLogAttributes,
-    SMSLogCreationAttributes,
-} from '../../interfaces';
+import { SMSLogAttributes, SMSLogCreationAttributes } from '../../interfaces';
+import { Role, User } from './index';
 
 @Table({
     timestamps: true,
@@ -25,10 +23,10 @@ class SMSLog extends Model<SMSLogAttributes, SMSLogCreationAttributes> {
     confirmationNumber: string;
 
     @Column({ type: DataTypes.INTEGER, allowNull: false })
-    userId: number;
+    senderId: number;
 
-    @Column({ type: DataTypes.INTEGER, allowNull: true })
-    requestId: number;
+    @Column({ type: DataTypes.INTEGER, allowNull: false })
+    receiverId: number;
 
     @Column({ type: DataTypes.DATE, allowNull: false })
     sentDate: Date;
@@ -44,6 +42,20 @@ class SMSLog extends Model<SMSLogAttributes, SMSLogCreationAttributes> {
         allowNull: true,
     })
     action: string;
+
+    @BelongsTo(() => User, {
+        foreignKey: 'senderId',
+        targetKey: 'id',
+        as: 'sender',
+    })
+    sender: User;
+
+    @BelongsTo(() => User, {
+        foreignKey: 'receiverId',
+        targetKey: 'id',
+        as: 'receiver',
+    })
+    receiver: User;
 }
 
 export default SMSLog;

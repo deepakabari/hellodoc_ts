@@ -3,6 +3,9 @@ import httpCode from '../../../constants/http.constant';
 import { Business, OrderDetail } from '../../../db/models';
 import { Controller } from '../../../interfaces';
 import { AccountType } from '../../../utils/enum.constant';
+import { Op } from 'sequelize';
+import { sequelize } from '../../../db/config/db.connection';
+import { Transaction } from 'sequelize';
 
 /**
  * @function addBusiness
@@ -206,6 +209,107 @@ export const sendOrder: Controller = async (req, res) => {
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
             data: sendOrder,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const viewVendor: Controller = async (req, res) => {
+    try {
+        const { search, professions, page, pageSize } = req.query;
+
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        const viewVendor = await Business.findAndCountAll({
+            attributes: [
+                'id',
+                'profession',
+                'businessName',
+                'email',
+                'faxNumber',
+                'businessContact',
+            ],
+            where: {
+                ...(search
+                    ? {
+                          businessName: { [Op.substring]: `${search}` },
+                      }
+                    : {}),
+                ...(professions ? { profession: professions as string } : {}),
+            },
+            limit,
+            offset,
+        });
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.VENDOR_RETRIEVED,
+            data: viewVendor,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateBusiness: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            businessName,
+            profession,
+            faxNumber,
+            phoneNumber,
+            email,
+            businessContact,
+            street,
+            city,
+            state,
+            zipCode,
+        } = req.body;
+
+        const transaction = await sequelize.transaction();
+
+        await Business.update(
+            {
+                businessName,
+                profession,
+                faxNumber,
+                phoneNumber,
+                email,
+                businessContact,
+                street,
+                city,
+                state,
+                zipCode,
+            },
+            { where: { id }, transaction: transaction },
+        );
+
+        // If the update is successful, commit the transaction
+        await transaction.commit();
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.BUSINESS_UPDATED,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const deleteBusiness: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await Business.destroy({
+            where: { id },
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.BUSINESS_DELETED,
         });
     } catch (error) {
         throw error;

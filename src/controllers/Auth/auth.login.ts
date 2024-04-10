@@ -6,7 +6,7 @@ import { Controller } from '../../interfaces';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
-import { User } from '../../db/models/index';
+import { EmailLog, User } from '../../db/models/index';
 import { compileEmailTemplate } from '../../utils/hbsCompiler';
 import linkConstant from '../../constants/link.constant';
 import dotenv from 'dotenv';
@@ -150,10 +150,19 @@ export const forgotPassword: Controller = async (req, res) => {
             html: data,
         };
 
-        return transporter.sendMail(mailOptions, (error: Error) => {
+        return transporter.sendMail(mailOptions, async (error: Error) => {
             if (error) {
                 throw error;
             } else {
+                await EmailLog.create({
+                    email,
+                    senderId: existingUser?.id,
+                    receiverId: existingUser?.id,
+                    sentDate: new Date(),
+                    isEmailSent: true,
+                    sentTries: 1,
+                    action: 'Forgot Password',
+                });
                 return res.json({
                     status: httpCode.OK,
                     message: messageConstant.RESET_EMAIL_SENT,

@@ -8,7 +8,7 @@ import {
 } from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
 import { RoleAttributes, RoleCreationAttributes } from '../../interfaces';
-import { Permission, RolePermissionMap, User } from './index';
+import { EmailLog, Permission, RolePermissionMap, SMSLog, User } from './index';
 
 @Table({
     timestamps: true,
@@ -54,6 +54,18 @@ class Role extends Model<RoleAttributes, RoleCreationAttributes> {
         'permissionId',
     )
     permissions: Permission[];
+
+    @HasMany(() => EmailLog, {
+        foreignKey: 'roleId',
+        sourceKey: 'id',
+    })
+    emailLogs: EmailLog[];
+
+    @HasMany(() => SMSLog, {
+        foreignKey: 'roleId',
+        sourceKey: 'id',
+    })
+    smsLogs: SMSLog[];
 }
 
 export default Role;

@@ -12,7 +12,9 @@ export const RecordSchema = {
             requestType: Joi.string(),
             email: Joi.string(),
             phoneNumber: Joi.string(),
-            physicianName: Joi.string()
+            physicianName: Joi.string(),
+            page: Joi.string(),
+            pageSize: Joi.string(),
         },
     },
 };

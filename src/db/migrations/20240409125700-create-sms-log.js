@@ -17,13 +17,13 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: true,
             },
-            userId: {
+            senderId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
-            requestId: {
-                allowNull: true,
+            receiverId: {
                 type: Sequelize.INTEGER,
+                allowNull: false
             },
             sentDate: {
                 type: Sequelize.DATE,

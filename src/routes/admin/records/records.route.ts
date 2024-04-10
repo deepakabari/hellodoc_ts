@@ -25,4 +25,8 @@ router.delete('/deleteRecord/:id', isAuth, recordsController.deleteRecord);
 
 router.get('/exportToExcel', isAuth, recordsController.exportToExcel);
 
+router.get('/emailLog', isAuth, recordsController.emailLog);
+
+router.get('/smsLog', isAuth, recordsController.smsLog)
+
 export default router;

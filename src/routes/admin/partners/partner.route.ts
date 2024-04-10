@@ -45,4 +45,10 @@ router.post(
     partnerController.sendOrder,
 );
 
+router.get('/viewVendor', isAuth, partnerController.viewVendor);
+
+router.patch('/updateBusiness/:id', isAuth, partnerController.updateBusiness);
+
+router.delete('/deleteBusiness/:id', isAuth, partnerController.deleteBusiness);
+
 export default router;

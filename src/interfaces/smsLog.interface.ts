@@ -4,11 +4,12 @@ interface SMSLogAttributes {
     id: number;
     phoneNumber: string
     confirmationNumber?: string
-    userId: number
-    requestId?: number
+    senderId: number
+    receiverId?: number
     sentDate: Date
     isSMSSent: boolean
     sentTries?: number
+    action?: string
 }
 
 type SMSLogCreationAttributes = Optional<SMSLogAttributes, 'id'>;

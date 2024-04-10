@@ -60,7 +60,7 @@ export const downloadFile = async (req: ExpressRequest, res: Response) => {
         if (!Array.isArray(fileNames) || fileNames.length === 0) {
             return res
                 .status(httpCode.NOT_FOUND)
-                .json({ error: messageConstant.INVALID_INPUT });
+                .json({ error: messageConstant.NO_FILE_SELECTED });
         }
 
         const archive = archiver('zip', {
@@ -100,6 +100,13 @@ export const deleteFile: Controller = async (req, res) => {
     try {
         const { id } = req.params;
         const { fileNames } = req.body;
+
+        // Validate fileNames array
+        if (!Array.isArray(fileNames) || fileNames.length === 0) {
+            return res
+                .status(httpCode.NOT_FOUND)
+                .json({ error: messageConstant.NO_FILE_SELECTED });
+        }
 
         for (const fileName of fileNames) {
             const filePath = path.join(

@@ -6,9 +6,11 @@ import {
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
 import {
+    EmailLog,
     Region,
     Request,
     RequestWiseFiles,
+    SMSLog,
     User,
 } from '../../../db/models/index';
 import { Controller } from '../../../interfaces';
@@ -44,6 +46,16 @@ export const requestCount: Controller = async (req, res) => {
             where: {
                 caseTag: {
                     [Op.in]: allCaseTags, // Filter to include only the caseTags present in allCaseTags array
+                },
+                requestStatus: {
+                    [Op.in]: [
+                        RequestStatus.Unassigned,
+                        RequestStatus.Processing,
+                        RequestStatus.Accepted,
+                        RequestStatus.Conclude,
+                        RequestStatus.Closed,
+                        RequestStatus.CancelledByAdmin,
+                    ],
                 },
             },
             group: 'caseTag', // Group the results by caseTag
@@ -158,14 +170,12 @@ export const getPatientByState: Controller = async (req, res) => {
                 condition = {
                     caseTag: 'New',
                     deletedAt: null,
-                    isDeleted: false,
                 };
                 break;
             case 'pending':
                 condition = {
                     caseTag: 'Pending',
                     deletedAt: null,
-                    isDeleted: false,
                 };
                 includeModels = [
                     {
@@ -193,7 +203,6 @@ export const getPatientByState: Controller = async (req, res) => {
                     caseTag: 'Active',
                     isAgreementAccepted: true,
                     deletedAt: null,
-                    isDeleted: false,
                 };
                 includeModels = [
                     {
@@ -220,7 +229,6 @@ export const getPatientByState: Controller = async (req, res) => {
                 condition = {
                     caseTag: 'Conclude',
                     deletedAt: null,
-                    isDeleted: false,
                 };
                 includeModels = [
                     {
@@ -251,7 +259,6 @@ export const getPatientByState: Controller = async (req, res) => {
                             [Op.or]: [
                                 { physicianId: null },
                                 { deletedAt: null },
-                                { isDeleted: false },
                             ],
                         },
                     ],
@@ -281,7 +288,6 @@ export const getPatientByState: Controller = async (req, res) => {
                 condition = {
                     caseTag: 'UnPaid',
                     deletedAt: null,
-                    isDeleted: false,
                 };
                 includeModels = [
                     {
@@ -731,6 +737,28 @@ export const sendAgreement: Controller = async (req, res) => {
                 const messageBody = `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: http://localhost:3000/agreement.`;
                 sendSMS(messageBody);
 
+                await EmailLog.create({
+                    email,
+                    confirmationNumber: user.confirmationNumber,
+                    senderId: req.user.id,
+                    receiverId: user.id,
+                    sentDate: new Date(),
+                    isEmailSent: true,
+                    sentTries: 1,
+                    action: 'Send Agreement',
+                });
+
+                await SMSLog.create({
+                    phoneNumber,
+                    confirmationNumber: user.confirmationNumber,
+                    senderId: req.user.id,
+                    receiverId: user.id,
+                    sentDate: new Date(),
+                    isSMSSent: true,
+                    sentTries: 1,
+                    action: 'Send Agreement',
+                });
+
                 // Return a 200 OK status with a message indicating the email was sent successfully.
                 return res.json({
                     status: httpCode.OK,
@@ -904,6 +932,21 @@ export const sendFileThroughMail: Controller = async (req, res) => {
     try {
         const { email, files } = req.body;
 
+        // Validate fileNames array
+        if (!Array.isArray(files) || files.length === 0) {
+            return res
+                .status(httpCode.NOT_FOUND)
+                .json({ error: messageConstant.NO_FILE_SELECTED });
+        }
+
+        const user = await Request.findOne({ where: { patientEmail: email } });
+        if (!user) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.OK,
+                message: messageConstant.USER_NOT_EXIST,
+            });
+        }
+
         const filePath = path.join(
             __dirname,
             '..',
@@ -917,9 +960,9 @@ export const sendFileThroughMail: Controller = async (req, res) => {
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
-            subject: 'Files Attached',
-            text: 'Please find attached files.',
-            attachments: files.map((file: any) => ({
+            subject: 'Medical Files Attached',
+            text: 'Here is your Medical Report, Prescription file, Medical Tests files.',
+            attachments: files.map((file: string) => ({
                 filename: file,
                 path: `${filePath}/${file}`,
             })),
@@ -927,6 +970,17 @@ export const sendFileThroughMail: Controller = async (req, res) => {
 
         // Send email
         await transporter.sendMail(mailOptions);
+
+        await EmailLog.create({
+            email,
+            confirmationNumber: user.confirmationNumber,
+            senderId: req.user.id,
+            receiverId: user.id,
+            sentDate: new Date(),
+            isEmailSent: true,
+            sentTries: 1,
+            action: 'Request Medical Files',
+        });
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -1175,6 +1229,16 @@ export const requestSupport: Controller = async (req, res) => {
             };
 
             await transporter.sendMail(mailOptions);
+
+            await EmailLog.create({
+                email: physician.email,
+                senderId: req.user.id,
+                receiverId: physician.id,
+                sentDate: new Date(),
+                isEmailSent: true,
+                sentTries: 1,
+                action: 'Request Support',
+            });
         }
 
         return res.status(httpCode.OK).json({
@@ -1232,6 +1296,15 @@ export const sendPatientRequest: Controller = async (req, res) => {
         const messageBody = `Hello ${firstName}, To Create a Request on our secure online portal. Please click on the button below to create Your First Request: ${linkConstant.REQUEST_URL}.`;
         sendSMS(messageBody);
 
+        await SMSLog.create({
+            phoneNumber,
+            senderId: req.user.id,
+            sentDate: new Date(),
+            isSMSSent: true,
+            sentTries: 1,
+            action: 'Send request link to patient',
+        });
+
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
@@ -1239,10 +1312,18 @@ export const sendPatientRequest: Controller = async (req, res) => {
             html: data,
         };
 
-        return transporter.sendMail(mailOptions, (error: Error) => {
+        return transporter.sendMail(mailOptions, async (error: Error) => {
             if (error) {
                 throw error;
             } else {
+                await EmailLog.create({
+                    email,
+                    senderId: req.user.id,
+                    sentDate: new Date(),
+                    isEmailSent: true,
+                    sentTries: 1,
+                    action: 'Send request link to patient',
+                });
                 return res.json({
                     status: httpCode.OK,
                     message: messageConstant.REQUEST_EMAIL_SMS_SENT,
