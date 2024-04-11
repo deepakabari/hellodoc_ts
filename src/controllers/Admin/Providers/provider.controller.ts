@@ -5,6 +5,7 @@ import {
     Business,
     EmailLog,
     Region,
+    Role,
     SMSLog,
     User,
     UserRegion,
@@ -75,7 +76,7 @@ export const providerInformation: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.PROVIDER_RETRIEVED,
             data: providerInformation,
         });
     } catch (error) {
@@ -150,7 +151,7 @@ export const contactProvider: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.EMAIL_SMS_SENT,
         });
     } catch (error) {
         throw error;
@@ -192,11 +193,17 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
                 'isNonDisclosureDoc',
                 'isLicenseDoc',
             ],
-            include: {
-                model: Region,
-                attributes: ['id', 'name'],
-                through: { attributes: [] },
-            },
+            include: [
+                {
+                    model: Region,
+                    attributes: ['id', 'name'],
+                    through: { attributes: [] },
+                },
+                {
+                    model: Role,
+                    attributes: ['id', 'Name'],
+                },
+            ],
             where: { id },
         });
 
@@ -206,15 +213,15 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
         });
 
         if (!physicianProfile && !businessDetails) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
             });
         }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.PROFILE_RETRIEVED,
             data: { physicianProfile, businessDetails },
         });
     } catch (error) {
@@ -285,6 +292,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             'state',
             'zipCode',
             'altPhone',
+            'roleId'
         ];
 
         const hashPassword = async (password: string): Promise<string> => {
@@ -334,7 +342,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.PROFILE_UPDATED,
         });
     } catch (error) {
         throw error;
@@ -347,7 +355,7 @@ export const providerLocation: Controller = async (req, res) => {
         const lat = 23.034721;
         const lng = 72.500535;
         const address = 'Ahmedabad';
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}`;
+        const url = `https://maps.googleapis.com/maps/api/json?key=${apiKey}&address=${address}`;
 
         const response = await fetch(url);
         const data = await response.json();

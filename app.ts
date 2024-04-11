@@ -8,6 +8,8 @@ import { errorHandler } from './src/utils/errorHandler';
 import { engine } from 'express-handlebars';
 import dotenv from 'dotenv';
 import json2xls from 'json2xls';
+import httpCode from './src/constants/http.constant';
+import messageConstant from './src/constants/message.constant';
 dotenv.config();
 
 const PORT = process.env.PORT;
@@ -40,6 +42,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 app.use(router);
 app.use(errors());
+
+app.use('*', (req: Request, res: Response) => {
+    res.status(httpCode.NOT_FOUND).json({
+        status: httpCode.NOT_FOUND,
+        message: messageConstant.ACCESS_DENIED,
+    });
+});
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error(err); // Log the error for debugging purposes

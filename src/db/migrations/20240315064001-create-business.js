@@ -23,7 +23,7 @@ module.exports = {
             },
             businessWebsite: {
                 type: Sequelize.STRING,
-                allowNull: false,
+                allowNull: true,
             },
             profession: {
                 type: Sequelize.STRING,

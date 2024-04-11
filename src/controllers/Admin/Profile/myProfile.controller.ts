@@ -1,6 +1,6 @@
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
-import { Region, User, UserRegion } from '../../../db/models/index';
+import { Region, Role, User, UserRegion } from '../../../db/models/index';
 import { Controller, AdminUpdates, BillingUpdates } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -45,13 +45,17 @@ export const adminProfile: Controller = async (req, res) => {
                     attributes: ['id', 'name'], // Select specific attributes from the Region model.
                     through: { attributes: [] }, // This will exclude the join table attributes
                 },
+                {
+                    model: Role,
+                    attributes: ['id', 'Name'],
+                }
             ],
         });
 
         // Send a success response with the admin's profile data.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.PROFILE_RETRIEVED,
             data: adminProfile, // Include the retrieved profile data in the response.
         });
     } catch (error) {
@@ -75,8 +79,8 @@ export const editAdminProfile: Controller = async (req, res) => {
         // Check if the required fields 'section' and 'updatedData' are provided.
         if (!section || !updatedData) {
             // If not, return a 'Not Found' status with an error message.
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.MISSING_SECTION_OR_UPDATED_DATA,
             });
         }
@@ -181,7 +185,7 @@ export const editAdminProfile: Controller = async (req, res) => {
         // If the update was successful, return an 'OK' status with a success message.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.PROFILE_UPDATED,
         });
     } catch (error) {
         throw error;

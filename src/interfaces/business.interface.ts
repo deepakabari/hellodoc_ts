@@ -5,7 +5,7 @@ interface BusinessAttributes {
     userId: number;
     accountType: string;
     businessName: string;
-    businessWebsite: string;
+    businessWebsite?: string;
     businessContact?: string;
     faxNumber?: string;
     profession?: string;

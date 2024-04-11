@@ -65,7 +65,7 @@ export const getPatientHistory: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.PATIENT_HISTORY_RETRIEVED,
             data: patientsHistory,
         });
     } catch (error) {
@@ -88,31 +88,26 @@ export const blockHistory: Controller = async (req, res) => {
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
-        let sortByModel: Order = [];
+        const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
 
-        if (sortBy && orderBy) {
-            sortByModel = [[sortBy, orderBy]] as Order;
-        }
+        const nameFilter = name
+            ? {
+                  [Op.or]: [
+                      { patientFirstName: { [Op.substring]: name } },
+                      { patientLastName: { [Op.substring]: name } },
+                  ],
+              }
+            : {};
 
-        const whereClause: any = {
-            requestStatus: RequestStatus.Blocked,
-        };
+        const emailFilter = email
+            ? { patientEmail: { [Op.substring]: email } }
+            : {};
 
-        if (name) {
-            whereClause[Op.or] = [
-                { patientFirstName: { [Op.substring]: `${name}` } },
-                { patientLastName: { [Op.substring]: `${name}` } },
-            ];
-        }
-        if (email) {
-            whereClause.patientEmail = { [Op.substring]: `${email}` };
-        }
-        if (phone) {
-            whereClause.patientPhoneNumber = { [Op.substring]: `${phone}` };
-        }
-        if (date) {
-            whereClause.createdAt = { [Op.substring]: `${date}` };
-        }
+        const phoneFilter = phone
+            ? { patientPhoneNumber: { [Op.substring]: phone } }
+            : {};
+
+        const dateFilter = date ? { createdAt: { [Op.substring]: date } } : {};
 
         const blockRequests = await Request.findAndCountAll({
             attributes: [
@@ -124,18 +119,24 @@ export const blockHistory: Controller = async (req, res) => {
                 'createdAt',
                 'patientNote',
             ],
-            where: whereClause,
+            where: {
+                requestStatus: RequestStatus.Blocked,
+                ...nameFilter,
+                ...emailFilter,
+                ...phoneFilter,
+                ...dateFilter,
+            },
             include: [
                 { model: User, as: 'user', attributes: ['id', 'status'] },
             ],
-            order: sortByModel,
+            order,
             limit,
             offset,
         });
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.BLOCK_HISTORY_RETRIEVED,
             data: blockRequests,
         });
     } catch (error) {
@@ -159,11 +160,7 @@ export const patientRecord: Controller = async (req, res) => {
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
-        let sortByModel: Order = [];
-
-        if (sortBy && orderBy) {
-            sortByModel = [[sortBy, orderBy]] as Order;
-        }
+        const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
 
         const patients = await Request.findAndCountAll({
             attributes: [
@@ -182,14 +179,14 @@ export const patientRecord: Controller = async (req, res) => {
                 where: { id: sequelize.col('Request.physicianId') },
             },
             where: { userId: id },
-            order: sortByModel,
+            order,
             limit,
             offset,
         });
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.PATIENT_RECORD_RETRIEVED,
             data: { patients, id },
         });
     } catch (error) {
@@ -218,43 +215,35 @@ export const searchRecord: Controller = async (req, res) => {
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
-        const whereClause: any = {};
+        const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
 
-        if (fromDate && toDate) {
-            whereClause.updatedAt = {
-                [Op.between]: [
-                    new Date(fromDate as string),
-                    new Date(toDate as string),
-                ],
-            };
-        }
+        const dateRange =
+            fromDate && toDate
+                ? {
+                      [Op.between]: [
+                          new Date(fromDate as string),
+                          new Date(toDate as string),
+                      ],
+                  }
+                : {};
 
-        let sortByModel: Order = [];
+        const patientNameFilter = patientName
+            ? {
+                  [Op.or]: [
+                      { patientFirstName: { [Op.substring]: patientName } },
+                      { patientLastName: { [Op.substring]: patientName } },
+                  ],
+              }
+            : {};
 
-        if (sortBy && orderBy) {
-            sortByModel = [[sortBy, orderBy]] as Order;
-        }
-
-        if (patientName) {
-            whereClause[Op.or] = [
-                { patientFirstName: { [Op.substring]: `${patientName}` } },
-                { patientLastName: { [Op.substring]: `${patientName}` } },
-            ];
-        }
-        if (requestStatus) {
-            whereClause.requestStatus = { [Op.substring]: `${requestStatus}` };
-        }
-        if (requestType) {
-            whereClause.requestType = { [Op.substring]: `${requestType}` };
-        }
-        if (email) {
-            whereClause.patientEmail = { [Op.substring]: `${email}` };
-        }
-        if (phoneNumber) {
-            whereClause.patientPhoneNumber = {
-                [Op.substring]: `${phoneNumber}`,
-            };
-        }
+        const physicianNameFilter = physicianName
+            ? {
+                  [Op.or]: [
+                      { firstName: { [Op.substring]: physicianName } },
+                      { lastName: { [Op.substring]: physicianName } },
+                  ],
+              }
+            : {};
 
         const patientData = await Request.findAndCountAll({
             attributes: [
@@ -282,33 +271,32 @@ export const searchRecord: Controller = async (req, res) => {
                 attributes: ['id', 'firstName', 'lastName'],
                 where: {
                     id: sequelize.col('Request.physicianId'),
-                    ...(physicianName
-                        ? {
-                              [Op.or]: [
-                                  {
-                                      firstName: {
-                                          [Op.substring]: `${physicianName}`,
-                                      },
-                                  },
-                                  {
-                                      lastName: {
-                                          [Op.substring]: `${physicianName}`,
-                                      },
-                                  },
-                              ],
-                          }
-                        : {}),
+                    ...physicianNameFilter,
                 },
             },
-            order: sortByModel,
-            where: whereClause,
+            order,
+            where: {
+                ...dateRange,
+                ...patientNameFilter,
+                ...(requestStatus && {
+                    requestStatus: { [Op.substring]: `${requestStatus}` },
+                }),
+                ...(requestType && {
+                    requestType: { [Op.substring]: `${requestType}` },
+                }),
+                ...(email && { patientEmail: { [Op.substring]: `${email}` } }),
+                ...(phoneNumber && {
+                    patientPhoneNumber: { [Op.substring]: `${phoneNumber}` },
+                }),
+            },
             limit,
             offset,
+            distinct: true,
         });
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.RECORDS_RETRIEVED,
             data: patientData,
         });
     } catch (error) {
@@ -396,8 +384,16 @@ export const exportToExcel = async (req: ExpressRequest, res: Response) => {
     }
 };
 
+/**
+ * @function emailLog
+ * @param req - The request object from the client.
+ * @param  res - The response object to send back the result.
+ * @returns  A promise that resolves to the response object.
+ * @description This function handles the retrieval of email logs based on various query parameters.
+ */
 export const emailLog: Controller = async (req, res) => {
     try {
+        // Destructure and obtain query parameters from the request object
         const {
             roleName,
             receiverName,
@@ -410,34 +406,43 @@ export const emailLog: Controller = async (req, res) => {
             pageSize,
         } = req.query;
 
+        // Parse the page number and pageSize, defaulting to 1 if not provided
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
-        let sortByModel: Order = [];
+        // Determine the sorting order if provided
+        const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
 
-        if (sortBy && orderBy) {
-            sortByModel = [[sortBy, orderBy]] as Order;
-        }
+        // Create a where clause for email if it's provided
+        const emailWhereClause = email
+            ? { email: { [Op.substring]: email } }
+            : {};
 
-        const whereClause: any = {};
+        // Create a where clause for created date if it's provided
+        const createdDateWhereClause = createdDate
+            ? { createdAt: { [Op.substring]: createdDate } }
+            : {};
 
-        if (email) {
-            whereClause.email = {
-                [Op.substring]: `${email}`,
-            };
-        }
-        if (createdDate) {
-            whereClause.createdAt = {
-                [Op.substring]: `${createdDate}`,
-            };
-        }
-        if (sentDate) {
-            whereClause.sentDate = {
-                [Op.substring]: `${sentDate}`,
-            };
-        }
+        // Create a where clause for sent date if it's provided
+        const sentDateWhereClause = sentDate
+            ? { sentDate: { [Op.substring]: sentDate } }
+            : {};
 
+        // Create a where clause for receiver name if it's provided
+        const receiverWhereClause = receiverName
+            ? {
+                  [Op.or]: [
+                      { firstName: { [Op.substring]: receiverName } },
+                      { lastName: { [Op.substring]: receiverName } },
+                  ],
+              }
+            : {};
+
+        // Create a where clause for role name if it's provided
+        const roleWhereClause = roleName ? { Name: roleName } : {};
+
+        // Query the database for email logs with the constructed where clauses and pagination
         const emailLog = await EmailLog.findAndCountAll({
             attributes: [
                 'id',
@@ -459,41 +464,23 @@ export const emailLog: Controller = async (req, res) => {
                             model: Role,
                             as: 'role',
                             attributes: ['Name'],
-                            where: {
-                                ...(roleName
-                                    ? {
-                                          Name: roleName,
-                                      }
-                                    : {}),
-                            },
+                            where: roleWhereClause,
                         },
                     ],
-                    where: {
-                        ...(receiverName
-                            ? {
-                                  [Op.or]: [
-                                      {
-                                          firstName: {
-                                              [Op.substring]: `${receiverName}`,
-                                          },
-                                      },
-                                      {
-                                          lastName: {
-                                              [Op.substring]: `${receiverName}`,
-                                          },
-                                      },
-                                  ],
-                              }
-                            : {}),
-                    },
+                    where: receiverWhereClause,
                 },
             ],
-            where: whereClause,
-            order: sortByModel,
+            where: {
+                ...emailWhereClause,
+                ...createdDateWhereClause,
+                ...sentDateWhereClause,
+            },
+            order,
             limit,
             offset,
         });
 
+        // Return the response with the status code and the retrieved email logs
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.EMAIL_LOG_RETRIEVED,
@@ -504,8 +491,16 @@ export const emailLog: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function smsLog
+ * @param req - The request object from the client.
+ * @param  res - The response object to send back the result.
+ * @returns  A promise that resolves to the response object.
+ * @description This function handles the retrieval of sms logs based on various query parameters.
+ */
 export const smsLog: Controller = async (req, res) => {
     try {
+        // Destructure and obtain query parameters from the request object
         const {
             roleName,
             receiverName,
@@ -518,34 +513,43 @@ export const smsLog: Controller = async (req, res) => {
             pageSize,
         } = req.query;
 
+        // Parse the page number and pageSize, defaulting to 1 if not provided
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
-        let sortByModel: Order = [];
+        // Determine the sorting order if provided
+        const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
 
-        if (sortBy && orderBy) {
-            sortByModel = [[sortBy, orderBy]] as Order;
-        }
+        // Create a where clause for phoneNumber if it's provided
+        const phoneWhereClause = phoneNumber
+            ? { email: { [Op.substring]: phoneNumber } }
+            : {};
 
-        const whereClause: any = {};
+        // Create a where clause for created date if it's provided
+        const createdDateWhereClause = createdDate
+            ? { createdAt: { [Op.substring]: createdDate } }
+            : {};
 
-        if (phoneNumber) {
-            whereClause.phoneNumber = {
-                [Op.substring]: `${phoneNumber}`,
-            };
-        }
-        if (createdDate) {
-            whereClause.createdAt = {
-                [Op.substring]: `${createdDate}`,
-            };
-        }
-        if (sentDate) {
-            whereClause.sentDate = {
-                [Op.substring]: `${sentDate}`,
-            };
-        }
+        // Create a where clause for sent date if it's provided
+        const sentDateWhereClause = sentDate
+            ? { sentDate: { [Op.substring]: sentDate } }
+            : {};
 
+        // Create a where clause for receiver name if it's provided
+        const receiverWhereClause = receiverName
+            ? {
+                  [Op.or]: [
+                      { firstName: { [Op.substring]: receiverName } },
+                      { lastName: { [Op.substring]: receiverName } },
+                  ],
+              }
+            : {};
+
+        // Create a where clause for role name if it's provided
+        const roleWhereClause = roleName ? { Name: roleName } : {};
+
+        // Query the database for sms logs with the constructed where clauses and pagination
         const smsLog = await SMSLog.findAndCountAll({
             attributes: [
                 'id',
@@ -567,41 +571,23 @@ export const smsLog: Controller = async (req, res) => {
                             model: Role,
                             as: 'role',
                             attributes: ['Name'],
-                            where: {
-                                ...(roleName
-                                    ? {
-                                          Name: roleName,
-                                      }
-                                    : {}),
-                            },
+                            where: roleWhereClause,
                         },
                     ],
-                    where: {
-                        ...(receiverName
-                            ? {
-                                  [Op.or]: [
-                                      {
-                                          firstName: {
-                                              [Op.substring]: `${receiverName}`,
-                                          },
-                                      },
-                                      {
-                                          lastName: {
-                                              [Op.substring]: `${receiverName}`,
-                                          },
-                                      },
-                                  ],
-                              }
-                            : {}),
-                    },
+                    where: receiverWhereClause,
                 },
             ],
-            where: whereClause,
-            order: sortByModel,
+            where: {
+                ...phoneWhereClause,
+                ...createdDateWhereClause,
+                ...sentDateWhereClause,
+            },
+            order,
             limit,
             offset,
         });
 
+        // Return the response with the status code and the retrieved email logs
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SMS_LOG_RETRIEVED,

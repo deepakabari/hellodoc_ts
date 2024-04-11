@@ -33,6 +33,7 @@ interface UserAttributes {
     onCallStatus?: string;
     isDeleted?: boolean;
     stopNotification?: boolean;
+    roleId?: number
     createdAt?: Date;
     updatedAt?: Date;
     deletedAt?: Date | null;

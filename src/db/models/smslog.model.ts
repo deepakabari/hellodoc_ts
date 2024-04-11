@@ -25,7 +25,7 @@ class SMSLog extends Model<SMSLogAttributes, SMSLogCreationAttributes> {
     @Column({ type: DataTypes.INTEGER, allowNull: false })
     senderId: number;
 
-    @Column({ type: DataTypes.INTEGER, allowNull: false })
+    @Column({ type: DataTypes.INTEGER, allowNull: true })
     receiverId: number;
 
     @Column({ type: DataTypes.DATE, allowNull: false })

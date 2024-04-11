@@ -121,13 +121,6 @@ router.patch(
 );
 
 router.post(
-    '/editCloseCase/:id',
-    isAuth,
-    celebrate(RequestSchema.closeCase),
-    dashboardController.editCloseCase,
-);
-
-router.post(
     '/transferRequest/:id',
     isAuth,
     celebrate(RequestSchema.assignCase),

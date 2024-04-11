@@ -52,7 +52,7 @@ class Business extends Model<BusinessAttributes, BusinessCreationAttributes> {
     businessName: string;
 
     @Column({
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.STRING,
     })
     businessWebsite: string;

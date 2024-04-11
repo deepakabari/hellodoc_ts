@@ -1,3 +1,4 @@
+import path from 'path';
 import {
     AccountType,
     CaseTag,
@@ -17,11 +18,10 @@ import { Controller } from '../../../interfaces';
 import transporter from '../../../utils/email';
 import sequelize, { FindAttributeOptions, Includeable, Order } from 'sequelize';
 import { Op } from 'sequelize';
-import dotenv from 'dotenv';
 import { compileEmailTemplate } from '../../../utils/hbsCompiler';
 import linkConstant from '../../../constants/link.constant';
 import { sendSMS } from '../../../utils/smsSender';
-import path from 'path';
+import dotenv from 'dotenv';
 dotenv.config();
 
 /**
@@ -56,7 +56,7 @@ export const requestCount: Controller = async (req, res) => {
                         RequestStatus.Closed,
                         RequestStatus.CancelledByAdmin,
                         RequestStatus.Consult,
-                        RequestStatus.UnPaid
+                        RequestStatus.UnPaid,
                     ],
                 },
             },
@@ -162,7 +162,6 @@ export const getPatientByState: Controller = async (req, res) => {
             ['state', 'Region'],
             ['caseTag', 'State of Request'],
             ['transferNote', 'Transfer Note'],
-            'requestStatus',
         ];
         let condition;
         let includeModels;
@@ -184,7 +183,7 @@ export const getPatientByState: Controller = async (req, res) => {
         switch (state) {
             case 'new':
                 condition = {
-                    caseTag: 'New',
+                    caseTag: CaseTag.New,
                     deletedAt: null,
                     requestStatus: RequestStatus.Unassigned,
                 };
@@ -193,7 +192,6 @@ export const getPatientByState: Controller = async (req, res) => {
                 condition = {
                     caseTag: 'Pending',
                     deletedAt: null,
-                    requestStatus: RequestStatus.Processing,
                 };
                 includeModels = [
                     {
@@ -282,7 +280,12 @@ export const getPatientByState: Controller = async (req, res) => {
                             ],
                         },
                         {
-                            requestStatus: {[Op.or]: [RequestStatus.CancelledByAdmin, RequestStatus.Conclude]}
+                            requestStatus: {
+                                [Op.or]: [
+                                    RequestStatus.CancelledByAdmin,
+                                    RequestStatus.Conclude,
+                                ],
+                            },
                         },
                     ],
                 };
@@ -369,7 +372,7 @@ export const getPatientByState: Controller = async (req, res) => {
 
         return res.json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.REQUEST_RETRIEVED,
             data: { patients },
         });
     } catch (error) {
@@ -421,8 +424,8 @@ export const viewCase: Controller = async (req, res) => {
         });
 
         if (viewCase.length === 0) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
             });
         }
@@ -430,7 +433,7 @@ export const viewCase: Controller = async (req, res) => {
         // success response with data in response body
         return res.json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.CASE_RETRIEVED,
             data: viewCase,
         });
     } catch (error) {
@@ -463,15 +466,15 @@ export const viewNotes: Controller = async (req, res) => {
         });
 
         if (notes.length === 0) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
             });
         }
 
         return res.json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.NOTE_RETRIEVED,
             data: notes,
         });
     } catch (error) {
@@ -505,7 +508,7 @@ export const updateNotes: Controller = async (req, res) => {
 
         return res.json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.NOTE_UPDATED,
         });
     } catch (error) {
         throw error;
@@ -538,8 +541,8 @@ export const getPatientName: Controller = async (req, res) => {
         });
 
         if (patientName.length === 0) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
             });
         }
@@ -590,7 +593,7 @@ export const cancelCase: Controller = async (req, res) => {
         // success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.CASE_CANCELLED,
         });
     } catch (error) {
         throw error;
@@ -625,7 +628,7 @@ export const blockCase: Controller = async (req, res) => {
         // success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.CASE_BLOCKED,
         });
     } catch (error) {
         throw error;
@@ -655,7 +658,7 @@ export const clearCase: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.CASE_CLEARED,
         });
     } catch (error) {
         throw error;
@@ -685,7 +688,7 @@ export const viewSendAgreement: Controller = async (req, res) => {
         // If no agreement details are found, send a 502 Bad Gateway response with an appropriate message.
         if (viewSendAgreement.length === 0) {
             return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_GATEWAY,
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
             });
         }
@@ -715,8 +718,8 @@ export const sendAgreement: Controller = async (req, res) => {
 
         // If no user is found, return a 404 Not Found status with a user not exist message.
         if (!user) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.USER_NOT_EXIST,
             });
         }
@@ -811,7 +814,7 @@ export const getRegions: Controller = async (req, res) => {
 
         if (getRegions.length === 0) {
             return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_GATEWAY,
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
             });
         }
@@ -856,7 +859,7 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
 
         if (getPhysicianByRegion.length === 0) {
             return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_GATEWAY,
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
             });
         }
@@ -887,15 +890,13 @@ export const assignCase: Controller = async (req, res) => {
             {
                 physicianId,
                 transferNote,
-                caseTag: CaseTag.Pending,
-                requestStatus: RequestStatus.Processing,
             },
             { where: { id } },
         );
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.CASE_ASSIGNED,
         });
     } catch (error) {
         throw error;
@@ -928,24 +929,16 @@ export const viewUploads: Controller = async (req, res) => {
             order: sortByModel as Order,
         });
 
-        // To format the date in MM(string) DD YYYY format
-        // const formattedUploads = uploads.map((upload) => {
-        //     const date = new Date(upload.createdAt);
-        //     const formattedDate = date.toLocaleDateString("en-US", {
-        //         year: "numeric",
-        //         month: "short",
-        //         day: "numeric",
-        //     });
-        //     const { createdAt, ...uploadWithoutCreatedAt } = upload.toJSON();
-        //     return {
-        //         ...uploadWithoutCreatedAt,
-        //         "Upload Date": formattedDate,
-        //     };
-        // });
+        if (uploads.length === 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.FILE_NOT_FOUND,
+            });
+        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.FILE_RETRIEVED,
             data: uploads,
         });
     } catch (error) {
@@ -960,13 +953,13 @@ export const sendFileThroughMail: Controller = async (req, res) => {
         // Validate fileNames array
         if (!Array.isArray(files) || files.length === 0) {
             return res
-                .status(httpCode.NOT_FOUND)
+                .status(httpCode.BAD_REQUEST)
                 .json({ error: messageConstant.NO_FILE_SELECTED });
         }
 
         const user = await Request.findOne({ where: { patientEmail: email } });
         if (!user) {
-            return res.status(httpCode.NOT_FOUND).json({
+            return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.OK,
                 message: messageConstant.USER_NOT_EXIST,
             });
@@ -1126,8 +1119,8 @@ export const closeCaseView: Controller = async (req, res) => {
         });
 
         if (closeCase.length === 0) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
             });
         }
@@ -1157,7 +1150,7 @@ export const updateCloseCase: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.CLOSE_CASE_UPDATED,
         });
     } catch (error) {
         throw error;
@@ -1182,38 +1175,7 @@ export const closeCase: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
-        });
-    } catch (error) {
-        throw error;
-    }
-};
-
-/**
- * @param req - Express request object, expects `patientPhoneNumber` and `patientEmail` in the body.
- * @param res - Express response object used to send the response.
- * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the updated case data.
- * @description This function is an Express controller that updates the phone number and email of a patient in a case.
- */
-export const editCloseCase: Controller = async (req, res) => {
-    try {
-        const { patientPhoneNumber, patientEmail } = req.body;
-
-        await Request.update(
-            {
-                patientPhoneNumber,
-                patientEmail,
-            },
-            {
-                where: {
-                    id: req.params.id,
-                },
-            },
-        );
-
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.CASE_CLOSED,
         });
     } catch (error) {
         throw error;
@@ -1291,7 +1253,7 @@ export const transferRequest: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.REQUEST_TRANSFERRED,
         });
     } catch (error) {
         throw error;

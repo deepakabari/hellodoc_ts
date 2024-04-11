@@ -18,7 +18,6 @@ export const addBusiness: Controller = async (req, res) => {
     try {
         const {
             businessName,
-            businessWebsite,
             profession,
             faxNumber,
             phoneNumber,
@@ -45,7 +44,6 @@ export const addBusiness: Controller = async (req, res) => {
             accountType: AccountType.Vendor,
             userId: req.user.id,
             businessName,
-            businessWebsite,
             profession,
             faxNumber,
             phoneNumber,
@@ -59,7 +57,7 @@ export const addBusiness: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.BUSINESS_ADDED,
             data: newBusiness,
         });
     } catch (error) {
@@ -94,16 +92,16 @@ export const viewBusiness: Controller = async (req, res) => {
             where: { id },
         });
 
-        if (!viewBusiness) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
+        if (viewBusiness.length === 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
             });
         }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.BUSINESS_RETRIEVED,
             data: viewBusiness,
         });
     } catch (error) {
@@ -207,7 +205,7 @@ export const sendOrder: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.ORDER_SENT,
             data: sendOrder,
         });
     } catch (error) {

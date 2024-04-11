@@ -136,7 +136,7 @@ export const UserSchema = {
     updateNotification: {
         [Segments.BODY]: Joi.object({
             physicianIds: Joi.array().items(Joi.number().integer()).required(),
-        })
+        }),
     },
 
     editPhysicianProfile: {
@@ -165,6 +165,7 @@ export const UserSchema = {
             signature: Joi.string(),
             businessName: Joi.string(),
             businessWebsite: Joi.string(),
+            roleId: Joi.string().allow('', null).optional(),
             regions: Joi.array().items(Joi.number().integer()).optional(),
         }),
     },

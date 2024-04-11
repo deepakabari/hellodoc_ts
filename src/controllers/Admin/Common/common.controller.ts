@@ -60,7 +60,7 @@ export const downloadFile = async (req: ExpressRequest, res: Response) => {
         // Validate fileNames array
         if (!Array.isArray(fileNames) || fileNames.length === 0) {
             return res
-                .status(httpCode.NOT_FOUND)
+                .status(httpCode.BAD_REQUEST)
                 .json({ error: messageConstant.NO_FILE_SELECTED });
         }
 
@@ -105,7 +105,7 @@ export const deleteFile: Controller = async (req, res) => {
         // Validate fileNames array
         if (!Array.isArray(fileNames) || fileNames.length === 0) {
             return res
-                .status(httpCode.NOT_FOUND)
+                .status(httpCode.BAD_REQUEST)
                 .json({ error: messageConstant.NO_FILE_SELECTED });
         }
 
@@ -125,8 +125,8 @@ export const deleteFile: Controller = async (req, res) => {
             });
 
             if (!fileRecord || fileRecord === null) {
-                return res.status(httpCode.NOT_FOUND).json({
-                    status: httpCode.NOT_FOUND,
+                return res.status(httpCode.BAD_REQUEST).json({
+                    status: httpCode.BAD_REQUEST,
                     message: messageConstant.FILE_NOT_FOUND,
                 });
             }
@@ -260,7 +260,7 @@ export const verifyState: Controller = async (req, res) => {
 
         if (!regionExists) {
             return res
-                .status(httpCode.NOT_FOUND)
+                .status(httpCode.BAD_REQUEST)
                 .json({ message: messageConstant.INVALID_REGION });
         }
 

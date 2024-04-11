@@ -23,7 +23,7 @@ module.exports = {
             },
             receiverId: {
                 type: Sequelize.INTEGER,
-                allowNull: false
+                allowNull: true
             },
             sentDate: {
                 type: Sequelize.DATE,

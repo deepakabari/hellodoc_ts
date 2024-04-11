@@ -9,13 +9,8 @@ import {
 } from '../../../db/models/index';
 import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
-import { sequelize } from '../../../db/config/db.connection';
 
 dotenv.config();
-
-interface RoleGroup {
-    [key: string]: string[];
-}
 
 /**
  * Handles the HTTP request to retrieve account access roles.
@@ -45,7 +40,7 @@ export const accountAccess: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.ACCOUNT_ACCESS_RETRIEVED,
             data: accountAccess,
         });
     } catch (error) {
@@ -77,7 +72,7 @@ export const accountAccessByAccountType: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.PERMISSION_RETRIEVED,
             data: roles,
         });
     } catch (error) {
@@ -173,7 +168,7 @@ export const userAccess: Controller = async (req, res) => {
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.USER_ACCESS_RETRIEVED,
             data: users,
         });
     } catch (error) {
@@ -204,9 +199,9 @@ export const viewRole: Controller = async (req, res) => {
         });
 
         // Check if the role exists
-        if (!viewRole) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
+        if (viewRole.length === 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.ROLE_NOT_FOUND,
             });
         }

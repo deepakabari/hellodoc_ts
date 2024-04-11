@@ -6,7 +6,6 @@ import { Controller, ShiftWhereAttributes, Group } from '../../../interfaces';
 import dotenv from 'dotenv';
 import { Op } from 'sequelize';
 import sequelize from 'sequelize';
-import { any } from 'joi';
 dotenv.config();
 
 /**
@@ -70,7 +69,7 @@ export const providerOnCall: Controller = async (req, res) => {
         // Send the grouped providers data in the response.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.SUCCESS,
+            message: messageConstant.PROVIDER_RETRIEVED,
             data: providers,
         });
     } catch (error) {

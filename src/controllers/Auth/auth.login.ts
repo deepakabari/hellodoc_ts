@@ -245,8 +245,8 @@ export const changePassword: Controller = async (req, res) => {
 
         const user = await User.findByPk(id);
         if (!user) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
                 message: messageConstant.USER_NOT_EXIST,
             });
         }
