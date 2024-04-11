@@ -55,6 +55,8 @@ export const requestCount: Controller = async (req, res) => {
                         RequestStatus.Conclude,
                         RequestStatus.Closed,
                         RequestStatus.CancelledByAdmin,
+                        RequestStatus.Consult,
+                        RequestStatus.UnPaid
                     ],
                 },
             },
@@ -99,8 +101,16 @@ export const requestCount: Controller = async (req, res) => {
 export const getPatientByState: Controller = async (req, res) => {
     try {
         // Extract variables from query parameters
-        const { state, search, sortBy, orderBy, regions, page, pageSize } =
-            req.query;
+        const {
+            requestType,
+            state,
+            search,
+            sortBy,
+            orderBy,
+            regions,
+            page,
+            pageSize,
+        } = req.query;
 
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
@@ -152,10 +162,16 @@ export const getPatientByState: Controller = async (req, res) => {
             ['state', 'Region'],
             ['caseTag', 'State of Request'],
             ['transferNote', 'Transfer Note'],
+            'requestStatus',
         ];
         let condition;
         let includeModels;
         let sortByModel;
+
+        let requestTypeWhereClause = {};
+        if (requestType && requestType !== 'all') {
+            requestTypeWhereClause = { requestType: requestType as string };
+        }
 
         switch (sortBy) {
             case 'id':
@@ -170,12 +186,14 @@ export const getPatientByState: Controller = async (req, res) => {
                 condition = {
                     caseTag: 'New',
                     deletedAt: null,
+                    requestStatus: RequestStatus.Unassigned,
                 };
                 break;
             case 'pending':
                 condition = {
                     caseTag: 'Pending',
                     deletedAt: null,
+                    requestStatus: RequestStatus.Processing,
                 };
                 includeModels = [
                     {
@@ -203,6 +221,7 @@ export const getPatientByState: Controller = async (req, res) => {
                     caseTag: 'Active',
                     isAgreementAccepted: true,
                     deletedAt: null,
+                    requestStatus: RequestStatus.Accepted,
                 };
                 includeModels = [
                     {
@@ -229,6 +248,7 @@ export const getPatientByState: Controller = async (req, res) => {
                 condition = {
                     caseTag: 'Conclude',
                     deletedAt: null,
+                    requestStatus: RequestStatus.Consult,
                 };
                 includeModels = [
                     {
@@ -261,6 +281,9 @@ export const getPatientByState: Controller = async (req, res) => {
                                 { deletedAt: null },
                             ],
                         },
+                        {
+                            requestStatus: {[Op.or]: [RequestStatus.CancelledByAdmin, RequestStatus.Conclude]}
+                        },
                     ],
                 };
                 includeModels = [
@@ -288,6 +311,7 @@ export const getPatientByState: Controller = async (req, res) => {
                 condition = {
                     caseTag: 'UnPaid',
                     deletedAt: null,
+                    requestStatus: RequestStatus.UnPaid,
                 };
                 includeModels = [
                     {
@@ -318,7 +342,7 @@ export const getPatientByState: Controller = async (req, res) => {
         }
 
         // Select query to select attributes with respect to where condition and searching & ordering
-        const patients = await Request.findAll({
+        const patients = await Request.findAndCountAll({
             attributes: attributes as FindAttributeOptions,
             where: {
                 ...condition,
@@ -335,6 +359,7 @@ export const getPatientByState: Controller = async (req, res) => {
                       }
                     : {}),
                 ...(regions ? { state: regions as string } : {}),
+                ...requestTypeWhereClause,
             },
             include: includeModels as unknown as Includeable[],
             order: sortByModel as Order,

@@ -55,6 +55,7 @@ export enum RequestStatus {
     Consult = 'Consult',
     Cleared = 'Cleared',
     Blocked = 'Blocked',
+    UnPaid = 'Unpaid',
     CancelledByProvider = 'CancelledByProvider',
     CancelledByAdmin = 'CancelledByAdmin',
     CCUploadedByClient = 'CCUploadedByClient',

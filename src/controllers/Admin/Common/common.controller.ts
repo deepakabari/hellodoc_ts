@@ -8,6 +8,7 @@ import {
     Region,
     Request,
     RequestWiseFiles,
+    Role,
     User,
 } from '../../../db/models/index';
 import { Request as ExpressRequest, Response } from 'express';
@@ -266,6 +267,37 @@ export const verifyState: Controller = async (req, res) => {
         return res
             .status(httpCode.OK)
             .json({ message: messageConstant.VALID_REGION });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getRoles: Controller = async (req, res) => {
+    try {
+        const { accountType } = req.query;
+
+        let whereClause = {};
+        if (accountType && accountType !== 'all') {
+            whereClause = { accountType: accountType as string };
+        }
+
+        const getRoles = await Role.findAll({
+            attributes: ['id', 'Name', 'accountType'],
+            where: whereClause,
+        });
+
+        if (getRoles.length === 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.ROLE_RETRIEVED,
+            data: getRoles,
+        });
     } catch (error) {
         throw error;
     }

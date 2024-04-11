@@ -438,7 +438,7 @@ export const emailLog: Controller = async (req, res) => {
             };
         }
 
-        const emailLog = await EmailLog.findAll({
+        const emailLog = await EmailLog.findAndCountAll({
             attributes: [
                 'id',
                 'email',
@@ -546,7 +546,7 @@ export const smsLog: Controller = async (req, res) => {
             };
         }
 
-        const smsLog = await SMSLog.findAll({
+        const smsLog = await SMSLog.findAndCountAll({
             attributes: [
                 'id',
                 'phoneNumber',
