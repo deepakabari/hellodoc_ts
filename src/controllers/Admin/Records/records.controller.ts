@@ -273,6 +273,7 @@ export const searchRecord: Controller = async (req, res) => {
                     id: sequelize.col('Request.physicianId'),
                     ...physicianNameFilter,
                 },
+                required: false,
             },
             order,
             where: {

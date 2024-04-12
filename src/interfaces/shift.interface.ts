@@ -8,13 +8,19 @@ interface ShiftAttributes {
     startTime?: string;
     endTime?: string;
     isRepeat?: boolean;
-    weekDays?: string;
     repeatUpto?: number;
+    sunday?: boolean;
+    monday?: boolean;
+    tuesday?: boolean;
+    wednesday?: boolean;
+    thursday?: boolean;
+    friday?: boolean;
+    saturday?: boolean;
     isApproved?: boolean;
     isDeleted?: boolean;
-    startDate?: string
-    endDate?: string
-    regions?: any
+    startDate?: string;
+    endDate?: string;
+    regions?: any;
 }
 
 type ShiftCreationAttributes = Optional<ShiftAttributes, 'id'>;

@@ -94,7 +94,13 @@ export const addNewShift: Controller = async (req, res) => {
             startTime,
             endTime,
             isRepeat,
-            weekDays,
+            sunday,
+            monday,
+            tuesday,
+            wednesday,
+            thursday,
+            friday,
+            saturday,
             repeatUpto,
         } = req.body;
 
@@ -105,7 +111,15 @@ export const addNewShift: Controller = async (req, res) => {
             shiftDate,
             startTime,
             endTime,
-            isApproved: false,
+            isRepeat,
+            sunday,
+            monday,
+            tuesday,
+            wednesday,
+            thursday,
+            friday,
+            saturday,
+            repeatUpto,
         });
 
         // If the shift creation fails, send a bad request response.
@@ -147,6 +161,15 @@ export const viewShift: Controller = async (req, res) => {
                 'startTime',
                 'endTime',
                 'isApproved',
+                'isRepeat',
+                'sunday',
+                'monday',
+                'tuesday',
+                'wednesday',
+                'thursday',
+                'friday',
+                'saturday',
+                'repeatUpto',
             ],
             include: [
                 {
@@ -246,6 +269,15 @@ export const viewShiftFilter: Controller = async (req, res) => {
                 'startTime',
                 'endTime',
                 'isApproved',
+                'isRepeat',
+                'sunday',
+                'monday',
+                'tuesday',
+                'wednesday',
+                'thursday',
+                'friday',
+                'saturday',
+                'repeatUpto',
             ],
             include: [
                 {
@@ -303,7 +335,7 @@ export const unApprovedViewShift: Controller = async (req, res) => {
             where: {
                 isApproved: false,
                 isDeleted: false,
-                ...(regions ? { state: regions as string } : {}),
+                ...(regions ? { region: regions as string } : {}),
             },
             include: {
                 model: User,
@@ -357,6 +389,13 @@ export const approveShift: Controller = async (req, res) => {
     try {
         const { shiftIds } = req.body;
 
+        if (!shiftIds || shiftIds.length === 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.SHIFT_NOT_SELECTED,
+            });
+        }
+
         // Update 'isApproved' to true for each selected shift
         shiftIds.forEach(async (shiftId: string) => {
             await Shift.update(
@@ -373,13 +412,20 @@ export const approveShift: Controller = async (req, res) => {
             message: messageConstant.SHIFT_APPROVED,
         });
     } catch (error) {
-        throw error;
+        throw new Error(messageConstant.ERROR_APPROVE_SHIFT);
     }
 };
 
 export const deleteShift: Controller = async (req, res) => {
     try {
         const { shiftIds } = req.body;
+
+        if (!shiftIds || shiftIds.length === 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.SHIFT_NOT_SELECTED,
+            });
+        }
 
         // Update 'isDeleted' to true for each selected shift
         shiftIds.forEach(async (shiftId: string) => {
@@ -397,6 +443,6 @@ export const deleteShift: Controller = async (req, res) => {
             message: messageConstant.SHIFT_DELETED,
         });
     } catch (error) {
-        throw error;
+        throw new Error(messageConstant.ERROR_DELETE_SHIFT);
     }
 };

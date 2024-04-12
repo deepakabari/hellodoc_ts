@@ -9,3 +9,4 @@ export * as recordsController from './Admin/Records/records.controller';
 export * as partnerController from './Admin/Partners/partner.controller';
 export * as commonController from './Admin/Common/common.controller';
 export * as providerDashboard from './Provider/Dashboard/dashboard.controller'
+export * as patientDashboard from './Patient/patient.controller'

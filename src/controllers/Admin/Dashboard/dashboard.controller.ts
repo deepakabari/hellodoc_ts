@@ -22,6 +22,7 @@ import { compileEmailTemplate } from '../../../utils/hbsCompiler';
 import linkConstant from '../../../constants/link.constant';
 import { sendSMS } from '../../../utils/smsSender';
 import dotenv from 'dotenv';
+import { required } from 'joi';
 dotenv.config();
 
 /**
@@ -50,13 +51,15 @@ export const requestCount: Controller = async (req, res) => {
                 requestStatus: {
                     [Op.in]: [
                         RequestStatus.Unassigned,
-                        RequestStatus.Processing,
                         RequestStatus.Accepted,
                         RequestStatus.Conclude,
                         RequestStatus.Closed,
                         RequestStatus.CancelledByAdmin,
                         RequestStatus.Consult,
                         RequestStatus.UnPaid,
+                        RequestStatus.MDOnRoute,
+                        RequestStatus.MDOnSite,
+                        RequestStatus.Declined,
                     ],
                 },
             },
@@ -164,7 +167,27 @@ export const getPatientByState: Controller = async (req, res) => {
             ['transferNote', 'Transfer Note'],
         ];
         let condition;
-        let includeModels;
+        let includeModels = [
+            {
+                model: User,
+                as: 'physician',
+                attributes: [
+                    [
+                        sequelize.fn(
+                            'CONCAT',
+                            sequelize.col('firstName'),
+                            ' ',
+                            sequelize.col('lastName'),
+                        ),
+                        'Physician Name',
+                    ],
+                ],
+                where: {
+                    id: sequelize.col('Request.physicianId'),
+                },
+                required: false
+            },
+        ];
         let sortByModel;
 
         let requestTypeWhereClause = {};
@@ -194,26 +217,6 @@ export const getPatientByState: Controller = async (req, res) => {
                     requestStatus: RequestStatus.Accepted,
                     deletedAt: null,
                 };
-                includeModels = [
-                    {
-                        model: User,
-                        as: 'physician',
-                        attributes: [
-                            [
-                                sequelize.fn(
-                                    'CONCAT',
-                                    sequelize.col('firstName'),
-                                    ' ',
-                                    sequelize.col('lastName'),
-                                ),
-                                'Physician Name',
-                            ],
-                        ],
-                        where: {
-                            id: sequelize.col('Request.physicianId'),
-                        },
-                    },
-                ];
                 break;
             case 'active':
                 condition = {
@@ -221,26 +224,6 @@ export const getPatientByState: Controller = async (req, res) => {
                     isAgreementAccepted: true,
                     deletedAt: null,
                 };
-                includeModels = [
-                    {
-                        model: User,
-                        as: 'physician',
-                        attributes: [
-                            [
-                                sequelize.fn(
-                                    'CONCAT',
-                                    sequelize.col('firstName'),
-                                    ' ',
-                                    sequelize.col('lastName'),
-                                ),
-                                'Physician Name',
-                            ],
-                        ],
-                        where: {
-                            id: sequelize.col('Request.physicianId'),
-                        },
-                    },
-                ];
                 break;
             case 'conclude':
                 condition = {
@@ -248,26 +231,6 @@ export const getPatientByState: Controller = async (req, res) => {
                     deletedAt: null,
                     requestStatus: RequestStatus.Consult,
                 };
-                includeModels = [
-                    {
-                        model: User,
-                        as: 'physician',
-                        attributes: [
-                            [
-                                sequelize.fn(
-                                    'CONCAT',
-                                    sequelize.col('firstName'),
-                                    ' ',
-                                    sequelize.col('lastName'),
-                                ),
-                                'Physician Name',
-                            ],
-                        ],
-                        where: {
-                            id: sequelize.col('Request.physicianId'),
-                        },
-                    },
-                ];
                 break;
             case 'to close':
                 condition = {
@@ -284,31 +247,12 @@ export const getPatientByState: Controller = async (req, res) => {
                                 [Op.or]: [
                                     RequestStatus.CancelledByAdmin,
                                     RequestStatus.Conclude,
+                                    RequestStatus.Declined,
                                 ],
                             },
                         },
                     ],
                 };
-                includeModels = [
-                    {
-                        model: User,
-                        as: 'physician',
-                        attributes: [
-                            [
-                                sequelize.fn(
-                                    'CONCAT',
-                                    sequelize.col('firstName'),
-                                    ' ',
-                                    sequelize.col('lastName'),
-                                ),
-                                'Physician Name',
-                            ],
-                        ],
-                        where: {
-                            id: sequelize.col('Request.physicianId'),
-                        },
-                    },
-                ];
                 break;
             case 'unpaid':
                 condition = {
@@ -316,26 +260,6 @@ export const getPatientByState: Controller = async (req, res) => {
                     deletedAt: null,
                     requestStatus: RequestStatus.UnPaid,
                 };
-                includeModels = [
-                    {
-                        model: User,
-                        as: 'physician',
-                        attributes: [
-                            [
-                                sequelize.fn(
-                                    'CONCAT',
-                                    sequelize.col('firstName'),
-                                    ' ',
-                                    sequelize.col('lastName'),
-                                ),
-                                'Physician Name',
-                            ],
-                        ],
-                        where: {
-                            id: sequelize.col('Request.physicianId'),
-                        },
-                    },
-                ];
                 break;
             default:
                 return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
@@ -497,6 +421,13 @@ export const updateNotes: Controller = async (req, res) => {
 
         // Take adminNotes from request body
         const { adminNotes } = req.body;
+
+        if (!adminNotes) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.NO_INPUT_PROVIDED,
+            });
+        }
 
         // To update note in the adminNotes in request table
         await Request.update(

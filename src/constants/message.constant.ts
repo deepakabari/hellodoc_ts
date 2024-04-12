@@ -57,6 +57,8 @@ const messageConstant = {
     MISSING_SECTION_OR_UPDATED_DATA: 'Missing section or updates data',
     UPDATE_FAILED: 'Update failed...',
     AGREEMENT_EMAIL_SENT: 'Agreement email sent successfully',
+    AGREEMENT_ACCEPTED: 'Agreement accepted successfully.',
+    AGREEMENT_CANCELLED: 'Agreement cancelled successfully',
     INVALID_SORT_PARAMETER: 'Invalid sort parameter...',
     BUSINESS_ALREADY_EXISTS: 'Your business already exists in platform.',
     BUSINESS_ADDED: 'Business added successfully.',
@@ -72,6 +74,9 @@ const messageConstant = {
     SHIFT_RETRIEVED: 'Shifts Retrieved Successfully.',
     SHIFT_APPROVED: 'Shifts Approved Successfully.',
     SHIFT_DELETED: 'Shifts Deleted Successfully.',
+    SHIFT_NOT_SELECTED: 'No shift IDs provided.',
+    ERROR_DELETE_SHIFT: 'An error occurred while deleting shifts.',
+    ERROR_APPROVE_SHIFT: 'An error occurred while deleting approving shifts.',
     INVALID_REGION:
         'Invalid region. Please select from following ( Maryland, Virginia, District of Columbia, New York )',
     VALID_REGION: 'Valid Region.',
@@ -100,6 +105,7 @@ const messageConstant = {
     ORDER_SENT: 'Order sent successfully.',
     PROVIDER_RETRIEVED: 'Provider information retrieved successfully.',
     EMAIL_SMS_SENT: 'Email and SMS sent successfully.',
+    NO_INPUT_PROVIDED: 'no input provided.',
 };
 
 export default messageConstant;

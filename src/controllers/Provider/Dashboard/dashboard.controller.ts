@@ -5,7 +5,8 @@ import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
 import { Request } from '../../../db/models/index';
-import { Op } from 'sequelize';
+import { FindAttributeOptions, Op } from 'sequelize';
+import sequelize from 'sequelize';
 
 export const getPatientByState: Controller = async (req, res) => {
     try {
@@ -17,14 +18,30 @@ export const getPatientByState: Controller = async (req, res) => {
 
         let attributes = [
             'id',
-            'patientFirstName',
-            'patientLastName',
-            'patientPhoneNumber',
-            'street',
-            'city',
-            'state',
-            'zipCode',
-            'requestType',
+            [
+                sequelize.fn(
+                    'CONCAT',
+                    sequelize.col('patientFirstName'),
+                    ' ',
+                    sequelize.col('patientLastName'),
+                ),
+                'Name',
+            ],
+            ['patientPhoneNumber', 'Phone'],
+            [
+                sequelize.fn(
+                    'CONCAT',
+                    sequelize.col('Request.street'),
+                    ', ',
+                    sequelize.col('Request.city'),
+                    ', ',
+                    sequelize.col('Request.state'),
+                    ', ',
+                    sequelize.col('Request.zipCode'),
+                ),
+                'Address',
+            ],
+            ['requestType', 'Requestor Type'],
             'requestorPhoneNumber',
         ];
 
@@ -71,7 +88,7 @@ export const getPatientByState: Controller = async (req, res) => {
         }
 
         const patients = await Request.findAndCountAll({
-            attributes: attributes,
+            attributes: attributes as FindAttributeOptions,
             where: {
                 ...condition,
                 ...(search

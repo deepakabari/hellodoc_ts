@@ -1,5 +1,5 @@
 import { Table, Column, Model, BelongsTo } from 'sequelize-typescript';
-import { DataTypes } from 'sequelize';
+import { DataTypes, Sequelize } from 'sequelize';
 import { ShiftAttributes, ShiftCreationAttributes } from '../../interfaces';
 import { User } from './index';
 
@@ -53,16 +53,52 @@ class Shift extends Model<ShiftAttributes, ShiftCreationAttributes> {
     isRepeat: boolean;
 
     @Column({
-        type: DataTypes.STRING,
-        allowNull: true,
-    })
-    weekDays: string;
-
-    @Column({
         type: DataTypes.INTEGER,
         allowNull: true,
     })
     repeatUpto: number;
+
+    @Column({
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+    })
+    sunday: boolean;
+
+    @Column({
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+    })
+    monday: boolean;
+
+    @Column({
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+    })
+    tuesday: boolean;
+
+    @Column({
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+    })
+    wednesday: boolean;
+
+    @Column({
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+    })
+    thursday: boolean;
+
+    @Column({
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+    })
+    friday: boolean;
+
+    @Column({
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+    })
+    saturday: boolean;
 
     @Column({
         type: DataTypes.BOOLEAN,

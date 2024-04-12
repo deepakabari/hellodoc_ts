@@ -9,6 +9,7 @@ import {
 } from '../../../db/models/index';
 import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
+import { Op } from 'sequelize';
 
 dotenv.config();
 
@@ -146,7 +147,13 @@ export const userAccess: Controller = async (req, res) => {
             sortByModel = [[sortBy, orderBy]] as Order;
         }
 
-        let whereCondition: { [key: string]: any } = {};
+        let whereCondition: { [key: string]: any } = {
+            // Exclude 'user' accountType from all results
+            accountType: {
+                [Op.not]: 'user'
+            }
+        };
+
         if (accountType && accountType !== 'All') {
             whereCondition['accountType'] = accountType;
         }
@@ -231,7 +238,7 @@ export const updateRole: Controller = async (req, res) => {
         // Extract the list of permission IDs from the request body.
         const { roleName, accountType, permissionIds } = req.body;
 
-        const updateRole = await Role.update(
+        await Role.update(
             {
                 Name: roleName,
                 accountType,
