@@ -228,6 +228,7 @@ export const viewVendor: Controller = async (req, res) => {
                 'businessName',
                 'email',
                 'faxNumber',
+                'phoneNumber',
                 'businessContact',
             ],
             where: {

@@ -38,6 +38,7 @@ const messageConstant = {
     REQUEST_DELETED: 'Request Deleted Successfully.',
     REQUEST_RETRIEVED: 'Patient requests retrieved successfully.',
     REQUEST_TRANSFERRED: 'Request transferred successfully.',
+    REQUEST_ACCEPTED: 'Request accepted successfully.',
     NO_FILE_SELECTED: 'File not selected.',
     FILE_NOT_FOUND: 'File not found',
     FILE_DELETED: 'File deleted successfully.',
@@ -98,7 +99,7 @@ const messageConstant = {
     CASE_CLOSED: 'Case closed successfully.',
     ORDER_SENT: 'Order sent successfully.',
     PROVIDER_RETRIEVED: 'Provider information retrieved successfully.',
-    EMAIL_SMS_SENT: 'Email and SMS sent successfully.'
+    EMAIL_SMS_SENT: 'Email and SMS sent successfully.',
 };
 
 export default messageConstant;

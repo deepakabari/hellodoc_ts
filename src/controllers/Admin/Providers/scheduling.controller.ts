@@ -4,7 +4,7 @@ import messageConstant from '../../../constants/message.constant';
 import { Region, Shift, User } from '../../../db/models/index';
 import { Controller, ShiftWhereAttributes, Group } from '../../../interfaces';
 import dotenv from 'dotenv';
-import { Op } from 'sequelize';
+import { Op, Order } from 'sequelize';
 import sequelize from 'sequelize';
 dotenv.config();
 
@@ -206,7 +206,7 @@ export const viewShiftFilter: Controller = async (req, res) => {
 
         // Initialize the WHERE condition for the database query
         let whereCondition: ShiftWhereAttributes = {
-            isDeleted: false
+            isDeleted: false,
         };
 
         if (dateString) {
@@ -284,10 +284,21 @@ export const viewShiftFilter: Controller = async (req, res) => {
  */
 export const unApprovedViewShift: Controller = async (req, res) => {
     try {
-        const regions = req.query.regions as string;
+        const { regions, page, pageSize, sortBy, orderBy } = req.query;
+
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        const order =
+            sortBy && orderBy
+                ? ([
+                      [{ model: User, as: 'physician' }, sortBy, orderBy],
+                  ] as Order)
+                : [];
 
         // Retrieve unapproved shifts with specific attributes and include physician details
-        const unApprovedViewShift = await Shift.findAll({
+        const unApprovedViewShift = await Shift.findAndCountAll({
             attributes: ['id', 'shiftDate', 'startTime', 'endTime', 'region'],
             where: {
                 isApproved: false,
@@ -312,9 +323,12 @@ export const unApprovedViewShift: Controller = async (req, res) => {
                     id: sequelize.col('Shift.physicianId'),
                 },
             },
+            order,
+            limit,
+            offset,
         });
 
-        if (unApprovedViewShift.length === 0) {
+        if (unApprovedViewShift.count === 0) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -385,4 +399,4 @@ export const deleteShift: Controller = async (req, res) => {
     } catch (error) {
         throw error;
     }
-}
+};

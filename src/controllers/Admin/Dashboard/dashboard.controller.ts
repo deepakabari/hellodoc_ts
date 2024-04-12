@@ -190,7 +190,8 @@ export const getPatientByState: Controller = async (req, res) => {
                 break;
             case 'pending':
                 condition = {
-                    caseTag: 'Pending',
+                    caseTag: CaseTag.Pending,
+                    requestStatus: RequestStatus.Accepted,
                     deletedAt: null,
                 };
                 includeModels = [
@@ -216,10 +217,9 @@ export const getPatientByState: Controller = async (req, res) => {
                 break;
             case 'active':
                 condition = {
-                    caseTag: 'Active',
+                    caseTag: CaseTag.Active,
                     isAgreementAccepted: true,
                     deletedAt: null,
-                    requestStatus: RequestStatus.Accepted,
                 };
                 includeModels = [
                     {
@@ -244,7 +244,7 @@ export const getPatientByState: Controller = async (req, res) => {
                 break;
             case 'conclude':
                 condition = {
-                    caseTag: 'Conclude',
+                    caseTag: CaseTag.Conclude,
                     deletedAt: null,
                     requestStatus: RequestStatus.Consult,
                 };
@@ -272,7 +272,7 @@ export const getPatientByState: Controller = async (req, res) => {
             case 'to close':
                 condition = {
                     [Op.and]: [
-                        { caseTag: 'To Close' },
+                        { caseTag: CaseTag.Close },
                         {
                             [Op.or]: [
                                 { physicianId: null },
@@ -312,7 +312,7 @@ export const getPatientByState: Controller = async (req, res) => {
                 break;
             case 'unpaid':
                 condition = {
-                    caseTag: 'UnPaid',
+                    caseTag: CaseTag.UnPaid,
                     deletedAt: null,
                     requestStatus: RequestStatus.UnPaid,
                 };
