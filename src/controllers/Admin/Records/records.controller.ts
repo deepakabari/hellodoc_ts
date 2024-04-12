@@ -177,6 +177,7 @@ export const patientRecord: Controller = async (req, res) => {
                 as: 'physician',
                 attributes: ['id', 'firstName', 'lastName'],
                 where: { id: sequelize.col('Request.physicianId') },
+                required: false,
             },
             where: { userId: id },
             order,

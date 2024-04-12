@@ -8,6 +8,59 @@ import { Request } from '../../../db/models/index';
 import { FindAttributeOptions, Op } from 'sequelize';
 import sequelize from 'sequelize';
 
+export const requestCount: Controller = async (req, res) => {
+    try {
+        const allCaseTags: CaseTag[] = Object.values(CaseTag);
+
+        const requestCounts = await Request.findAll({
+            attributes: [
+                'caseTag',
+                [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+            ],
+            where: {
+                caseTag: {
+                    [Op.in]: allCaseTags,
+                },
+                requestStatus: {
+                    [Op.in]: [
+                        RequestStatus.Unassigned,
+                        RequestStatus.Accepted,
+                        RequestStatus.Consult,
+                        RequestStatus.MDOnRoute,
+                        RequestStatus.MDOnSite,
+                    ],
+                },
+                physicianId: req.user.id,
+            },
+            group: 'caseTag',
+            raw: true,
+        });
+
+        // Initialize an object to map caseTags to their counts
+        const countMap: any = {};
+
+        // Populate countMap with counts for each caseTag
+        requestCounts.forEach((row: any) => {
+            countMap[row.caseTag] = row.count;
+        });
+
+        // Map allCaseTags to an array of objects containing caseTag and its count
+        const result = allCaseTags.map((caseTag) => ({
+            caseTag,
+            count: countMap[caseTag] || 0, // Use the count from countMap or default to 0 if not present
+        }));
+
+        // Send a response with the status code 200 and the result in JSON format
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: result,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const getPatientByState: Controller = async (req, res) => {
     try {
         const { requestType, search, state, page, pageSize } = req.query;

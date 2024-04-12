@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.get('/', isAuth, providerDashboard.getPatientByState);
 
+router.get('/dashboardCount', isAuth, providerDashboard.requestCount);
+
 router.patch('/acceptRequest/:id', isAuth, providerDashboard.acceptRequest);
 
 export default router;
