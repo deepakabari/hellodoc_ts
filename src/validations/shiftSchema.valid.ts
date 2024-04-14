@@ -8,9 +8,15 @@ export const ShiftSchema = {
             shiftDate: Joi.date().required(),
             startTime: Joi.string().required(),
             endTime: Joi.string().required(),
-            isRepeat: Joi.boolean().optional(),
-            weekDays: Joi.string().optional(),
+            isRepeat: Joi.boolean().optional().allow('', null),
             repeatUpto: Joi.number().optional(),
-        })
-    }
+            sunday: Joi.boolean().optional().allow('', null),
+            monday: Joi.boolean().optional().allow('', null),
+            tuesday: Joi.boolean().optional().allow('', null),
+            wednesday: Joi.boolean().optional().allow('', null),
+            thursday: Joi.boolean().optional().allow('', null),
+            friday: Joi.boolean().optional().allow('', null),
+            saturday: Joi.boolean().optional().allow('', null),
+        }),
+    },
 };

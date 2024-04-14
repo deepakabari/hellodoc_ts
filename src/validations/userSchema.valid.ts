@@ -167,6 +167,6 @@ export const UserSchema = {
             businessWebsite: Joi.string(),
             roleId: Joi.string().allow('', null).optional(),
             regions: Joi.array().items(Joi.number().integer()).optional(),
-        }),
+        }).unknown(true),
     },
 };

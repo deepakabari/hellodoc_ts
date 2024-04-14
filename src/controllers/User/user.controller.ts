@@ -22,6 +22,7 @@ import linkConstant from '../../constants/link.constant';
 import { compileEmailTemplate } from '../../utils/hbsCompiler';
 import transporter from '../../utils/email';
 import { getAbbreviationFromDb } from '../../utils/regionAbbreviation';
+import { upload } from '../../utils/multerConfig';
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
@@ -153,7 +154,6 @@ const createAccount: Controller = async (req, res) => {
                 });
             }
         } else if (accountType === 'Physician') {
-            const files = (req.files as Express.Multer.File[]) || [];
 
             const newUser = await User.create({
                 accountType,
@@ -175,18 +175,6 @@ const createAccount: Controller = async (req, res) => {
                 status: ProfileStatus.Active,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                isBackgroundDoc: !!(req.files as Express.Multer.File[])?.find(
-                    (file) => file.fieldname === 'backgroundCheck',
-                ),
-                isAgreementDoc: !!(req.files as Express.Multer.File[])?.find(
-                    (file) => file.fieldname === 'independentContract',
-                ),
-                isTrainingDoc: !!(req.files as Express.Multer.File[])?.find(
-                    (file) => file.fieldname === 'hpaaCompliance',
-                ),
-                isNonDisclosureDoc: !!(
-                    req.files as Express.Multer.File[]
-                )?.find((file) => file.fieldname === 'nonDisclosureAgreement'),
             });
 
             if (!newUser) {
@@ -207,27 +195,52 @@ const createAccount: Controller = async (req, res) => {
                     state,
                     zipCode,
                 });
-                const documentTypeMap: { [key: string]: string } = {
-                    photo: 'Photo',
-                    independentContract: 'IndependentContract',
-                    backgroundCheck: 'BackgroundCheck',
-                    hipaaCompliance: 'HIPAACompliance',
-                    nonDisclosureAgreement: 'NonDisclosureAgreement',
-                    licenseDocument: 'LicenseDocument',
+
+                const fileColumnMapping: { [key: string]: string } = {
+                    backgroundCheck: 'isBackgroundDoc',
+                    nonDisclosureAgreement: 'isNonDisclosureDoc',
+                    hipaaCompliance: 'isHippaDoc',
+                    independentContract: 'isAgreementDoc',
                 };
 
-                const filePromises = files.map((file: any) => {
-                    const docType =
-                        documentTypeMap[file.fieldname] || 'unknown';
+                const uploadedFiles: { [key: string]: string[] } = {};
 
-                    return RequestWiseFiles.create({
-                        requestId: newUser.id,
-                        fileName: file.originalname,
-                        documentPath: file.path,
-                        docType,
-                    });
+                const updateFields: { [key: string]: boolean } = {};
+                
+                let files: { [key: string]: Express.Multer.File[] } = {};
+
+                // Type guard to handle both array and object types
+                if (Array.isArray(req.files)) {
+                    // If req.files is an array, assign it to photo field
+                    files['photo'] = req.files as Express.Multer.File[];
+                } else {
+                    // If req.files is an object, assign it directly
+                    files = req.files as { [key: string]: Express.Multer.File[] };
+                }
+
+                for (const fieldName of Object.keys(fileColumnMapping)) {
+                    const fieldFiles = files[fieldName];
+                    if (fieldFiles && fieldFiles.length > 0) {
+                        // Update corresponding column in the user table
+                        const columnName = fileColumnMapping[fieldName];
+                        updateFields[columnName] = true;
+
+                        // Save file details to RequestWiseFiles table
+                        for (const file of fieldFiles) {
+                            await RequestWiseFiles.create({
+                                requestId: newUser.id,
+                                fileName: file.filename,
+                                docType: fieldName,
+                                documentPath: file.path,
+                            });
+                        }
+                        uploadedFiles[fieldName] = fieldFiles.map(file => file.filename);
+                    }
+                }
+
+                await User.update(updateFields, {
+                    where: { id: newUser.id }, // Update based on user id
                 });
-                const newFiles = await Promise.all(filePromises);
 
                 const { regions } = req.body;
 
@@ -247,7 +260,7 @@ const createAccount: Controller = async (req, res) => {
                 return res.status(httpCode.OK).json({
                     status: httpCode.OK,
                     message: messageConstant.USER_CREATED,
-                    data: { userResponse, newFiles, newBusiness },
+                    data: { userResponse, newBusiness, uploadedFiles },
                 });
             }
         } else if (accountType === 'User') {

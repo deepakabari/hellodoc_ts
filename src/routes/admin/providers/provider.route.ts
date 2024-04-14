@@ -37,6 +37,10 @@ router.patch(
     upload.fields([
         { name: 'photo', maxCount: 1 },
         { name: 'signature', maxCount: 1 },
+        { name: 'independentContract' },
+        { name: 'backgroundCheck' },
+        { name: 'hipaaCompliance' },
+        { name: 'nonDisclosureAgreement' },
     ]),
     celebrate(UserSchema.editPhysicianProfile),
     providerController.editPhysicianProfile,
@@ -72,6 +76,6 @@ router.put('/approveShift', isAuth, schedulingController.approveShift);
 
 router.delete('/deleteShift', isAuth, schedulingController.deleteShift);
 
-router.delete('/deleteProvider/:id', isAuth, providerController.deleteAccount)
+router.delete('/deleteProvider/:id', isAuth, providerController.deleteAccount);
 
 export default router;

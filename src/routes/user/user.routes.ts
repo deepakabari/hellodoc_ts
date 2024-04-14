@@ -9,7 +9,13 @@ const router = express.Router();
 
 router.post(
     '/createUser',
-    upload.array('files'),
+    upload.fields([
+        { name: 'photo' },
+        { name: 'independentContract' },
+        { name: 'backgroundCheck' },
+        { name: 'hipaaCompliance' },
+        { name: 'nonDisclosureAgreement' }
+    ]),
     celebrate(UserSchema.createUser),
     userController.createAccount,
 );

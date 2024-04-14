@@ -5,6 +5,7 @@ import {
     Business,
     EmailLog,
     Region,
+    RequestWiseFiles,
     Role,
     SMSLog,
     User,
@@ -212,7 +213,12 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
             where: { userId: id },
         });
 
-        if (!physicianProfile && !businessDetails) {
+        const files = await RequestWiseFiles.findAll({
+            attributes: ['id', 'fileName', 'docType', 'documentPath'],
+            where: { requestId: id },
+        });
+
+        if (!physicianProfile && !businessDetails && !files) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -222,7 +228,7 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PROFILE_RETRIEVED,
-            data: { physicianProfile, businessDetails },
+            data: { physicianProfile, businessDetails, files },
         });
     } catch (error) {
         throw error;
@@ -267,6 +273,36 @@ export const editPhysicianProfile: Controller = async (req, res) => {
                     { where: { userId: id } },
                 );
 
+                const fileColumnMapping: { [key: string]: string } = {
+                    backgroundCheck: 'isBackgroundDoc',
+                    nonDisclosureAgreement: 'isNonDisclosureDoc',
+                    hipaaCompliance: 'isHippaDoc',
+                    independentContract: 'isAgreementDoc',
+                };
+
+                if (files) {
+                    for (const [key, value] of Object.entries(
+                        fileColumnMapping,
+                    )) {
+                        if (files[key] && files[key][0]) {
+                            // Update the requestWiseFiles table
+                            await RequestWiseFiles.create({
+                                requestId: id as unknown as number,
+                                fileName: files[key][0].filename,
+                                docType: key,
+                                documentPath: files[key][0].path,
+                            });
+
+                            // Set the corresponding column to true
+                            const userUpdate: any = {};
+                            userUpdate[value] = true;
+                            await User.update(userUpdate, {
+                                where: { id },
+                            });
+                        }
+                    }
+                }
+
                 return true;
             } catch (error) {
                 console.error('Transaction failed:', error);
@@ -292,7 +328,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             'state',
             'zipCode',
             'altPhone',
-            'roleId'
+            'roleId',
         ];
 
         const hashPassword = async (password: string): Promise<string> => {

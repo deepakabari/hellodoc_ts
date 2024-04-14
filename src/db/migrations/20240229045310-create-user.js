@@ -93,7 +93,7 @@ module.exports = {
                 type: Sequelize.BOOLEAN,
                 allowNull: true,
             },
-            isTrainingDoc: {
+            isHippaDoc: {
                 type: Sequelize.BOOLEAN,
                 allowNull: true,
             },

@@ -16,6 +16,7 @@ type BillingUpdates = {
 };
 
 type FieldUpdates = {
+    [key: string]: any;
     password?: string;
     status?: string;
     firstName?: string;
@@ -33,6 +34,10 @@ type FieldUpdates = {
     altPhone?: string;
     photo?: string;
     signature?: string;
+    isBackgroundDoc?: boolean;
+    isNonDisclosureDoc?: boolean;
+    isHippaDoc?: boolean;
+    isAgreementDoc?: boolean;
 };
 
 export { AdminUpdates, BillingUpdates, FieldUpdates };
