@@ -8,9 +8,10 @@ import Business from './business.model';
 import OrderDetail from './orderDetails.model';
 import Shift from './shift.model';
 import Permission from './permission.model';
-import RolePermissionMap from './rolepermissionmap.model';
-import EmailLog from './emaillog.model'
+import RolePermissionMap from './rolePermissionMap.model';
+import EmailLog from './emailLog.model';
 import SMSLog from './smslog.model';
+import MedicalReport from './medicalreport.model';
 
 export {
     Role,
@@ -25,5 +26,6 @@ export {
     Permission,
     RolePermissionMap,
     EmailLog,
-    SMSLog
+    SMSLog,
+    MedicalReport,
 };

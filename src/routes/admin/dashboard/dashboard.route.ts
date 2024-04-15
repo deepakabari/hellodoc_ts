@@ -36,7 +36,7 @@ router.get(
     '/patientName/:id',
     isAuth,
     celebrate(RequestSchema.idParams),
-    dashboardController.getPatientName,
+    dashboardController.getPatientData,
 );
 
 router.patch(

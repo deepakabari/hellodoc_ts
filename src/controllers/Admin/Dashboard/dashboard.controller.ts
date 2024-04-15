@@ -185,7 +185,7 @@ export const getPatientByState: Controller = async (req, res) => {
                 where: {
                     id: sequelize.col('Request.physicianId'),
                 },
-                required: false
+                required: false,
             },
         ];
         let sortByModel;
@@ -447,13 +447,13 @@ export const updateNotes: Controller = async (req, res) => {
 };
 
 /**
- * @function getPatientName
+ * @function getPatientData
  * @param req - Express request object, expects `id` in the parameters.
  * @param res - Express response object used to send the response.
  * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the patient data.
  * @description This function is an Express controller that retrieve a case with patient name in response.
  */
-export const getPatientName: Controller = async (req, res) => {
+export const getPatientData: Controller = async (req, res) => {
     try {
         // Extract id from request parameter
         const { id } = req.params;
@@ -467,6 +467,12 @@ export const getPatientName: Controller = async (req, res) => {
                 'patientEmail',
                 'confirmationNumber',
                 'requestType',
+                'street',
+                'city',
+                'state',
+                'zipCode',
+                'dob',
+                'patientPhoneNumber',
             ],
             where: { id },
         });

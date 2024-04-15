@@ -1,10 +1,17 @@
-import { Table, Column, Model, BelongsTo, HasMany } from 'sequelize-typescript';
+import {
+    Table,
+    Column,
+    Model,
+    BelongsTo,
+    HasMany,
+    HasOne,
+} from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
 import {
     RequestAttributes,
     RequestCreationAttributes,
 } from '../../interfaces/';
-import { EmailLog, SMSLog, User } from '../models/index';
+import { EmailLog, MedicalReport, SMSLog, User } from '../models/index';
 import { RequestWiseFiles } from './index';
 
 @Table({
@@ -287,6 +294,9 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
         as: 'requestSMSLog',
     })
     requestSMSLogs: SMSLog[];
+
+    @HasOne(() => MedicalReport, { foreignKey: 'requestId' })
+    medicalReport: MedicalReport;
 }
 
 export default Request;

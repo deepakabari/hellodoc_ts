@@ -111,6 +111,11 @@ const messageConstant = {
     NO_INPUT_PROVIDED: 'no input provided.',
     CARE_CONCLUDED: 'Care concluded.',
     INVALID_TYPE_CARE: 'Invalid typeOfCare',
+    FORM_CREATED: 'Encounter form created successfully.',
+    FORM_FINALIZED: 'encounter form finalized successfully.',
+    FORM_FOUND: 'Encounter form already present.',
+    FORM_UPDATED: 'Encounter form updated.',
+    DATA_RETRIEVED: 'Data retrieved successfully.',
 };
 
 export default messageConstant;

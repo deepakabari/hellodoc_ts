@@ -117,7 +117,7 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: true,
             },
-            is_finalize: {
+            isFinalize: {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,
             },

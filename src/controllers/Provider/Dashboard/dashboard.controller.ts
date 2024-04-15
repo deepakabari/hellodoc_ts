@@ -4,9 +4,10 @@ import messageConstant from '../../../constants/message.constant';
 import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
-import { Request } from '../../../db/models/index';
+import { MedicalReport, Request } from '../../../db/models/index';
 import { FindAttributeOptions, Op, where } from 'sequelize';
 import sequelize from 'sequelize';
+import { Request as ExpressRequest, Response } from 'express';
 
 export const requestCount: Controller = async (req, res) => {
     try {
@@ -241,7 +242,7 @@ export const typeOfCare: Controller = async (req, res) => {
             });
         }
 
-        const updateRows = await Request.update(
+        await Request.update(
             {
                 callType,
                 requestStatus,
@@ -253,7 +254,6 @@ export const typeOfCare: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_UPDATED,
-            data: updateRows,
         });
     } catch (error) {
         throw error;
@@ -271,6 +271,7 @@ export const transferRequest: Controller = async (req, res) => {
                 requestStatus: RequestStatus.Unassigned,
                 physicianId: null,
                 transferNote: description,
+                caseTag: CaseTag.New,
             },
             { where: { id } },
         );
@@ -279,6 +280,166 @@ export const transferRequest: Controller = async (req, res) => {
             status: httpCode.OK,
             message: messageConstant.REQUEST_TRANSFERRED,
         });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const encounterForm: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const existingForm = await MedicalReport.findOne({
+            where: { requestId: id },
+        });
+
+        if (existingForm) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.FORM_FOUND,
+            });
+        }
+
+        const encounterForm = await MedicalReport.create({
+            requestId: id,
+            ...req.body,
+            isFinalize: false,
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.FORM_CREATED,
+            data: encounterForm,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const finalizeForm: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await MedicalReport.update(
+            {
+                isFinalize: true,
+            },
+            { where: { id } },
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.FORM_FINALIZED,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const viewEncounterForm: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const viewEncounterForm = await MedicalReport.findAll({
+            attributes: [
+                'id',
+                'serviceDate',
+                'presentIllnessHistory',
+                'medicalHistory',
+                'medications',
+                'allergies',
+                'temperature',
+                'heartRate',
+                'repositoryRate',
+                'sisBP',
+                'diaBP',
+                'oxygen',
+                'pain',
+                'heent',
+                'cv',
+                'chest',
+                'abd',
+                'extr',
+                'skin',
+                'neuro',
+                'other',
+                'diagnosis',
+                'treatmentPlan',
+                'medicationDispensed',
+                'procedure',
+                'followUp',
+            ],
+            include: [
+                {
+                    model: Request,
+                    attributes: [
+                        'id',
+                        'patientFirstName',
+                        'patientLastName',
+                        'patientEmail',
+                        'street',
+                        'city',
+                        'state',
+                        'zipCode',
+                        'dob',
+                        'patientPhoneNumber',
+                    ],
+                },
+            ],
+            where: { requestId: id },
+        });
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.DATA_RETRIEVED,
+            data: viewEncounterForm,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const editEncounterForm: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await MedicalReport.update(
+            {
+                ...req.body,
+            },
+            {
+                where: { id },
+            },
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.FORM_UPDATED,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const downloadEncounter = async (req: ExpressRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        const token = req.headers.authorization as string;
+
+        const apiUrl = `http:localhost:4000/provider/dashboard/viewEncounterForm/${id}`;
+
+        const response = await fetch(apiUrl, {
+            headers: {
+                Authorization: token,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch data: ${response.statusText}`);
+        }
+
+        const jsonData: any = await response.json();
     } catch (error) {
         throw error;
     }

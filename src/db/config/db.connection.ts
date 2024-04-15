@@ -13,6 +13,7 @@ import {
     RolePermissionMap,
     EmailLog,
     SMSLog,
+    MedicalReport
 } from '../models/index';
 
 import dotenv from 'dotenv';
@@ -43,6 +44,7 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
         RolePermissionMap,
         EmailLog,
         SMSLog,
+        MedicalReport
     ],
 });
 
