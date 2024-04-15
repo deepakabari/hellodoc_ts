@@ -36,7 +36,7 @@ type FieldUpdates = {
     signature?: string;
     isBackgroundDoc?: boolean;
     isNonDisclosureDoc?: boolean;
-    isHippaDoc?: boolean;
+    isHipaaDoc?: boolean;
     isAgreementDoc?: boolean;
 };
 

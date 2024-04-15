@@ -2,124 +2,124 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('User', {
+        await queryInterface.createTable('MedicalReport', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-            userName: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            email: {
-                type: Sequelize.STRING,
+            requestId: {
+                type: Sequelize.INTEGER,
                 allowNull: false,
+                references: {
+                    model: 'Request',
+                    key: 'id',
+                },
             },
-            password: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            firstName: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            lastName: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            phoneNumber: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            dob: {
-                type: Sequelize.DATEONLY,
-                allowNull: true,
-            },
-            address1: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            address2: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            street: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            city: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            state: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            zipCode: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            altPhone: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            status: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            accountType: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            medicalLicense: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            photo: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            signature: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            isAgreementDoc: {
-                type: Sequelize.BOOLEAN,
-                allowNull: true,
-            },
-            isBackgroundDoc: {
-                type: Sequelize.BOOLEAN,
-                allowNull: true,
-            },
-            isHipaaDoc: {
-                type: Sequelize.BOOLEAN,
-                allowNull: true,
-            },
-            isNonDisclosureDoc: {
-                type: Sequelize.BOOLEAN,
-                allowNull: true,
-            },
-            isLicenseDoc: {
-                type: Sequelize.BOOLEAN,
-                allowNull: true,
-            },
-            NPINumber: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            syncEmailAddress: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            resetToken: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            expireToken: {
+            serviceDate: {
                 type: Sequelize.DATE,
                 allowNull: true,
+            },
+            presentIllnessHistory: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            medicalHistory: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            medications: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            allergies: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            temperature: {
+                type: Sequelize.INTEGER,
+                allowNull: true,
+            },
+            heartRate: {
+                type: Sequelize.INTEGER,
+                allowNull: true,
+            },
+            repositoryRate: {
+                type: Sequelize.INTEGER,
+                allowNull: true,
+            },
+            sisBP: {
+                type: Sequelize.INTEGER,
+                allowNull: true,
+            },
+            diaBP: {
+                type: Sequelize.INTEGER,
+                allowNull: true,
+            },
+            oxygen: {
+                type: Sequelize.INTEGER,
+                allowNull: true,
+            },
+            pain: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            heent: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            cv: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            chest: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            abd: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            extr: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            skin: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            neuro: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            other: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            diagnosis: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            treatmentPlan: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            medicationDispensed: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            procedure: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            followUp: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            is_finalize: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
             },
             createdAt: {
                 allowNull: false,
@@ -136,6 +136,6 @@ module.exports = {
         });
     },
     async down(queryInterface) {
-        await queryInterface.dropTable('User');
+        await queryInterface.dropTable('MedicalReport');
     },
 };

@@ -110,7 +110,7 @@ module.exports = {
                 allowNull: true,
             },
             callType: {
-                type: Sequelize.INTEGER,
+                type: Sequelize.STRING,
                 allowNull: true,
             },
             completedByPhysician: {

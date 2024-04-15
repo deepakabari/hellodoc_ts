@@ -172,9 +172,9 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
 
     @Column({
         allowNull: true,
-        type: DataTypes.BOOLEAN,
+        type: DataTypes.STRING,
     })
-    callType?: boolean;
+    callType?: string;
 
     @Column({
         allowNull: true,

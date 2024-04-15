@@ -103,7 +103,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     isBackgroundDoc: boolean;
 
     @Column({ type: DataTypes.BOOLEAN, allowNull: true })
-    isHippaDoc: boolean;
+    isHipaaDoc: boolean;
 
     @Column({ type: DataTypes.BOOLEAN, allowNull: true })
     isNonDisclosureDoc: boolean;

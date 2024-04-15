@@ -39,6 +39,7 @@ const messageConstant = {
     REQUEST_RETRIEVED: 'Patient requests retrieved successfully.',
     REQUEST_TRANSFERRED: 'Request transferred successfully.',
     REQUEST_ACCEPTED: 'Request accepted successfully.',
+    REQUEST_UPDATED: 'Request details updated successfully',
     NO_FILE_SELECTED: 'File not selected.',
     FILE_NOT_FOUND: 'File not found',
     FILE_DELETED: 'File deleted successfully.',
@@ -74,7 +75,9 @@ const messageConstant = {
     SHIFT_RETRIEVED: 'Shifts Retrieved Successfully.',
     SHIFT_APPROVED: 'Shifts Approved Successfully.',
     SHIFT_DELETED: 'Shifts Deleted Successfully.',
+    SHIFT_UPDATED: 'Shift updated successfully.',
     SHIFT_NOT_SELECTED: 'No shift IDs provided.',
+    SHIFT_NOT_FOUND: 'Shift not found.',
     ERROR_DELETE_SHIFT: 'An error occurred while deleting shifts.',
     ERROR_APPROVE_SHIFT: 'An error occurred while deleting approving shifts.',
     INVALID_REGION:
@@ -106,6 +109,8 @@ const messageConstant = {
     PROVIDER_RETRIEVED: 'Provider information retrieved successfully.',
     EMAIL_SMS_SENT: 'Email and SMS sent successfully.',
     NO_INPUT_PROVIDED: 'no input provided.',
+    CARE_CONCLUDED: 'Care concluded.',
+    INVALID_TYPE_CARE: 'Invalid typeOfCare',
 };
 
 export default messageConstant;

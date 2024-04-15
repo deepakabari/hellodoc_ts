@@ -199,7 +199,7 @@ const createAccount: Controller = async (req, res) => {
                 const fileColumnMapping: { [key: string]: string } = {
                     backgroundCheck: 'isBackgroundDoc',
                     nonDisclosureAgreement: 'isNonDisclosureDoc',
-                    hipaaCompliance: 'isHippaDoc',
+                    hipaaCompliance: 'isHipaaDoc',
                     independentContract: 'isAgreementDoc',
                 };
 

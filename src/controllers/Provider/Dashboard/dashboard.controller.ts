@@ -1,11 +1,11 @@
-import { CaseTag, RequestStatus } from '../../../utils/enum.constant';
+import { CallType, CaseTag, RequestStatus } from '../../../utils/enum.constant';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
 import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
 import { Request } from '../../../db/models/index';
-import { FindAttributeOptions, Op } from 'sequelize';
+import { FindAttributeOptions, Op, where } from 'sequelize';
 import sequelize from 'sequelize';
 
 export const requestCount: Controller = async (req, res) => {
@@ -96,6 +96,7 @@ export const getPatientByState: Controller = async (req, res) => {
             ],
             ['requestType', 'Requestor Type'],
             'requestorPhoneNumber',
+            'callType',
         ];
 
         let condition;
@@ -187,6 +188,96 @@ export const acceptRequest: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_ACCEPTED,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const concludeCare: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const { providerNotes } = req.body;
+
+        await Request.update(
+            {
+                physicianNotes: providerNotes,
+                caseTag: CaseTag.Close,
+                requestStatus: RequestStatus.Conclude,
+            },
+            { where: { id } },
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.CARE_CONCLUDED,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const typeOfCare: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const { typeOfCare } = req.body;
+
+        let callType, requestStatus, caseTag;
+
+        if (typeOfCare === 'houseCall') {
+            callType = CallType.HouseCall;
+            requestStatus = RequestStatus.MDOnSite;
+            caseTag = CaseTag.Active;
+        } else if (typeOfCare === 'consult') {
+            callType = CallType.Consult;
+            requestStatus = RequestStatus.Consult;
+            caseTag = CaseTag.Conclude;
+        } else {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_TYPE_CARE,
+            });
+        }
+
+        const updateRows = await Request.update(
+            {
+                callType,
+                requestStatus,
+                caseTag,
+            },
+            { where: { id } },
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.REQUEST_UPDATED,
+            data: updateRows,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const transferRequest: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const { description } = req.body;
+
+        await Request.update(
+            {
+                requestStatus: RequestStatus.Unassigned,
+                physicianId: null,
+                transferNote: description,
+            },
+            { where: { id } },
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.REQUEST_TRANSFERRED,
         });
     } catch (error) {
         throw error;

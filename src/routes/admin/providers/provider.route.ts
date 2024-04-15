@@ -41,6 +41,7 @@ router.patch(
         { name: 'backgroundCheck' },
         { name: 'hipaaCompliance' },
         { name: 'nonDisclosureAgreement' },
+        { name: 'licenseDoc' },
     ]),
     celebrate(UserSchema.editPhysicianProfile),
     providerController.editPhysicianProfile,
@@ -73,6 +74,14 @@ router.get(
 );
 
 router.put('/approveShift', isAuth, schedulingController.approveShift);
+
+router.patch('/editShift/:id', isAuth, schedulingController.editShift);
+
+router.patch(
+    '/toggleApproval/:id',
+    isAuth,
+    schedulingController.toggleShiftApproval,
+);
 
 router.delete('/deleteShift', isAuth, schedulingController.deleteShift);
 

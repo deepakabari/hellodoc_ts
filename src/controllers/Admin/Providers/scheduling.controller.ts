@@ -446,3 +446,49 @@ export const deleteShift: Controller = async (req, res) => {
         throw new Error(messageConstant.ERROR_DELETE_SHIFT);
     }
 };
+
+export const editShift: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const { shiftDate, startTime, endTime } = req.body;
+
+        await Shift.update(
+            { shiftDate, startTime, endTime },
+            { where: { id } },
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SHIFT_UPDATED,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const toggleShiftApproval: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const shift = await Shift.findByPk(id);
+
+        if (!shift) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.SHIFT_NOT_FOUND,
+            });
+        }
+
+        shift.isApproved = !shift.isApproved;
+
+        await shift.save();
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SHIFT_UPDATED,
+        });
+    } catch (error) {
+        throw error;
+    }
+};

@@ -23,7 +23,7 @@ interface UserAttributes {
     signature?: string;
     isAgreementDoc?: boolean;
     isBackgroundDoc?: boolean;
-    isHippaDoc?: boolean;
+    isHipaaDoc?: boolean;
     isNonDisclosureDoc?: boolean;
     isLicenseDoc?: boolean;
     NPINumber?: string;

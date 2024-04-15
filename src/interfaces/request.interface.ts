@@ -17,7 +17,7 @@ interface RequestAttributes {
     roomNumber?: string;
     patientNote?: string;
     documentPhoto?: string;
-    physicianId?: number;
+    physicianId?: number | null;
     requestorFirstName?: string;
     requestorLastName?: string;
     requestorPhoneNumber?: string;
@@ -27,7 +27,7 @@ interface RequestAttributes {
     declinedBy?: number;
     isUrgentEmailSent?: boolean;
     lastWellnessDate?: Date;
-    callType?: number;
+    callType?: string;
     completedByPhysician?: boolean;
     lastReservationDate?: Date;
     acceptedDate?: Date;
