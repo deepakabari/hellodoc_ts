@@ -10,10 +10,19 @@ import sequelize from 'sequelize';
 import { Request as ExpressRequest, Response } from 'express';
 import PDFDocument from 'pdfkit';
 
+/**
+ * @function requestCount
+ * @param {ExpressRequest} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @description Counts requests based on different case tags and sends the count as response
+ */
 export const requestCount: Controller = async (req, res) => {
     try {
+        // Get all case tags
         const allCaseTags: CaseTag[] = Object.values(CaseTag);
 
+        // Find request counts for each case tag
         const requestCounts = await Request.findAll({
             attributes: [
                 'caseTag',
@@ -63,14 +72,23 @@ export const requestCount: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function getPatientByState
+ * @param {ExpressRequest} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @description Retrieves patients based on their state and other optional filters
+ */
 export const getPatientByState: Controller = async (req, res) => {
     try {
         const { requestType, search, state, page, pageSize } = req.query;
 
+        // Parsing page number and page size, defaulting to 1 and 10 respectively if not provided
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
+        // Attributes to retrieve from the database
         let attributes = [
             'id',
             [
@@ -107,6 +125,7 @@ export const getPatientByState: Controller = async (req, res) => {
             requestTypeWhereClause = { requestType: requestType as string };
         }
 
+        // Constructing where clause based on state
         switch (state) {
             case 'new':
                 condition = {
@@ -143,6 +162,7 @@ export const getPatientByState: Controller = async (req, res) => {
                 });
         }
 
+        // Finding patients based on condition and optional search and requestType
         const patients = await Request.findAndCountAll({
             attributes: attributes as FindAttributeOptions,
             where: {
@@ -165,6 +185,7 @@ export const getPatientByState: Controller = async (req, res) => {
             offset,
         });
 
+        // Sending response with patients data
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_RETRIEVED,
@@ -175,6 +196,13 @@ export const getPatientByState: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function acceptRequest
+ * @param {ExpressRequest} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @description Accepts a request and updates its status to Accepted
+ */
 export const acceptRequest: Controller = async (req, res) => {
     try {
         const { id } = req.params;
@@ -187,6 +215,7 @@ export const acceptRequest: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        // Sending response indicating request is accepted
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_ACCEPTED,
@@ -196,12 +225,20 @@ export const acceptRequest: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function concludeCare
+ * @param {ExpressRequest} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @description Concludes care for a request by updating its status and adding physician notes
+ */
 export const concludeCare: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
         const { providerNotes } = req.body;
 
+        // Update request status to Conclude and add physician notes
         await Request.update(
             {
                 physicianNotes: providerNotes,
@@ -211,6 +248,7 @@ export const concludeCare: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        // Sending response indicating care is concluded
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.CARE_CONCLUDED,
@@ -220,6 +258,13 @@ export const concludeCare: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function typeOfCare
+ * @param {ExpressRequest} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @description Updates type of care for a request
+ */
 export const typeOfCare: Controller = async (req, res) => {
     try {
         const { id } = req.params;
@@ -228,6 +273,7 @@ export const typeOfCare: Controller = async (req, res) => {
 
         let callType, requestStatus, caseTag;
 
+        // Determine callType, requestStatus, and caseTag based on typeOfCare
         if (typeOfCare === 'houseCall') {
             callType = CallType.HouseCall;
             requestStatus = RequestStatus.MDOnSite;
@@ -237,12 +283,14 @@ export const typeOfCare: Controller = async (req, res) => {
             requestStatus = RequestStatus.Consult;
             caseTag = CaseTag.Conclude;
         } else {
+            // Return error response for invalid typeOfCare
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.INVALID_TYPE_CARE,
             });
         }
 
+        // Update request with new type of care
         await Request.update(
             {
                 callType,
@@ -252,6 +300,7 @@ export const typeOfCare: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        // Sending response indicating request is updated
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_UPDATED,
@@ -261,12 +310,20 @@ export const typeOfCare: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function transferRequest
+ * @param {ExpressRequest} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @description Transfers a request to another provider
+ */
 export const transferRequest: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
         const { description } = req.body;
-
+        
+        // Update request status to Unassigned and clear physicianId with transfer note
         await Request.update(
             {
                 requestStatus: RequestStatus.Unassigned,
@@ -277,6 +334,7 @@ export const transferRequest: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        // Sending response indicating request is transferred
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_TRANSFERRED,
@@ -286,27 +344,38 @@ export const transferRequest: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function encounterForm
+ * @param {ExpressRequest} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @description Creates a new medical report for a request
+ */
 export const encounterForm: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // Check if encounter form already exists
         const existingForm = await MedicalReport.findOne({
             where: { requestId: id },
         });
 
         if (existingForm) {
+             // Return error response if encounter form already exists
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.FORM_FOUND,
             });
         }
 
+        // Create new encounter form
         const encounterForm = await MedicalReport.create({
             requestId: id,
             ...req.body,
             isFinalize: false,
         });
 
+         // Sending response indicating encounter form is created
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.FORM_CREATED,
@@ -317,10 +386,18 @@ export const encounterForm: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function finalizeForm
+ * @param {ExpressRequest} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @description Finalizes a medical report
+ */
 export const finalizeForm: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // Update medical report to finalize
         await MedicalReport.update(
             {
                 isFinalize: true,
@@ -328,6 +405,7 @@ export const finalizeForm: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        // Sending response indicating form is finalized
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.FORM_FINALIZED,
@@ -337,10 +415,18 @@ export const finalizeForm: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function viewEncounterForm
+ * @param {ExpressRequest} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @description Retrieves encounter form data for viewing
+ */
 export const viewEncounterForm: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // Retrieve encounter form data
         const viewEncounterForm = await MedicalReport.findAll({
             attributes: [
                 'id',
@@ -390,6 +476,7 @@ export const viewEncounterForm: Controller = async (req, res) => {
             where: { requestId: id },
         });
 
+         // Sending response with encounter form data
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.DATA_RETRIEVED,
@@ -400,10 +487,18 @@ export const viewEncounterForm: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function editEncounterForm
+ * @param {ExpressRequest} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @description Edits an existing encounter form
+ */
 export const editEncounterForm: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // Update encounter form
         await MedicalReport.update(
             {
                 ...req.body,
@@ -413,6 +508,7 @@ export const editEncounterForm: Controller = async (req, res) => {
             },
         );
 
+        // Sending response indicating encounter form is updated
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.FORM_UPDATED,
@@ -422,12 +518,20 @@ export const editEncounterForm: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function downloadEncounter
+ * @param {ExpressRequest} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @description Downloads encounter form as PDF
+ */
 export const downloadEncounter = async (req: ExpressRequest, res: Response) => {
     try {
         const { id } = req.params;
 
         const token = req.headers.authorization as string;
 
+        // Fetch encounter form data from API
         const apiUrl = `http:localhost:4000/provider/dashboard/viewEncounterForm/${id}`;
 
         const response = await fetch(apiUrl, {
@@ -440,12 +544,16 @@ export const downloadEncounter = async (req: ExpressRequest, res: Response) => {
             throw new Error(`Failed to fetch data: ${response.statusText}`);
         }
 
+        // Parse JSON response
         const jsonData: any = await response.json();
 
+        // Extract encounter data
         const encounterData = jsonData.data[0];
 
+        // Create PDF document
         const doc = new PDFDocument();
 
+        // Add content to PDF
         doc.font('Courier-BoldOblique');
         doc.fontSize(24)
             .fillColor('#03c6fc')
@@ -522,6 +630,7 @@ export const downloadEncounter = async (req: ExpressRequest, res: Response) => {
         doc.text(`Followup: ${encounterData.followUp}`);
         doc.moveDown();
 
+        // Create PDF buffer
         const buffer: Buffer = await new Promise((resolve, reject) => {
             const chunks: Uint8Array[] = [];
             doc.on('data', (chunk) => chunks.push(chunk));
@@ -529,6 +638,7 @@ export const downloadEncounter = async (req: ExpressRequest, res: Response) => {
             doc.end();
         });
 
+         // Set response headers for PDF download
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader(
             'Content-Disposition',
