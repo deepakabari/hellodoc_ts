@@ -206,7 +206,7 @@ export const viewRole: Controller = async (req, res) => {
         });
 
         // Check if the role exists
-        if (viewRole.length === 0) {
+        if (!viewRole.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.ROLE_NOT_FOUND,

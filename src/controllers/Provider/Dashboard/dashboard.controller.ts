@@ -8,6 +8,7 @@ import { MedicalReport, Request } from '../../../db/models/index';
 import { FindAttributeOptions, Op, where } from 'sequelize';
 import sequelize from 'sequelize';
 import { Request as ExpressRequest, Response } from 'express';
+import PDFDocument from 'pdfkit';
 
 export const requestCount: Controller = async (req, res) => {
     try {
@@ -440,6 +441,102 @@ export const downloadEncounter = async (req: ExpressRequest, res: Response) => {
         }
 
         const jsonData: any = await response.json();
+
+        const encounterData = jsonData.data[0];
+
+        const doc = new PDFDocument();
+
+        doc.font('Courier-BoldOblique');
+        doc.fontSize(24)
+            .fillColor('#03c6fc')
+            .text('Medical Report-Confidential', {
+                align: 'center', // Center align the heading
+            });
+        doc.fontSize(15).fillColor('black');
+        doc.moveDown();
+        doc.moveDown();
+        doc.text(`First Name: ${encounterData.request.patientFirstName}`);
+        doc.moveDown();
+        doc.text(`Last Name: ${encounterData.request.patientLastName}`);
+        doc.moveDown();
+        doc.text(
+            `Location: ${encounterData.request.street}, ${encounterData.request.city}, ${encounterData.request.state} - ${encounterData.request.zipCode}.`,
+        );
+        doc.moveDown();
+        doc.text(`Date of Birth: ${encounterData.request.dob}`);
+        doc.moveDown();
+        doc.text(`Service Date: ${encounterData.serviceDate}`);
+        doc.moveDown();
+        doc.text(`Phone Number: ${encounterData.request.patientPhoneNumber}`);
+        doc.moveDown();
+        doc.text(`Email: ${encounterData.request.patientEmail}`);
+        doc.moveDown();
+        doc.text(
+            `History Of Present illness Or injury: ${encounterData.presentIllnessHistory}`,
+        );
+        doc.moveDown();
+        doc.text(`Medical History: ${encounterData.medicalHistory}`);
+        doc.moveDown();
+        doc.text(`Medications: ${encounterData.medications}`);
+        doc.moveDown();
+        doc.text(`Allergies: ${encounterData.allergies}`);
+        doc.moveDown();
+        doc.text(`Temperature: ${encounterData.temperature}`);
+        doc.moveDown();
+        doc.text(`Heart Rate: ${encounterData.heartRate}`);
+        doc.moveDown();
+        doc.text(`Repository Rate: ${encounterData.repositoryRate}`);
+        doc.moveDown();
+        doc.text(`Blood Pressure(systolic): ${encounterData.sisBP}`);
+        doc.moveDown();
+        doc.text(`Blood Pressure(diastolic): ${encounterData.diaBP}`);
+        doc.moveDown();
+        doc.text(`Oxygen: ${encounterData.oxygen}`);
+        doc.moveDown();
+        doc.text(`Pain: ${encounterData.pain}`);
+        doc.moveDown();
+        doc.text(`Heent: ${encounterData.heent}`);
+        doc.moveDown();
+        doc.text(`CV: ${encounterData.cv}`);
+        doc.moveDown();
+        doc.text(`Chest: ${encounterData.chest}`);
+        doc.moveDown();
+        doc.text(`ABD: ${encounterData.abd}`);
+        doc.moveDown();
+        doc.text(`Extr: ${encounterData.extr}`);
+        doc.moveDown();
+        doc.text(`Skin: ${encounterData.skin}`);
+        doc.moveDown();
+        doc.text(`Neuro: ${encounterData.neuro}`);
+        doc.moveDown();
+        doc.text(`Other: ${encounterData.other}`);
+        doc.moveDown();
+        doc.text(`Diagnosis: ${encounterData.diagnosis}`);
+        doc.moveDown();
+        doc.text(`Treatment Plan: ${encounterData.treatmentPlan}`);
+        doc.moveDown();
+        doc.text(`Medication Dispensed: ${encounterData.medicationDispensed}`);
+        doc.moveDown();
+        doc.text(`Procedure: ${encounterData.procedure}`);
+        doc.moveDown();
+        doc.text(`Followup: ${encounterData.followUp}`);
+        doc.moveDown();
+
+        const buffer: Buffer = await new Promise((resolve, reject) => {
+            const chunks: Uint8Array[] = [];
+            doc.on('data', (chunk) => chunks.push(chunk));
+            doc.on('end', () => resolve(Buffer.concat(chunks)));
+            doc.end();
+        });
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader(
+            'Content-Disposition',
+            'attachment; filename=encounter_form.pdf',
+        );
+
+        // Send the PDF buffer as the response
+        res.send(buffer);
     } catch (error) {
         throw error;
     }

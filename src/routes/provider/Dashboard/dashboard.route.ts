@@ -32,4 +32,6 @@ router.patch(
     providerDashboard.editEncounterForm,
 );
 
+router.get('/download/:id', providerDashboard.downloadEncounter);
+
 export default router;
