@@ -4,7 +4,6 @@ export const BusinessSchema = {
     createBusiness: {
         [Segments.BODY]: Joi.object({
             businessName: Joi.string().required(),
-            businessWebsite: Joi.string().required(),
             profession: Joi.string().optional(),
             faxNumber: Joi.string().optional(),
             phoneNumber: Joi.string().required().min(11).max(13),

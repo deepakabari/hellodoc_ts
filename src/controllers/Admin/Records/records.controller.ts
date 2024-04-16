@@ -366,9 +366,9 @@ export const exportToExcel = async (req: ExpressRequest, res: Response) => {
         const formattedData = jsonData.data.rows.map((row: any) => {
             return {
                 ...row,
-                physicianId: row.physician.id,
-                physicianFirstName: row.physician.firstName,
-                physicianLastName: row.physician.lastName,
+                physicianId: row?.physician?.id,
+                physicianFirstName: row?.physician?.firstName,
+                physicianLastName: row?.physician?.lastName,
             };
         });
 

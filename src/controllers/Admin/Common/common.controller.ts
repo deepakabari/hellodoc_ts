@@ -53,6 +53,34 @@ export const getLoggedData: Controller = async (req, res) => {
     }
 };
 
+export const viewFile = async (req: ExpressRequest, res: Response) => {
+    try {
+        const { fileName } = req.params;
+
+        const filePath = path.join(
+            __dirname,
+            '..',
+            '..',
+            '..',
+            'public',
+            'images',
+            fileName,
+        );
+
+        if (!fs.existsSync(filePath)) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.FILE_NOT_FOUND,
+            });
+        } else {
+            res.type(path.extname(filePath))
+            fs.createReadStream(filePath).pipe(res);
+        }
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const downloadFile = async (req: ExpressRequest, res: Response) => {
     try {
         const { fileNames } = req.body;

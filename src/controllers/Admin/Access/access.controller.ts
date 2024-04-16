@@ -39,6 +39,13 @@ export const accountAccess: Controller = async (req, res) => {
             offset,
         });
 
+        if (!accountAccess.count) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
+
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.ACCOUNT_ACCESS_RETRIEVED,
@@ -70,6 +77,13 @@ export const accountAccessByAccountType: Controller = async (req, res) => {
             order: ['accountType'],
             where: whereCondition,
         });
+
+        if (!roles.length) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -150,8 +164,8 @@ export const userAccess: Controller = async (req, res) => {
         let whereCondition: { [key: string]: any } = {
             // Exclude 'user' accountType from all results
             accountType: {
-                [Op.not]: 'user'
-            }
+                [Op.not]: 'user',
+            },
         };
 
         if (accountType && accountType !== 'All') {
@@ -173,6 +187,13 @@ export const userAccess: Controller = async (req, res) => {
             offset,
         });
 
+        if (!users.count) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
+
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.USER_ACCESS_RETRIEVED,
@@ -191,7 +212,16 @@ export const userAccess: Controller = async (req, res) => {
  */
 export const viewRole: Controller = async (req, res) => {
     try {
+        // Extract the role ID from the request parameters.
         const { id } = req.params;
+
+        const existingRole = await Role.findByPk(id);
+        if (!existingRole) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
 
         const viewRole = await Role.findAll({
             attributes: ['id', 'Name', 'accountType'],
@@ -205,7 +235,7 @@ export const viewRole: Controller = async (req, res) => {
             ],
         });
 
-        // Check if the role exists
+        // Check if the role exists or not
         if (!viewRole.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -234,6 +264,14 @@ export const updateRole: Controller = async (req, res) => {
     try {
         // Extract the role ID from the request parameters.
         const { id } = req.params;
+
+        const existingRole = await Role.findByPk(id);
+        if (!existingRole) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
 
         // Extract the list of permission IDs from the request body.
         const { roleName, accountType, permissionIds } = req.body;

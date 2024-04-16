@@ -343,7 +343,7 @@ export const transferRequest: Controller = async (req, res) => {
         const { id } = req.params;
 
         const { description } = req.body;
-        
+
         // Update request status to Unassigned and clear physicianId with transfer note
         await Request.update(
             {
@@ -382,7 +382,7 @@ export const encounterForm: Controller = async (req, res) => {
         });
 
         if (existingForm) {
-             // Return error response if encounter form already exists
+            // Return error response if encounter form already exists
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.FORM_FOUND,
@@ -396,7 +396,7 @@ export const encounterForm: Controller = async (req, res) => {
             isFinalize: false,
         });
 
-         // Sending response indicating encounter form is created
+        // Sending response indicating encounter form is created
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.FORM_CREATED,
@@ -476,6 +476,7 @@ export const viewEncounterForm: Controller = async (req, res) => {
                 'medicationDispensed',
                 'procedure',
                 'followUp',
+                'isFinalize',
             ],
             include: [
                 {
@@ -497,7 +498,7 @@ export const viewEncounterForm: Controller = async (req, res) => {
             where: { requestId: id },
         });
 
-         // Sending response with encounter form data
+        // Sending response with encounter form data
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.DATA_RETRIEVED,
@@ -659,7 +660,7 @@ export const downloadEncounter = async (req: ExpressRequest, res: Response) => {
             doc.end();
         });
 
-         // Set response headers for PDF download
+        // Set response headers for PDF download
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader(
             'Content-Disposition',

@@ -8,7 +8,7 @@ export const RoleSchema = {
             accountType: Joi.string()
                 .required()
                 .valid(...Object.values(AccountType)),
-            permissionIds: Joi.array().items(Joi.number().integer()).optional(),
+            permissionIds: Joi.array().items(Joi.number().integer()).required(),
         }),
     },
 

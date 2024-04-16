@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import {
     AccountType,
@@ -22,7 +23,6 @@ import { compileEmailTemplate } from '../../../utils/hbsCompiler';
 import linkConstant from '../../../constants/link.constant';
 import { sendSMS } from '../../../utils/smsSender';
 import dotenv from 'dotenv';
-import { required } from 'joi';
 dotenv.config();
 
 /**
@@ -347,7 +347,7 @@ export const viewCase: Controller = async (req, res) => {
             where: { id },
         });
 
-        if (viewCase.length === 0) {
+        if (!viewCase.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -389,7 +389,7 @@ export const viewNotes: Controller = async (req, res) => {
             where: { id },
         });
 
-        if (notes.length === 0) {
+        if (!notes.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -422,10 +422,12 @@ export const updateNotes: Controller = async (req, res) => {
         // Take adminNotes from request body
         const { adminNotes } = req.body;
 
-        if (!adminNotes) {
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
-                message: messageConstant.NO_INPUT_PROVIDED,
+                message: messageConstant.REQUEST_NOT_FOUND,
             });
         }
 
@@ -458,6 +460,15 @@ export const getPatientData: Controller = async (req, res) => {
         // Extract id from request parameter
         const { id } = req.params;
 
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
+
         // Select query to retrieve asked attributes from request table
         const patientName = await Request.findAll({
             attributes: [
@@ -477,7 +488,7 @@ export const getPatientData: Controller = async (req, res) => {
             where: { id },
         });
 
-        if (patientName.length === 0) {
+        if (!patientName.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -510,6 +521,18 @@ export const cancelCase: Controller = async (req, res) => {
         // take value of these variables from request body
         const { adminNotes, reasonForCancellation } = req.body;
 
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (
+            !exists ||
+            exists.requestStatus === RequestStatus.CancelledByAdmin
+        ) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_CANCELLED,
+            });
+        }
+
         // To update the requestStatus, adminNotes and caseTag to request table
         await Request.update(
             {
@@ -518,7 +541,6 @@ export const cancelCase: Controller = async (req, res) => {
                 requestStatus: RequestStatus.CancelledByAdmin,
                 caseTag: CaseTag.Close,
                 isDeleted: true,
-                physicianId: 17,
             },
             {
                 where: {
@@ -552,6 +574,15 @@ export const blockCase: Controller = async (req, res) => {
         // Take value of this from request body
         const { reasonForCancellation } = req.body;
 
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists || exists.requestStatus === RequestStatus.Blocked) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_BLOCKED,
+            });
+        }
+
         // To update the reason and status to request table
         await Request.update(
             {
@@ -581,6 +612,17 @@ export const blockCase: Controller = async (req, res) => {
  */
 export const clearCase: Controller = async (req, res) => {
     try {
+        const { id } = req.params;
+
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists || exists.requestStatus === RequestStatus.Cleared) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_CLEARED,
+            });
+        }
+
         // To update the requestStatus and soft deletion to request table
         await Request.update(
             {
@@ -589,7 +631,7 @@ export const clearCase: Controller = async (req, res) => {
                 deletedAt: new Date(),
             },
             {
-                where: { id: req.params.id },
+                where: { id },
             },
         );
 
@@ -611,24 +653,23 @@ export const clearCase: Controller = async (req, res) => {
  */
 export const viewSendAgreement: Controller = async (req, res) => {
     try {
-        // Extract the ID from the request parameters.
+        // Extract the request ID from the request parameters.
         const { id } = req.params;
+
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
 
         // Retrieve the agreement details from the Request table.
         const viewSendAgreement = await Request.findAll({
             attributes: ['patientPhoneNumber', 'patientEmail'],
-            where: {
-                id,
-            },
+            where: { id },
         });
-
-        // If no agreement details are found, send a 502 Bad Gateway response with an appropriate message.
-        if (viewSendAgreement.length === 0) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.DATA_NOT_FOUND,
-            });
-        }
 
         // If agreement details are found, send a 200 OK response with the details.
         return res.status(httpCode.OK).json({
@@ -650,10 +691,12 @@ export const viewSendAgreement: Controller = async (req, res) => {
  */
 export const sendAgreement: Controller = async (req, res) => {
     try {
-        // Attempt to retrieve the user's details from the Request table using the ID from the request parameters.
-        const user = await Request.findOne({ where: { id: req.params.id } });
+        const { id } = req.params;
 
-        // If no user is found, return a 404 Not Found status with a user not exist message.
+        // Attempt to retrieve the user's details from the Request table using the ID from the request parameters.
+        const user = await Request.findOne({ where: { id } });
+
+        // If no user is found, return a 400 Bad Request status with a user not exist message.
         if (!user) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -749,7 +792,7 @@ export const getRegions: Controller = async (req, res) => {
             attributes: ['id', 'name'],
         });
 
-        if (getRegions.length === 0) {
+        if (!getRegions.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -794,7 +837,7 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
             attributes: ['id', 'firstName', 'lastName'],
         });
 
-        if (getPhysicianByRegion.length === 0) {
+        if (!getPhysicianByRegion.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -820,8 +863,17 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
  */
 export const assignCase: Controller = async (req, res) => {
     try {
-        const { physicianId, transferNote } = req.body;
         const { id } = req.params;
+        const { physicianId, transferNote } = req.body;
+
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
 
         await Request.update(
             {
@@ -852,6 +904,15 @@ export const viewUploads: Controller = async (req, res) => {
         const { id } = req.params;
         const { sortBy, orderBy } = req.query;
 
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if(!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
+
         let sortByModel;
         switch (sortBy) {
             case 'id':
@@ -866,7 +927,7 @@ export const viewUploads: Controller = async (req, res) => {
             order: sortByModel as Order,
         });
 
-        if (uploads.length === 0) {
+        if (!uploads.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.FILE_NOT_FOUND,
@@ -883,12 +944,19 @@ export const viewUploads: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function sendFileThroughMail
+ * @param req - Express request object, expects `email and array of files` in the body.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message.
+ * @description This function is an Express controller that sends selected files to patient's email address.
+ */
 export const sendFileThroughMail: Controller = async (req, res) => {
     try {
         const { email, files } = req.body;
 
         // Validate fileNames array
-        if (!Array.isArray(files) || files.length === 0) {
+        if (!Array.isArray(files) || !files.length) {
             return res
                 .status(httpCode.BAD_REQUEST)
                 .json({ error: messageConstant.NO_FILE_SELECTED });
@@ -898,7 +966,7 @@ export const sendFileThroughMail: Controller = async (req, res) => {
         if (!user) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.OK,
-                message: messageConstant.USER_NOT_EXIST,
+                message: messageConstant.REQUEST_NOT_FOUND,
             });
         }
 
@@ -910,6 +978,13 @@ export const sendFileThroughMail: Controller = async (req, res) => {
             'public',
             'images',
         );
+
+        if (!fs.existsSync(filePath)) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.FILE_NOT_FOUND,
+            });
+        }
 
         // Construct email message
         const mailOptions = {
@@ -983,6 +1058,8 @@ export const uploadFile: Controller = async (req, res) => {
             requestId: id,
             fileName: newFileName,
             documentPath: req.file.path,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         });
 
         if (!uploadFile) {
@@ -1106,7 +1183,7 @@ export const closeCase: Controller = async (req, res) => {
         const { id } = req.params;
 
         await Request.update(
-            { requestStatus: RequestStatus.Closed, caseTag: CaseTag.UnPaid },
+            { requestStatus: RequestStatus.UnPaid, caseTag: CaseTag.UnPaid },
             { where: { id, caseTag: CaseTag.Close } },
         );
 

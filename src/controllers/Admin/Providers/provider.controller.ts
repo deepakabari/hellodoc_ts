@@ -293,6 +293,8 @@ export const editPhysicianProfile: Controller = async (req, res) => {
                                 fileName: files[key][0].filename,
                                 docType: key,
                                 documentPath: files[key][0].path,
+                                createdAt: new Date(),
+                                updatedAt: new Date(),
                             });
 
                             // Set the corresponding column to true

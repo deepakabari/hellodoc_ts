@@ -232,6 +232,8 @@ const createAccount: Controller = async (req, res) => {
                                 fileName: file.filename,
                                 docType: fieldName,
                                 documentPath: file.path,
+                                createdAt: new Date(),
+            updatedAt: new Date(),
                             });
                         }
                         uploadedFiles[fieldName] = fieldFiles.map(file => file.filename);
@@ -469,6 +471,8 @@ const createRequest: Controller = async (req, res) => {
                 fileName: req.file.originalname,
                 documentPath: req.file.path,
                 docType: 'MedicalReport',
+                createdAt: new Date(),
+            updatedAt: new Date(),
             });
         }
 
@@ -622,6 +626,8 @@ const createAdminRequest: Controller = async (req, res) => {
                 fileName: req.file.originalname,
                 documentPath: req.file.path,
                 docType: 'MedicalReport',
+                createdAt: new Date(),
+            updatedAt: new Date(),
             });
         }
 

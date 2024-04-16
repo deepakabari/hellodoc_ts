@@ -40,6 +40,10 @@ const messageConstant = {
     REQUEST_TRANSFERRED: 'Request transferred successfully.',
     REQUEST_ACCEPTED: 'Request accepted successfully.',
     REQUEST_UPDATED: 'Request details updated successfully',
+    REQUEST_NOT_FOUND: 'Request id not found.',
+    REQUEST_CANCELLED: 'Request id not found or cancelled already.',
+    REQUEST_BLOCKED: 'Request id not found or blocked already.',
+    REQUEST_CLEARED: 'Request id not found or cleared already.',
     NO_FILE_SELECTED: 'File not selected.',
     FILE_NOT_FOUND: 'File not found',
     FILE_DELETED: 'File deleted successfully.',
@@ -83,7 +87,7 @@ const messageConstant = {
     INVALID_REGION:
         'Invalid region. Please select from following ( Maryland, Virginia, District of Columbia, New York )',
     VALID_REGION: 'Valid Region.',
-    INVALID_INPUT: 'Invalid file names array.',
+    INVALID_INPUT_ARRAY: 'Invalid file names array.',
     NOTIFICATION_UPDATED: 'Notification Updated Successfully.',
     PATIENT_HISTORY_RETRIEVED: 'Patient history retrieved successfully.',
     PATIENT_RECORD_RETRIEVED: 'Patient record retrieved successfully.',
@@ -116,6 +120,7 @@ const messageConstant = {
     FORM_FOUND: 'Encounter form already present.',
     FORM_UPDATED: 'Encounter form updated.',
     DATA_RETRIEVED: 'Data retrieved successfully.',
+    INVALID_INPUT: 'Invalid id provided.',
 };
 
 export default messageConstant;

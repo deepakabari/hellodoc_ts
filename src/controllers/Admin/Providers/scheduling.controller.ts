@@ -180,7 +180,7 @@ export const viewShift: Controller = async (req, res) => {
             where: { id },
         });
 
-        if (viewShift.length === 0) {
+        if (!viewShift.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
