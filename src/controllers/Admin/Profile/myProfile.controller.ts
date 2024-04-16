@@ -1,6 +1,13 @@
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
-import { Region, Role, User, UserRegion } from '../../../db/models/index';
+import {
+    Business,
+    Region,
+    RequestWiseFiles,
+    Role,
+    User,
+    UserRegion,
+} from '../../../db/models/index';
 import { Controller, AdminUpdates, BillingUpdates } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -12,13 +19,13 @@ dotenv.config();
  * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the admin profile data.
  * @description This function is an Express controller that retrieves the profile data of all admins and sends the data in the response.
  */
-export const adminProfile: Controller = async (req, res) => {
+export const myProfile: Controller = async (req, res) => {
     try {
         // Extract the authenticated user's ID from the request object.
         const id = req.user.id;
 
         // Extract the authenticated user's ID from the request object.
-        const adminProfile = await User.findAll({
+        const myProfile = await User.findAll({
             attributes: [
                 'id',
                 'userName',
@@ -27,14 +34,16 @@ export const adminProfile: Controller = async (req, res) => {
                 'lastName',
                 'email',
                 'phoneNumber',
+                'dob',
                 'street',
                 'address1',
                 'address2',
                 'city',
-                'dob',
                 'state',
                 'zipCode',
                 'altPhone',
+                'medicalLicense',
+                'NPINumber',
             ],
             where: {
                 id, // Use the authenticated user's ID as the search criterion.
@@ -44,11 +53,23 @@ export const adminProfile: Controller = async (req, res) => {
                     model: Region, // Include associated regions in the response.
                     attributes: ['id', 'name'], // Select specific attributes from the Region model.
                     through: { attributes: [] }, // This will exclude the join table attributes
+                    required: false,
                 },
                 {
                     model: Role,
                     attributes: ['id', 'Name'],
-                }
+                    required: false,
+                },
+                {
+                    model: Business,
+                    attributes: ['id', 'businessName', 'businessWebsite'],
+                    required: false,
+                },
+                {
+                    model: RequestWiseFiles,
+                    attributes: ['id', 'fileName', 'docType', 'documentPath'],
+                    required: false,
+                },
             ],
         });
 
@@ -56,7 +77,7 @@ export const adminProfile: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PROFILE_RETRIEVED,
-            data: adminProfile, // Include the retrieved profile data in the response.
+            data: myProfile, // Include the retrieved profile data in the response.
         });
     } catch (error) {
         // If an error occurs, throw it to be handled by the error middleware.

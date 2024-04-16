@@ -7,7 +7,7 @@ const router = express.Router();
 router.get(
     '/adminProfile',
     isAuth,
-    myProfileController.adminProfile,
+    myProfileController.myProfile,
 );
 
 router.patch(

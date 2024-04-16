@@ -1,9 +1,10 @@
-import { Table, Column, Model } from 'sequelize-typescript';
+import { Table, Column, Model, BelongsTo } from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
 import {
     BusinessAttributes,
     BusinessCreationAttributes,
 } from '../../interfaces';
+import { User } from './index';
 
 @Table({
     timestamps: true,
@@ -74,6 +75,9 @@ class Business extends Model<BusinessAttributes, BusinessCreationAttributes> {
         type: DataTypes.STRING,
     })
     businessContact: string;
+
+    @BelongsTo(() => User, { foreignKey: 'userId' })
+    user: User;
 }
 
 export default Business;

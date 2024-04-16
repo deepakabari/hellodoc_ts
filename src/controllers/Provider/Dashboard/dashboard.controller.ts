@@ -12,9 +12,9 @@ import PDFDocument from 'pdfkit';
 
 /**
  * @function requestCount
- * @param {ExpressRequest} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @param -req - Express request object
+ * @param - res - Express response object
+ * @returns - - Promise representing the completion of the operation
  * @description Counts requests based on different case tags and sends the count as response
  */
 export const requestCount: Controller = async (req, res) => {
@@ -74,9 +74,9 @@ export const requestCount: Controller = async (req, res) => {
 
 /**
  * @function getPatientByState
- * @param {ExpressRequest} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @param -req - Express request object
+ * @param - res - Express response object
+ * @returns - - Promise representing the completion of the operation
  * @description Retrieves patients based on their state and other optional filters
  */
 export const getPatientByState: Controller = async (req, res) => {
@@ -198,9 +198,9 @@ export const getPatientByState: Controller = async (req, res) => {
 
 /**
  * @function acceptRequest
- * @param {ExpressRequest} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @param -req - Express request object
+ * @param - res - Express response object
+ * @returns - - Promise representing the completion of the operation
  * @description Accepts a request and updates its status to Accepted
  */
 export const acceptRequest: Controller = async (req, res) => {
@@ -227,9 +227,9 @@ export const acceptRequest: Controller = async (req, res) => {
 
 /**
  * @function concludeCare
- * @param {ExpressRequest} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @param -req - Express request object
+ * @param - res - Express response object
+ * @returns - - Promise representing the completion of the operation
  * @description Concludes care for a request by updating its status and adding physician notes
  */
 export const concludeCare: Controller = async (req, res) => {
@@ -260,9 +260,9 @@ export const concludeCare: Controller = async (req, res) => {
 
 /**
  * @function typeOfCare
- * @param {ExpressRequest} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @param -req - Express request object
+ * @param - res - Express response object
+ * @returns - - Promise representing the completion of the operation
  * @description Updates type of care for a request
  */
 export const typeOfCare: Controller = async (req, res) => {
@@ -310,11 +310,32 @@ export const typeOfCare: Controller = async (req, res) => {
     }
 };
 
+export const houseCallType: Controller = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await Request.update(
+            {
+                caseTag: CaseTag.Conclude,
+                requestStatus: RequestStatus.Consult,
+            },
+            { where: { id } },
+        );
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.REQUEST_UPDATED,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
 /**
  * @function transferRequest
- * @param {ExpressRequest} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @param - req - Express request object
+ * @param - res - Express response object
+ * @returns - - Promise representing the completion of the operation
  * @description Transfers a request to another provider
  */
 export const transferRequest: Controller = async (req, res) => {
@@ -346,9 +367,9 @@ export const transferRequest: Controller = async (req, res) => {
 
 /**
  * @function encounterForm
- * @param {ExpressRequest} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @param -req - Express request object
+ * @param - res - Express response object
+ * @returns - - Promise representing the completion of the operation
  * @description Creates a new medical report for a request
  */
 export const encounterForm: Controller = async (req, res) => {
@@ -388,9 +409,9 @@ export const encounterForm: Controller = async (req, res) => {
 
 /**
  * @function finalizeForm
- * @param {ExpressRequest} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @param -req - Express request object
+ * @param - res - Express response object
+ * @returns - - Promise representing the completion of the operation
  * @description Finalizes a medical report
  */
 export const finalizeForm: Controller = async (req, res) => {
@@ -417,9 +438,9 @@ export const finalizeForm: Controller = async (req, res) => {
 
 /**
  * @function viewEncounterForm
- * @param {ExpressRequest} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @param -req - Express request object
+ * @param - res - Express response object
+ * @returns - - Promise representing the completion of the operation
  * @description Retrieves encounter form data for viewing
  */
 export const viewEncounterForm: Controller = async (req, res) => {
@@ -489,9 +510,9 @@ export const viewEncounterForm: Controller = async (req, res) => {
 
 /**
  * @function editEncounterForm
- * @param {ExpressRequest} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @param -req - Express request object
+ * @param - res - Express response object
+ * @returns - - Promise representing the completion of the operation
  * @description Edits an existing encounter form
  */
 export const editEncounterForm: Controller = async (req, res) => {
@@ -520,9 +541,9 @@ export const editEncounterForm: Controller = async (req, res) => {
 
 /**
  * @function downloadEncounter
- * @param {ExpressRequest} req - Express request object
- * @param {Response} res - Express response object
- * @returns {Promise<void>} - Promise representing the completion of the operation
+ * @param -req - Express request object
+ * @param - res - Express response object
+ * @returns - - Promise representing the completion of the operation
  * @description Downloads encounter form as PDF
  */
 export const downloadEncounter = async (req: ExpressRequest, res: Response) => {

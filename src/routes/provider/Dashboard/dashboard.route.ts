@@ -14,6 +14,8 @@ router.patch('/concludeCare/:id', isAuth, providerDashboard.concludeCare);
 
 router.patch('/typeOfCare/:id', isAuth, providerDashboard.typeOfCare);
 
+router.patch('/houseCallType/:id', isAuth, providerDashboard.houseCallType);
+
 router.patch('/transferRequest/:id', isAuth, providerDashboard.transferRequest);
 
 router.post('/encounterForm/:id', isAuth, providerDashboard.encounterForm);

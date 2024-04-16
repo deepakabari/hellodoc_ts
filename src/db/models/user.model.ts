@@ -18,6 +18,7 @@ import {
     RequestWiseFiles,
     EmailLog,
     SMSLog,
+    Business,
 } from './index';
 
 @Table({
@@ -201,5 +202,8 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
         as: 'receiverSMSLogs',
     })
     receiverSMSLogs: SMSLog[];
+
+    @HasOne(() => Business, { foreignKey: 'userId' })
+    business: Business;
 }
 export default User;
