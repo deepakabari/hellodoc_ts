@@ -3,5 +3,7 @@ export * from './roleSchema.valid';
 export * from './userSchema.valid';
 export * from './businessSchema.valid';
 export * from './recordSchema.valid';
-export * from './shiftSchema.valid'
-export * from './partnerSchema.valid'
+export * from './shiftSchema.valid';
+export * from './partnerSchema.valid';
+export * from './providerSchema.valid';
+export * from './patientSchema.valid';

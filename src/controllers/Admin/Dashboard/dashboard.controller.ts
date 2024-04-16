@@ -788,10 +788,12 @@ export const sendAgreement: Controller = async (req, res) => {
  */
 export const getRegions: Controller = async (req, res) => {
     try {
+        // Fetch all regions from the database
         const getRegions = await Region.findAll({
             attributes: ['id', 'name'],
         });
 
+        // Check if regions were found
         if (!getRegions.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -799,6 +801,7 @@ export const getRegions: Controller = async (req, res) => {
             });
         }
 
+        // Return regions data in JSON response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
@@ -818,7 +821,10 @@ export const getRegions: Controller = async (req, res) => {
  */
 export const getPhysicianByRegion: Controller = async (req, res) => {
     try {
+        // Extract region ID from request parameters
         const { id } = req.params;
+
+        // Fetch physicians associated with the specified region
         const getPhysicianByRegion = await User.findAll({
             where: {
                 accountType: AccountType.Physician,
@@ -837,6 +843,7 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
             attributes: ['id', 'firstName', 'lastName'],
         });
 
+        // Check if physicians were found
         if (!getPhysicianByRegion.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -844,6 +851,7 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
             });
         }
 
+        // Return physicians data in JSON response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
@@ -863,18 +871,21 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
  */
 export const assignCase: Controller = async (req, res) => {
     try {
+        // Extract request parameters and body data
         const { id } = req.params;
         const { physicianId, transferNote } = req.body;
 
         // Check if request exists or not
         const exists = await Request.findByPk(id);
         if (!exists) {
+            // If request doesn't exist, return bad request response
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
             });
         }
 
+        // Update request with assigned physician ID and transfer note
         await Request.update(
             {
                 physicianId,
@@ -883,6 +894,7 @@ export const assignCase: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.CASE_ASSIGNED,
@@ -901,6 +913,7 @@ export const assignCase: Controller = async (req, res) => {
  */
 export const viewUploads: Controller = async (req, res) => {
     try {
+        // Extract request parameters and query parameters
         const { id } = req.params;
         const { sortBy, orderBy } = req.query;
 
@@ -913,6 +926,7 @@ export const viewUploads: Controller = async (req, res) => {
             });
         }
 
+        // Construct sorting criteria based on sortBy and orderBy parameters
         let sortByModel;
         switch (sortBy) {
             case 'id':
@@ -921,12 +935,14 @@ export const viewUploads: Controller = async (req, res) => {
                 break;
         }
 
+        // Fetch uploads associated with the request
         const uploads = await RequestWiseFiles.findAll({
             where: { requestId: id },
             attributes: ['id', 'fileName', 'createdAt', 'documentPath'],
             order: sortByModel as Order,
         });
 
+        // Return uploads data in JSON response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.FILE_RETRIEVED,
@@ -946,6 +962,7 @@ export const viewUploads: Controller = async (req, res) => {
  */
 export const sendFileThroughMail: Controller = async (req, res) => {
     try {
+        // Extract email and files from request body
         const { email, files } = req.body;
 
         // Validate fileNames array
@@ -955,6 +972,7 @@ export const sendFileThroughMail: Controller = async (req, res) => {
                 .json({ error: messageConstant.NO_FILE_SELECTED });
         }
 
+        // Check if user with the provided email exists
         const user = await Request.findOne({ where: { patientEmail: email } });
         if (!user) {
             return res.status(httpCode.BAD_REQUEST).json({
@@ -987,6 +1005,7 @@ export const sendFileThroughMail: Controller = async (req, res) => {
         // Send email
         await transporter.sendMail(mailOptions);
 
+        // Log email sending
         await EmailLog.create({
             email,
             confirmationNumber: user.confirmationNumber,
@@ -1016,6 +1035,7 @@ export const sendFileThroughMail: Controller = async (req, res) => {
  */
 export const uploadFile: Controller = async (req, res) => {
     try {
+        // Extract request id from request parameters
         const id = +req.params.id;
 
         // Check if request exists or not
@@ -1027,6 +1047,7 @@ export const uploadFile: Controller = async (req, res) => {
             });
         }
 
+        // Check if file was uploaded
         if (!req.file) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -1034,6 +1055,7 @@ export const uploadFile: Controller = async (req, res) => {
             });
         }
 
+        // Rename file if a file with the same name already exists
         let newFileName = req.file.originalname;
 
         const existingFile = await RequestWiseFiles.findOne({
@@ -1056,6 +1078,7 @@ export const uploadFile: Controller = async (req, res) => {
             }
         }
 
+        // Create record for uploaded file
         const uploadFile = await RequestWiseFiles.create({
             requestId: id,
             fileName: newFileName,
@@ -1064,6 +1087,7 @@ export const uploadFile: Controller = async (req, res) => {
             updatedAt: new Date(),
         });
 
+        // Check if file was successfully uploaded
         if (!uploadFile) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -1071,6 +1095,7 @@ export const uploadFile: Controller = async (req, res) => {
             });
         }
 
+        // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.FILE_UPLOADED,
@@ -1090,6 +1115,7 @@ export const uploadFile: Controller = async (req, res) => {
  */
 export const closeCaseView: Controller = async (req, res) => {
     try {
+        // Extract request id and query parameters
         const { id } = req.params;
         const { sortBy, orderBy } = req.query;
 
@@ -1104,6 +1130,7 @@ export const closeCaseView: Controller = async (req, res) => {
 
         let sortByModel;
         switch (sortBy) {
+            // Construct sorting criteria based on sortBy and orderBy parameters
             case 'id':
             case 'createdAt':
                 sortByModel = [
@@ -1116,6 +1143,7 @@ export const closeCaseView: Controller = async (req, res) => {
                 break;
         }
 
+        // Fetch case details and associated files
         const closeCase = await Request.findAll({
             attributes: [
                 'id',
@@ -1138,6 +1166,7 @@ export const closeCaseView: Controller = async (req, res) => {
             order: sortByModel as Order,
         });
 
+        // Check if case details were found
         if (!closeCase.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -1145,6 +1174,7 @@ export const closeCaseView: Controller = async (req, res) => {
             });
         }
 
+        // Return case details and associated files
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
@@ -1167,6 +1197,7 @@ export const updateCloseCase: Controller = async (req, res) => {
         // Extract the request id from request parameters.
         const { id } = req.params;
 
+        // Extract updated patient phone number and email from request body
         const { patientPhoneNumber, patientEmail } = req.body;
 
         // Check if request exists or not
@@ -1178,6 +1209,7 @@ export const updateCloseCase: Controller = async (req, res) => {
             });
         }
 
+        // Update patient phone number and email
         await Request.update(
             {
                 patientPhoneNumber,
@@ -1238,22 +1270,29 @@ export const closeCase: Controller = async (req, res) => {
  */
 export const requestSupport: Controller = async (req, res) => {
     try {
+        // Extract message from request body
         const { message } = req.body;
+
+        // Find all unscheduled physicians
         const unScheduledPhysician = await User.findAll({
             where: { accountType: 'Physician', onCallStatus: 'UnScheduled' },
         });
 
+        // Loop through each unscheduled physician
         for (const physician of unScheduledPhysician) {
+            // Prepare template data
             const templateData = {
                 physicianName: physician.firstName + ' ' + physician.lastName,
                 message: message,
             };
 
+            // Compile email template with template data
             const data = await compileEmailTemplate(
                 'requestSupport',
                 templateData,
             );
 
+            // Construct email options
             const mailOptions = {
                 from: process.env.EMAIL_FROM,
                 to: physician.email,
@@ -1264,6 +1303,7 @@ export const requestSupport: Controller = async (req, res) => {
 
             await transporter.sendMail(mailOptions);
 
+            // Log email sending
             await EmailLog.create({
                 email: physician.email,
                 senderId: req.user.id,
@@ -1275,6 +1315,7 @@ export const requestSupport: Controller = async (req, res) => {
             });
         }
 
+        // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.MESSAGE_SENT_SUCCESSFULLY,
@@ -1325,21 +1366,26 @@ export const transferRequest: Controller = async (req, res) => {
  */
 export const sendPatientRequest: Controller = async (req, res) => {
     try {
+        // Extract patient information from request body
         const { firstName, lastName, phoneNumber, email } = req.body;
 
+        // Prepare template data for email
         const templateData = {
             createRequestLink: linkConstant.REQUEST_URL,
             patientName: firstName + ' ' + lastName,
         };
 
+        // Compile email template with template data
         const data = await compileEmailTemplate(
             'sendRequestEmail',
             templateData,
         );
 
+        // Send SMS to patient
         const messageBody = `Hello ${firstName}, To Create a Request on our secure online portal. Please click on the button below to create Your First Request: ${linkConstant.REQUEST_URL}.`;
         sendSMS(messageBody);
 
+        // Log SMS sendin
         await SMSLog.create({
             phoneNumber,
             senderId: req.user.id,
@@ -1349,6 +1395,7 @@ export const sendPatientRequest: Controller = async (req, res) => {
             action: 'Send request link to patient',
         });
 
+        // Construct email options
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
@@ -1356,6 +1403,7 @@ export const sendPatientRequest: Controller = async (req, res) => {
             html: data,
         };
 
+        // Send email and handle response
         return transporter.sendMail(mailOptions, async (error: Error) => {
             if (error) {
                 throw error;
@@ -1368,6 +1416,7 @@ export const sendPatientRequest: Controller = async (req, res) => {
                     sentTries: 1,
                     action: 'Send request link to patient',
                 });
+                // Return success response
                 return res.json({
                     status: httpCode.OK,
                     message: messageConstant.REQUEST_EMAIL_SMS_SENT,

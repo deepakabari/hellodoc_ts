@@ -4,15 +4,15 @@ export const BusinessSchema = {
     createBusiness: {
         [Segments.BODY]: Joi.object({
             businessName: Joi.string().required(),
-            profession: Joi.string().optional(),
-            faxNumber: Joi.string().optional(),
+            profession: Joi.string().required(),
+            faxNumber: Joi.string().optional().allow('', null),
             phoneNumber: Joi.string().required().min(11).max(13).messages({
                 'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
                 'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
                 'string.required': 'Phone number is required', // Custom message for required
             }),
             email: Joi.string().email().required(),
-            businessContact: Joi.string().optional(),
+            businessContact: Joi.string().optional().allow('', null),
             street: Joi.string().required(),
             city: Joi.string().required(),
             state: Joi.string().required(),

@@ -6,6 +6,7 @@ import express from 'express';
 import isAuth from '../../../middleware/in-auth';
 import { celebrate } from 'celebrate';
 import {
+    ProviderSchema,
     RequestSchema,
     ShiftSchema,
     UserSchema,
@@ -20,7 +21,12 @@ router.get(
     providerController.providerInformation,
 );
 
-router.post('/contactProvider/:id', isAuth, providerController.contactProvider);
+router.post(
+    '/contactProvider/:id',
+    isAuth,
+    celebrate(ProviderSchema.contactProvider),
+    providerController.contactProvider,
+);
 
 router.get(
     '/physicianProfile/:id',
@@ -50,7 +56,7 @@ router.patch(
 router.patch(
     '/updateNotification',
     isAuth,
-    celebrate(UserSchema.updateNotification),
+    celebrate(ProviderSchema.updateNotification),
     providerController.updateNotification,
 );
 
@@ -63,8 +69,6 @@ router.post(
 
 router.get('/viewShift/:id', isAuth, schedulingController.viewShift);
 
-router.get('/location', isAuth, providerController.providerLocation);
-
 router.get('/viewShiftFilter', isAuth, schedulingController.viewShiftFilter);
 
 router.get(
@@ -73,9 +77,19 @@ router.get(
     schedulingController.unApprovedViewShift,
 );
 
-router.put('/approveShift', isAuth, schedulingController.approveShift);
+router.put(
+    '/approveShift',
+    isAuth,
+    celebrate(ShiftSchema.approveShift),
+    schedulingController.approveShift,
+);
 
-router.patch('/editShift/:id', isAuth, schedulingController.editShift);
+router.patch(
+    '/editShift/:id',
+    isAuth,
+    celebrate(ShiftSchema.editShift),
+    schedulingController.editShift,
+);
 
 router.patch(
     '/toggleApproval/:id',
@@ -83,7 +97,12 @@ router.patch(
     schedulingController.toggleShiftApproval,
 );
 
-router.delete('/deleteShift', isAuth, schedulingController.deleteShift);
+router.delete(
+    '/deleteShift',
+    isAuth,
+    celebrate(ShiftSchema.approveShift),
+    schedulingController.deleteShift,
+);
 
 router.delete('/deleteProvider/:id', isAuth, providerController.deleteAccount);
 

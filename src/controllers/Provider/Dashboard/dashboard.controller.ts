@@ -207,6 +207,14 @@ export const acceptRequest: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
+
         await Request.update(
             {
                 caseTag: CaseTag.Pending,
@@ -237,6 +245,14 @@ export const concludeCare: Controller = async (req, res) => {
         const { id } = req.params;
 
         const { providerNotes } = req.body;
+
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
 
         // Update request status to Conclude and add physician notes
         await Request.update(
@@ -270,6 +286,14 @@ export const typeOfCare: Controller = async (req, res) => {
         const { id } = req.params;
 
         const { typeOfCare } = req.body;
+
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
 
         let callType, requestStatus, caseTag;
 
@@ -314,6 +338,16 @@ export const houseCallType: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
+         // Check if the request exists
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
+
+        // Update the request to mark as house call type
         await Request.update(
             {
                 caseTag: CaseTag.Conclude,
@@ -322,6 +356,7 @@ export const houseCallType: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_UPDATED,
@@ -342,7 +377,17 @@ export const transferRequest: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // Extract the transfer description from the request body
         const { description } = req.body;
+
+        // Check if the request exists
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
 
         // Update request status to Unassigned and clear physicianId with transfer note
         await Request.update(
@@ -418,6 +463,14 @@ export const finalizeForm: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
+        const exists = await MedicalReport.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
+
         // Update medical report to finalize
         await MedicalReport.update(
             {
@@ -446,6 +499,16 @@ export const finalizeForm: Controller = async (req, res) => {
 export const viewEncounterForm: Controller = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const exists = await MedicalReport.findOne({
+            where: { requestId: id },
+        });
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
 
         // Retrieve encounter form data
         const viewEncounterForm = await MedicalReport.findAll({
@@ -520,6 +583,14 @@ export const editEncounterForm: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
+        const exists = await MedicalReport.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
+
         // Update encounter form
         await MedicalReport.update(
             {
@@ -550,6 +621,16 @@ export const editEncounterForm: Controller = async (req, res) => {
 export const downloadEncounter = async (req: ExpressRequest, res: Response) => {
     try {
         const { id } = req.params;
+
+        const exists = await MedicalReport.findOne({
+            where: { requestId: id },
+        });
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
 
         const token = req.headers.authorization as string;
 

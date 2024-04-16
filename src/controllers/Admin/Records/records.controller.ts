@@ -25,12 +25,15 @@ dotenv.config();
  */
 export const getPatientHistory: Controller = async (req, res) => {
     try {
+        // Extract query parameters from the request
         const { firstName, lastName, email, phone, page, pageSize } = req.query;
 
+        // Calculate pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
+        // Define the where clause based on query parameters
         const whereClause: WhereOptions<RequestAttributes> = {};
         if (firstName) {
             whereClause.patientFirstName = { [Op.substring]: `${firstName}` };
@@ -45,6 +48,7 @@ export const getPatientHistory: Controller = async (req, res) => {
             whereClause.patientPhoneNumber = { [Op.substring]: `${phone}` };
         }
 
+        // Retrieve patient history based on the where clause and pagination parameters
         const patientsHistory = await Request.findAndCountAll({
             attributes: [
                 'id',
@@ -63,6 +67,7 @@ export const getPatientHistory: Controller = async (req, res) => {
             offset,
         });
 
+        // Return response with the retrieved patient history data
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PATIENT_HISTORY_RETRIEVED,
@@ -81,15 +86,19 @@ export const getPatientHistory: Controller = async (req, res) => {
  */
 export const blockHistory: Controller = async (req, res) => {
     try {
+        // Extract query parameters from the request
         const { name, email, phone, date, sortBy, orderBy, page, pageSize } =
             req.query;
 
+        // Calculate pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
+        // Define sorting order based on query parameters
         const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
 
+        // Define filters based on query parameters
         const nameFilter = name
             ? {
                   [Op.or]: [
@@ -109,6 +118,7 @@ export const blockHistory: Controller = async (req, res) => {
 
         const dateFilter = date ? { createdAt: { [Op.substring]: date } } : {};
 
+        // Retrieve block requests based on filters and pagination parameters
         const blockRequests = await Request.findAndCountAll({
             attributes: [
                 'id',
@@ -134,6 +144,7 @@ export const blockHistory: Controller = async (req, res) => {
             offset,
         });
 
+        // Return response with block history data
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.BLOCK_HISTORY_RETRIEVED,
@@ -153,15 +164,30 @@ export const blockHistory: Controller = async (req, res) => {
  */
 export const patientRecord: Controller = async (req, res) => {
     try {
+        // Extract user ID from request parameters
         const { id } = req.params;
+
+        // Check if a record exists for the provided user ID
+        const exists = await Request.findOne({ where: { userId: id } });
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
+
+        // Extract sorting and pagination parameters from query
         const { sortBy, orderBy, page, pageSize } = req.query;
 
+        // Calculate pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
+        // Define sorting order based on query parameters
         const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
 
+        // Retrieve patient records associated with the user ID
         const patients = await Request.findAndCountAll({
             attributes: [
                 'id',
@@ -185,6 +211,7 @@ export const patientRecord: Controller = async (req, res) => {
             offset,
         });
 
+        // Return response with patient records data
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PATIENT_RECORD_RETRIEVED,
@@ -197,6 +224,7 @@ export const patientRecord: Controller = async (req, res) => {
 
 export const searchRecord: Controller = async (req, res) => {
     try {
+        // Destructuring query parameters
         const {
             requestStatus,
             patientName,
@@ -212,12 +240,15 @@ export const searchRecord: Controller = async (req, res) => {
             physicianName,
         } = req.query;
 
+        // Pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
+        // Sorting parameters
         const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
 
+        // Date range filter
         const dateRange =
             fromDate && toDate
                 ? {
@@ -228,6 +259,7 @@ export const searchRecord: Controller = async (req, res) => {
                   }
                 : {};
 
+        // Filters for patient name and physician name
         const patientNameFilter = patientName
             ? {
                   [Op.or]: [
@@ -246,6 +278,7 @@ export const searchRecord: Controller = async (req, res) => {
               }
             : {};
 
+        // Query to retrieve patient records with optional filters
         const patientData = await Request.findAndCountAll({
             attributes: [
                 'id',
@@ -296,6 +329,7 @@ export const searchRecord: Controller = async (req, res) => {
             distinct: true,
         });
 
+        // Return response with patient records data
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.RECORDS_RETRIEVED,
@@ -308,8 +342,19 @@ export const searchRecord: Controller = async (req, res) => {
 
 export const unBlockPatient: Controller = async (req, res) => {
     try {
+        // Extract record ID from request parameters
         const { id } = req.params;
 
+        // Check if the record exists in the database
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
+
+        // Update the request status and deletion flag to unblock the patient
         await Request.update(
             {
                 requestStatus: RequestStatus.Unassigned,
@@ -318,6 +363,7 @@ export const unBlockPatient: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        // Return a success response after unblocking the patient
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PATIENT_UNBLOCK,
@@ -329,12 +375,24 @@ export const unBlockPatient: Controller = async (req, res) => {
 
 export const deleteRecord: Controller = async (req, res) => {
     try {
+        // Extract record ID from request parameters
         const { id } = req.params;
 
+        // Check if the record exists in the database
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
+
+        // Delete the record from the database
         await Request.destroy({
             where: { id },
         });
 
+        // Return a success response after deleting the record
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_DELETED,
@@ -346,8 +404,10 @@ export const deleteRecord: Controller = async (req, res) => {
 
 export const exportToExcel = async (req: ExpressRequest, res: Response) => {
     try {
+        // Extract token from request headers
         const token = req.headers.authorization as string;
 
+        // Fetch data from the specified endpoint
         const response = await fetch(
             'http://localhost:4000/admin/records/searchRecord',
             {
@@ -357,12 +417,15 @@ export const exportToExcel = async (req: ExpressRequest, res: Response) => {
             },
         );
 
+        // Check if the response is successful
         if (!response.ok) {
             throw new Error(`Failed to fetch data: ${response.statusText}`);
         }
 
+        // Parse response data as JSON
         const jsonData: any = await response.json();
 
+        // Format the data for Excel export
         const formattedData = jsonData.data.rows.map((row: any) => {
             return {
                 ...row,
@@ -372,11 +435,14 @@ export const exportToExcel = async (req: ExpressRequest, res: Response) => {
             };
         });
 
+        // Convert formatted data to Excel file
         const xls = json2xls(formattedData);
 
+        // Generate unique filename
         const filename = `records_patients_${Date.now()}.xlsx`;
         fs.writeFileSync(filename, xls, 'binary');
 
+        // Download the Excel file
         return res.download(filename, filename, () => {
             // Delete the file after download completes
             fs.unlinkSync(filename);

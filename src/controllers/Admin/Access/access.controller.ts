@@ -21,24 +21,31 @@ dotenv.config();
  */
 export const accountAccess: Controller = async (req, res) => {
     try {
+        // Extract query parameters
         const { sortBy, orderBy, page, pageSize } = req.query;
 
+        // Parse pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
+        // Initialize sorting model
         let sortByModel: Order = [];
 
+        // Check if sortBy and orderBy are provided, construct sorting model
         if (sortBy && orderBy) {
             sortByModel = [[sortBy, orderBy]] as Order;
         }
+
+        // Fetch data from database based on pagination and sorting
         const accountAccess = await Role.findAndCountAll({
-            attributes: ['id', 'Name', 'accountType'],
-            order: sortByModel,
-            limit,
-            offset,
+            attributes: ['id', 'Name', 'accountType'], // Select specific attributes
+            order: sortByModel, // Apply sorting if provided
+            limit, // Limit the number of results per page
+            offset, // Offset for pagination
         });
 
+        // Return data in JSON response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.ACCOUNT_ACCESS_RETRIEVED,
@@ -58,19 +65,25 @@ export const accountAccess: Controller = async (req, res) => {
  */
 export const accountAccessByAccountType: Controller = async (req, res) => {
     try {
+        // Extract query parameters
         const { accountTypes } = req.query;
 
+        // Initialize where condition object
         let whereCondition: { [key: string]: any } = {};
+
+        // Check if accountTypes is provided and not 'All', construct where condition
         if (accountTypes && accountTypes !== 'All') {
             whereCondition['accountType'] = accountTypes;
         }
 
+        // Fetch roles from database based on account type filter
         const roles = await Permission.findAll({
-            attributes: ['id', 'accountType', 'name'],
-            order: ['accountType'],
+            attributes: ['id', 'accountType', 'name'], // Select specific attributes
+            order: ['accountType'], // Order roles by accountType
             where: whereCondition,
         });
 
+        // Return roles in JSON response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PERMISSION_RETRIEVED,
@@ -89,10 +102,13 @@ export const accountAccessByAccountType: Controller = async (req, res) => {
  */
 export const createRole: Controller = async (req, res) => {
     try {
+        // Extract query parameters
         const { roleName, accountType, permissionIds } = req.body;
 
+        // Check if role with the same name already exists
         const existingRole = await Role.findOne({ where: { Name: roleName } });
 
+        // If role already exists, return conflict response
         if (existingRole) {
             return res.status(httpCode.CONFLICT).json({
                 status: httpCode.CONFLICT,
@@ -100,6 +116,7 @@ export const createRole: Controller = async (req, res) => {
             });
         }
 
+        // Create new role
         const createRole = await Role.create({
             Name: roleName,
             accountType,
@@ -107,6 +124,7 @@ export const createRole: Controller = async (req, res) => {
             updatedAt: new Date(),
         });
 
+        // Associate permissions with the new role
         for (const permissionId of permissionIds) {
             await RolePermissionMap.create({
                 roleId: createRole.id,
@@ -116,6 +134,7 @@ export const createRole: Controller = async (req, res) => {
             });
         }
 
+        // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.ROLE_CREATED,
@@ -135,18 +154,23 @@ export const createRole: Controller = async (req, res) => {
  */
 export const userAccess: Controller = async (req, res) => {
     try {
+        // Extract query parameters
         const { accountType, sortBy, orderBy, page, pageSize } = req.query;
 
+        // Parse pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
+        // Initialize sorting model
         let sortByModel: Order = [];
 
+        // Check if sortBy and orderBy are provided, construct sorting model
         if (sortBy && orderBy) {
             sortByModel = [[sortBy, orderBy]] as Order;
         }
 
+        // Initialize where condition object
         let whereCondition: { [key: string]: any } = {
             // Exclude 'user' accountType from all results
             accountType: {
@@ -154,10 +178,12 @@ export const userAccess: Controller = async (req, res) => {
             },
         };
 
+        // Add accountType filter if provided
         if (accountType && accountType !== 'All') {
             whereCondition['accountType'] = accountType;
         }
 
+        // Fetch users from database based on filters and pagination
         const users = await User.findAndCountAll({
             attributes: [
                 'id',
@@ -173,6 +199,7 @@ export const userAccess: Controller = async (req, res) => {
             offset,
         });
 
+        // Return users in JSON response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.USER_ACCESS_RETRIEVED,
@@ -194,7 +221,10 @@ export const viewRole: Controller = async (req, res) => {
         // Extract the role ID from the request parameters.
         const { id } = req.params;
 
+        // Find the role by its ID
         const existingRole = await Role.findByPk(id);
+
+        // If role doesn't exist, return bad request response
         if (!existingRole) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -202,6 +232,7 @@ export const viewRole: Controller = async (req, res) => {
             });
         }
 
+        // Fetch role details including associated permissions
         const viewRole = await Role.findAll({
             attributes: ['id', 'Name', 'accountType'],
             where: { id },
@@ -209,11 +240,12 @@ export const viewRole: Controller = async (req, res) => {
                 {
                     model: Permission,
                     attributes: ['id', 'name', 'accountType'],
-                    through: { attributes: [] },
+                    through: { attributes: [] }, // Exclude junction table attributes
                 },
             ],
         });
 
+        // Return role details in JSON response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.ROLE_RETRIEVED,

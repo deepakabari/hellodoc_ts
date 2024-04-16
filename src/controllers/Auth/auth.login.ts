@@ -240,9 +240,11 @@ export const resetPassword: Controller = async (req, res) => {
 
 export const changePassword: Controller = async (req, res) => {
     try {
+        // Extract password and user ID from the request
         const { password } = req.body;
         const id = req.params.id;
 
+        // Find the user by ID
         const user = await User.findByPk(id);
         if (!user) {
             return res.status(httpCode.BAD_REQUEST).json({
@@ -251,10 +253,13 @@ export const changePassword: Controller = async (req, res) => {
             });
         }
 
+        // Hash the new password
         const hashedPassword = await bcrypt.hash(password, Number(ITERATION));
 
+        // Update the user's password in the database
         await User.update({ password: hashedPassword }, { where: { id } });
 
+        // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PASSWORD_RESET,

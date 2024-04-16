@@ -1,6 +1,8 @@
 import express from 'express';
 import isAuth from '../../../middleware/in-auth';
 import { providerDashboard } from '../../../controllers';
+import { celebrate } from 'celebrate';
+import { ProviderSchema } from '../../../validations';
 
 const router = express.Router();
 
@@ -10,13 +12,28 @@ router.get('/dashboardCount', isAuth, providerDashboard.requestCount);
 
 router.patch('/acceptRequest/:id', isAuth, providerDashboard.acceptRequest);
 
-router.patch('/concludeCare/:id', isAuth, providerDashboard.concludeCare);
+router.patch(
+    '/concludeCare/:id',
+    isAuth,
+    celebrate(ProviderSchema.concludeCare),
+    providerDashboard.concludeCare,
+);
 
-router.patch('/typeOfCare/:id', isAuth, providerDashboard.typeOfCare);
+router.patch(
+    '/typeOfCare/:id',
+    isAuth,
+    celebrate(ProviderSchema.typeOfCare),
+    providerDashboard.typeOfCare,
+);
 
 router.patch('/houseCallType/:id', isAuth, providerDashboard.houseCallType);
 
-router.patch('/transferRequest/:id', isAuth, providerDashboard.transferRequest);
+router.patch(
+    '/transferRequest/:id',
+    isAuth,
+    celebrate(ProviderSchema.transferRequest),
+    providerDashboard.transferRequest,
+);
 
 router.post('/encounterForm/:id', isAuth, providerDashboard.encounterForm);
 

@@ -19,4 +19,21 @@ export const ShiftSchema = {
             saturday: Joi.boolean().optional().allow('', null),
         }),
     },
+
+    approveShift: {
+        [Segments.BODY]: Joi.object({
+            shiftIds: Joi.array()
+                .items(Joi.number().required())
+                .min(1)
+                .required(),
+        }),
+    },
+
+    editShift: {
+        [Segments.BODY]: Joi.object({
+            shiftDate: Joi.date(),
+            startTime: Joi.string(),
+            endTime: Joi.string(),
+        }),
+    },
 };

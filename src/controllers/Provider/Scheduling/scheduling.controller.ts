@@ -3,24 +3,28 @@ import messageConstant from '../../../constants/message.constant';
 import { Controller, ShiftWhereAttributes } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
-import { Shift, User } from '../../../db/models/index';
-import transporter from '../../../utils/email';
-import { compileEmailTemplate } from '../../../utils/hbsCompiler';
+import { Shift } from '../../../db/models/index';
 import sequelize from 'sequelize';
 import { Op } from 'sequelize';
 
 export const viewSchedule: Controller = async (req, res) => {
     try {
+        // Extract the user ID from the request
         const id = req.user.id;
+
+        // Extract the month from the query parameters
         const { month } = req.query;
 
+        // Convert the month to a number if provided
         const monthNumber: number | undefined =
             typeof month === 'string' ? parseInt(month, 10) - 1 : undefined;
 
+        // Define the where condition for filtering shifts
         let whereCondition: ShiftWhereAttributes = {
             isDeleted: false,
         };
 
+        // If month is provided, filter by month
         if (monthNumber !== undefined) {
             // Filter by month if only the month is provided
             whereCondition[Op.and] = [
@@ -31,6 +35,7 @@ export const viewSchedule: Controller = async (req, res) => {
             ];
         }
 
+        // Retrieve the schedule of the physician from the database
         const viewSchedule = await Shift.findAll({
             attributes: [
                 'id',
@@ -54,13 +59,6 @@ export const viewSchedule: Controller = async (req, res) => {
                 ...whereCondition,
             },
         });
-
-        if (!viewSchedule.length) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.DATA_NOT_FOUND,
-            });
-        }
 
         // Send the shift details data in the response.
         return res.status(httpCode.OK).json({

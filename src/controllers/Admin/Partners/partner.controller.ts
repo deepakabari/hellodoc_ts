@@ -5,7 +5,6 @@ import { Controller } from '../../../interfaces';
 import { AccountType } from '../../../utils/enum.constant';
 import { Op } from 'sequelize';
 import { sequelize } from '../../../db/config/db.connection';
-import { Transaction } from 'sequelize';
 
 /**
  * @function addBusiness
@@ -16,6 +15,7 @@ import { Transaction } from 'sequelize';
  */
 export const addBusiness: Controller = async (req, res) => {
     try {
+        // Extract business information from request body
         const {
             businessName,
             profession,
@@ -29,6 +29,7 @@ export const addBusiness: Controller = async (req, res) => {
             zipCode,
         } = req.body;
 
+         // Check if business with the same email already exists
         const business = await Business.findOne({
             where: { email },
         });
@@ -40,6 +41,7 @@ export const addBusiness: Controller = async (req, res) => {
             });
         }
 
+        // Create new business record
         const newBusiness = await Business.create({
             accountType: AccountType.Vendor,
             userId: req.user.id,
@@ -74,8 +76,10 @@ export const addBusiness: Controller = async (req, res) => {
  */
 export const viewBusiness: Controller = async (req, res) => {
     try {
+        // Extract business ID from request parameters
         const { id } = req.params;
 
+        // Find business by ID
         const existingBusiness = await Business.findByPk(id);
         if (!existingBusiness) {
             return res.status(httpCode.BAD_REQUEST).json({
@@ -84,6 +88,7 @@ export const viewBusiness: Controller = async (req, res) => {
             });
         }
 
+        // Retrieve business details
         const viewBusiness = await Business.findAll({
             attributes: [
                 'id',
@@ -120,6 +125,7 @@ export const viewBusiness: Controller = async (req, res) => {
  */
 export const professions: Controller = async (req, res) => {
     try {
+        // Retrieve list of unique professions
         const professions = await Business.findAll({
             attributes: ['profession'],
             group: ['profession'],
@@ -151,8 +157,10 @@ export const professions: Controller = async (req, res) => {
  */
 export const businessByProfession: Controller = async (req, res) => {
     try {
+        // Extract profession from request parameters
         const { profession } = req.params;
 
+        // Find businesses by profession
         const businessByProfession = await Business.findAll({
             attributes: ['id', 'businessName'],
             where: { profession: profession },
@@ -184,8 +192,10 @@ export const businessByProfession: Controller = async (req, res) => {
  */
 export const viewSendOrder: Controller = async (req, res) => {
     try {
+        // Extract business ID from request parameters
         const { id } = req.params;
 
+        // Check if business with the given ID exists
         const existingBusiness = await Business.findByPk(id);
         if (!existingBusiness) {
             return res.status(httpCode.BAD_REQUEST).json({
@@ -194,6 +204,7 @@ export const viewSendOrder: Controller = async (req, res) => {
             });
         }
 
+        // Retrieve business details by ID
         const businessDetails = await Business.findAll({
             attributes: ['id', 'businessContact', 'email', 'faxNumber'],
             where: { id },
@@ -218,9 +229,13 @@ export const viewSendOrder: Controller = async (req, res) => {
  */
 export const sendOrder: Controller = async (req, res) => {
     try {
+        // Extract vendor ID from request parameters
         const id = +req.params.id;
+
+        // Extract prescription and number of refills from request body
         const { prescription, noOfRefill } = req.body;
 
+        // Create order detail
         const sendOrder = await OrderDetail.create({
             userId: req.user.id,
             vendorId: id,
@@ -240,12 +255,15 @@ export const sendOrder: Controller = async (req, res) => {
 
 export const viewVendor: Controller = async (req, res) => {
     try {
+        // Extract query parameters
         const { search, professions, page, pageSize } = req.query;
 
+        // Extract pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
+        // Retrieve vendors based on search criteria
         const viewVendor = await Business.findAndCountAll({
             attributes: [
                 'id',
@@ -280,8 +298,10 @@ export const viewVendor: Controller = async (req, res) => {
 
 export const updateBusiness: Controller = async (req, res) => {
     try {
+        // Extract business ID from request parameters
         const { id } = req.params;
 
+        // Check if business with the given ID exists
         const existingBusiness = await Business.findByPk(id);
         if (!existingBusiness) {
             return res.status(httpCode.BAD_REQUEST).json({
@@ -290,6 +310,7 @@ export const updateBusiness: Controller = async (req, res) => {
             });
         }
 
+        // Extract business details from request body
         const {
             businessName,
             profession,
@@ -305,6 +326,7 @@ export const updateBusiness: Controller = async (req, res) => {
 
         const transaction = await sequelize.transaction();
 
+        // Update business details
         await Business.update(
             {
                 businessName,
@@ -335,8 +357,10 @@ export const updateBusiness: Controller = async (req, res) => {
 
 export const deleteBusiness: Controller = async (req, res) => {
     try {
+        // Extract business ID from request parameters
         const { id } = req.params;
 
+        // Check if business with the given ID exists
         const existingBusiness = await Business.findByPk(id);
         if (!existingBusiness) {
             return res.status(httpCode.BAD_REQUEST).json({
@@ -345,6 +369,7 @@ export const deleteBusiness: Controller = async (req, res) => {
             });
         }
 
+        // Delete the business
         await Business.destroy({
             where: { id },
         });

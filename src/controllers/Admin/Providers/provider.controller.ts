@@ -30,23 +30,28 @@ dotenv.config();
  */
 export const providerInformation: Controller = async (req, res) => {
     try {
+        // Extract query parameters
         const { regions, sortBy, orderBy, page, pageSize } = req.query;
 
+        // Parse pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
+        // Define sorting options
         let sortByModel: Order = [];
 
         if (sortBy && orderBy) {
             sortByModel = [[sortBy, orderBy]] as Order;
         }
 
+        // Define region where clause
         let regionWhereClause = {};
         if (regions && regions !== 'all') {
             regionWhereClause = { name: regions as string };
         }
 
+        // Retrieve provider information based on query parameters
         const providerInformation = await User.findAndCountAll({
             attributes: [
                 'id',
@@ -75,6 +80,7 @@ export const providerInformation: Controller = async (req, res) => {
             offset,
         });
 
+        // Return response with provider information
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PROVIDER_RETRIEVED,
@@ -94,21 +100,31 @@ export const providerInformation: Controller = async (req, res) => {
  */
 export const contactProvider: Controller = async (req, res) => {
     try {
+        // Extract provider id from request parameters
         const { id } = req.params;
+
+        // Check if the provider exists
+        const user = await User.findByPk(id);
+        if (!user) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
+
+        // Extract message body and contact method from request body
         const { messageBody, contactMethod } = req.body;
 
-        const user = await User.findOne({
-            where: { id },
-        });
-
+        // Function to send email to the provider
         const sendEmail = (message: string) => {
             let mailOptions = {
                 from: process.env.EMAIL_FROM,
-                to: user?.email,
+                to: user.email,
                 subject: linkConstant.contactSubject,
                 text: message,
             };
 
+            // Send email
             return transporter.sendMail(mailOptions, async (error: Error) => {
                 if (error) {
                     throw error;
@@ -127,6 +143,7 @@ export const contactProvider: Controller = async (req, res) => {
             });
         };
 
+        // Switch based on the contact method chosen
         switch (contactMethod) {
             case 'sms':
                 sendSMS(messageBody);
@@ -140,6 +157,7 @@ export const contactProvider: Controller = async (req, res) => {
                 break;
         }
 
+        // Log SMS sending
         await SMSLog.create({
             phoneNumber: user?.phoneNumber as string,
             senderId: req.user.id,
@@ -150,6 +168,7 @@ export const contactProvider: Controller = async (req, res) => {
             action: 'Provider Contact',
         });
 
+        // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.EMAIL_SMS_SENT,
@@ -168,7 +187,19 @@ export const contactProvider: Controller = async (req, res) => {
  */
 export const physicianProfileInAdmin: Controller = async (req, res) => {
     try {
+        // Extract physician id from request parameters
         const { id } = req.params;
+
+        // Check if the physician exists
+        const exists = await User.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
+
+        // Retrieve physician profile details including associated data
         const physicianProfile = await User.findAll({
             attributes: [
                 'id',
@@ -219,13 +250,7 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
             where: { id },
         });
 
-        if (!physicianProfile) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.DATA_NOT_FOUND,
-            });
-        }
-
+        // Return the physician profile data
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PROFILE_RETRIEVED,
@@ -244,18 +269,21 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
  */
 export const editPhysicianProfile: Controller = async (req, res) => {
     try {
+        // Extract parameters from request
         const { id } = req.params;
         const { businessName, businessWebsite, regions } = req.body;
         const files = req.files as {
             [fieldName: string]: Express.Multer.File[];
         };
 
+        // Inner function to update physician details
         const updatePhysicianDetails = async (
             id: string,
             fieldUpdates: FieldUpdates,
             files?: { [fieldName: string]: Express.Multer.File[] },
         ) => {
             try {
+                // Update photo and signature if files are provided
                 if (files) {
                     if (files.photo && files.photo[0]) {
                         fieldUpdates.photo = files.photo[0].filename;
@@ -265,6 +293,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
                     }
                 }
 
+                // Update user and business details
                 await User.update(fieldUpdates, {
                     where: { id },
                 });
@@ -274,6 +303,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
                     { where: { userId: id } },
                 );
 
+                // Mapping of file types to database columns
                 const fileColumnMapping: { [key: string]: string } = {
                     backgroundCheck: 'isBackgroundDoc',
                     nonDisclosureAgreement: 'isNonDisclosureDoc',
@@ -282,6 +312,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
                     licenseDoc: 'isLicenseDoc',
                 };
 
+                // Process and update uploaded files
                 if (files) {
                     for (const [key, value] of Object.entries(
                         fileColumnMapping,
@@ -316,6 +347,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
 
         let fieldUpdates: any = {};
 
+        // Define fields to update
         const fields = [
             'password',
             'status',
@@ -335,6 +367,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             'roleId',
         ];
 
+        // Hash password if provided
         const hashPassword = async (password: string): Promise<string> => {
             const saltRounds = process.env.ITERATION;
             const hashedPassword = await bcrypt.hash(
@@ -344,6 +377,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             return hashedPassword;
         };
 
+        // Process fields for update
         for (const field of fields) {
             if (req.body[field] !== undefined) {
                 fieldUpdates[field] =
@@ -353,12 +387,14 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             }
         }
 
+        // Update physician details
         const updateResult = await updatePhysicianDetails(
             id,
             fieldUpdates,
             files,
         );
 
+        // Update user regions if provided
         if (regions) {
             await UserRegion.destroy({
                 where: { userId: id },
@@ -373,6 +409,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             }
         }
 
+        // Handle update result
         if (!updateResult) {
             return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
                 status: httpCode.INTERNAL_SERVER_ERROR,
@@ -380,6 +417,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             });
         }
 
+        // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PROFILE_UPDATED,
@@ -389,24 +427,9 @@ export const editPhysicianProfile: Controller = async (req, res) => {
     }
 };
 
-export const providerLocation: Controller = async (req, res) => {
-    try {
-        const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-        const lat = 23.034721;
-        const lng = 72.500535;
-        const address = 'Ahmedabad';
-        const url = `https://maps.googleapis.com/maps/api/json?key=${apiKey}&address=${address}`;
-
-        const response = await fetch(url);
-        const data = await response.json();
-        return res.json(data);
-    } catch (error) {
-        throw error;
-    }
-};
-
 export const updateNotification: Controller = async (req, res) => {
     try {
+        // Extract physician IDs from request body
         const { physicianIds } = req.body;
 
         // Set stopNotification to false for all physicians
@@ -437,8 +460,19 @@ export const updateNotification: Controller = async (req, res) => {
 
 export const deleteAccount: Controller = async (req, res) => {
     try {
+        // Extract user ID from request parameters
         const { id } = req.params;
 
+        // Check if user with the given ID exists
+        const exists = await User.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
+
+        // Delete the user
         await User.destroy({
             where: { id },
         });

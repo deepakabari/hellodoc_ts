@@ -44,28 +44,6 @@ export const providerOnCall: Controller = async (req, res) => {
             order: ['onCallStatus'],
         });
 
-        // Group providers by their on-call status.
-        const groupedProvider: Group = providers.reduce(
-            (result: Group, user) => {
-                const key = user.onCallStatus;
-                if (!result[key]) {
-                    result[key] = [];
-                }
-                result[key].push({
-                    id: user.id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    photo: user.photo,
-                    regions: user.regions.map((region) => ({
-                        id: region.id,
-                        name: region.name,
-                    })),
-                });
-                return result;
-            },
-            {} as Group,
-        );
-
         // Send the grouped providers data in the response.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -152,6 +130,14 @@ export const viewShift: Controller = async (req, res) => {
         // Extract the shift ID from the request parameters.
         const { id } = req.params;
 
+        const exists = await Shift.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.SHIFT_NOT_FOUND,
+            });
+        }
+
         // Fetch the shift details from the database using the provided ID.
         const viewShift = await Shift.findAll({
             attributes: [
@@ -179,13 +165,6 @@ export const viewShift: Controller = async (req, res) => {
             ],
             where: { id },
         });
-
-        if (!viewShift.length) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.DATA_NOT_FOUND,
-            });
-        }
 
         // Send the shift details data in the response.
         return res.status(httpCode.OK).json({
@@ -289,13 +268,6 @@ export const viewShiftFilter: Controller = async (req, res) => {
             order: [['shiftDate', 'ASC']],
         });
 
-        if (viewShiftByDate.length === 0) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.DATA_NOT_FOUND,
-            });
-        }
-
         // Return the results as a JSON response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -316,12 +288,15 @@ export const viewShiftFilter: Controller = async (req, res) => {
  */
 export const unApprovedViewShift: Controller = async (req, res) => {
     try {
+        // Extract query parameters
         const { regions, page, pageSize, sortBy, orderBy } = req.query;
 
+        // Parse pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
+         // Define sorting options
         const order =
             sortBy && orderBy
                 ? ([
@@ -360,13 +335,6 @@ export const unApprovedViewShift: Controller = async (req, res) => {
             offset,
         });
 
-        if (unApprovedViewShift.count === 0) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.DATA_NOT_FOUND,
-            });
-        }
-
         // Respond with the unapproved shifts data
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -387,24 +355,18 @@ export const unApprovedViewShift: Controller = async (req, res) => {
  */
 export const approveShift: Controller = async (req, res) => {
     try {
+        // Extract query parameters
         const { shiftIds } = req.body;
 
-        if (!shiftIds || shiftIds.length === 0) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.SHIFT_NOT_SELECTED,
-            });
-        }
-
         // Update 'isApproved' to true for each selected shift
-        shiftIds.forEach(async (shiftId: string) => {
+        for (const shiftId of shiftIds) {
             await Shift.update(
                 {
                     isApproved: true,
                 },
                 { where: { id: shiftId } },
             );
-        });
+        }
 
         // Respond with a success message
         return res.status(httpCode.OK).json({
@@ -420,22 +382,15 @@ export const deleteShift: Controller = async (req, res) => {
     try {
         const { shiftIds } = req.body;
 
-        if (!shiftIds || shiftIds.length === 0) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.SHIFT_NOT_SELECTED,
-            });
-        }
-
         // Update 'isDeleted' to true for each selected shift
-        shiftIds.forEach(async (shiftId: string) => {
+        for (const shiftId of shiftIds) {
             await Shift.update(
                 {
                     isDeleted: true,
                 },
                 { where: { id: shiftId } },
             );
-        });
+        }
 
         // Respond with a success message
         return res.status(httpCode.OK).json({
@@ -449,15 +404,28 @@ export const deleteShift: Controller = async (req, res) => {
 
 export const editShift: Controller = async (req, res) => {
     try {
+        // Extract shift ID from request parameters
         const { id } = req.params;
 
+        // Extract shift details from request body
         const { shiftDate, startTime, endTime } = req.body;
 
+        // Check if the shift exists
+        const exists = await Shift.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.SHIFT_NOT_FOUND,
+            });
+        }
+
+        // Update the shift with the provided details
         await Shift.update(
             { shiftDate, startTime, endTime },
             { where: { id } },
         );
 
+        // Respond with success message
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SHIFT_UPDATED,
@@ -469,10 +437,13 @@ export const editShift: Controller = async (req, res) => {
 
 export const toggleShiftApproval: Controller = async (req, res) => {
     try {
+        // Extract shift ID from request parameters
         const { id } = req.params;
 
+        // Find the shift by its ID
         const shift = await Shift.findByPk(id);
 
+        // Check if the shift exists
         if (!shift) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -480,10 +451,13 @@ export const toggleShiftApproval: Controller = async (req, res) => {
             });
         }
 
+        // Toggle the approval status of the shift
         shift.isApproved = !shift.isApproved;
 
+        // Save the updated shift
         await shift.save();
 
+        // Respond with success message
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SHIFT_UPDATED,
