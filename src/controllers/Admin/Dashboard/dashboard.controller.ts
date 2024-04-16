@@ -258,7 +258,7 @@ export const getPatientByState: Controller = async (req, res) => {
                 condition = {
                     caseTag: CaseTag.UnPaid,
                     deletedAt: null,
-                    requestStatus: RequestStatus.UnPaid,
+                    requestStatus: RequestStatus.Closed,
                 };
                 break;
             default:
@@ -906,7 +906,7 @@ export const viewUploads: Controller = async (req, res) => {
 
         // Check if request exists or not
         const exists = await Request.findByPk(id);
-        if(!exists) {
+        if (!exists) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -926,13 +926,6 @@ export const viewUploads: Controller = async (req, res) => {
             attributes: ['id', 'fileName', 'createdAt', 'documentPath'],
             order: sortByModel as Order,
         });
-
-        if (!uploads.length) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.FILE_NOT_FOUND,
-            });
-        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -979,13 +972,6 @@ export const sendFileThroughMail: Controller = async (req, res) => {
             'images',
         );
 
-        if (!fs.existsSync(filePath)) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.FILE_NOT_FOUND,
-            });
-        }
-
         // Construct email message
         const mailOptions = {
             from: process.env.EMAIL_FROM,
@@ -1021,9 +1007,25 @@ export const sendFileThroughMail: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function uploadFile
+ * @param req - Express request object, expects `id` in the parameters.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success message, and the uploads data.
+ * @description This function is an Express controller that uploads the file in requestWiseFiles table.
+ */
 export const uploadFile: Controller = async (req, res) => {
     try {
         const id = +req.params.id;
+
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
 
         if (!req.file) {
             return res.status(httpCode.BAD_REQUEST).json({
@@ -1091,6 +1093,15 @@ export const closeCaseView: Controller = async (req, res) => {
         const { id } = req.params;
         const { sortBy, orderBy } = req.query;
 
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
+
         let sortByModel;
         switch (sortBy) {
             case 'id':
@@ -1103,11 +1114,6 @@ export const closeCaseView: Controller = async (req, res) => {
                     ],
                 ];
                 break;
-            default:
-                res.status(httpCode.UNPROCESSABLE_CONTENT).json({
-                    status: httpCode.UNPROCESSABLE_CONTENT,
-                    message: messageConstant.INVALID_SORT_PARAMETER,
-                });
         }
 
         const closeCase = await Request.findAll({
@@ -1132,7 +1138,7 @@ export const closeCaseView: Controller = async (req, res) => {
             order: sortByModel as Order,
         });
 
-        if (closeCase.length === 0) {
+        if (!closeCase.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -1149,10 +1155,28 @@ export const closeCaseView: Controller = async (req, res) => {
     }
 };
 
+/**
+ * @function updateCloseCase
+ * @param req - Express request object, expects `id` in the parameters and `patientPhoneNumber`, `patientEmail` in body.
+ * @param res - Express response object used to send the response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the status code, a success .
+ * @description This function is an Express controller that updates the close case.
+ */
 export const updateCloseCase: Controller = async (req, res) => {
     try {
+        // Extract the request id from request parameters.
         const { id } = req.params;
+
         const { patientPhoneNumber, patientEmail } = req.body;
+
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
 
         await Request.update(
             {
@@ -1182,8 +1206,17 @@ export const closeCase: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
+
         await Request.update(
-            { requestStatus: RequestStatus.UnPaid, caseTag: CaseTag.UnPaid },
+            { requestStatus: RequestStatus.Closed, caseTag: CaseTag.UnPaid },
             { where: { id, caseTag: CaseTag.Close } },
         );
 
@@ -1260,8 +1293,18 @@ export const requestSupport: Controller = async (req, res) => {
  */
 export const transferRequest: Controller = async (req, res) => {
     try {
-        const { physicianId, transferNote } = req.body;
+        // Extract Request id from request parameters.
         const { id } = req.params;
+        const { physicianId, transferNote } = req.body;
+
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
 
         await Request.update({ physicianId, transferNote }, { where: { id } });
 

@@ -205,21 +205,21 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
                     model: Role,
                     attributes: ['id', 'Name'],
                 },
+                {
+                    model: Business,
+                    attributes: ['id', 'businessName', 'businessWebsite'],
+                    required: false,
+                },
+                {
+                    model: RequestWiseFiles,
+                    attributes: ['id', 'fileName', 'docType', 'documentPath'],
+                    required: false,
+                },
             ],
             where: { id },
         });
 
-        const businessDetails = await Business.findAll({
-            attributes: ['id', 'businessName', 'businessWebsite'],
-            where: { userId: id },
-        });
-
-        const files = await RequestWiseFiles.findAll({
-            attributes: ['id', 'fileName', 'docType', 'documentPath'],
-            where: { requestId: id },
-        });
-
-        if (!physicianProfile && !businessDetails && !files) {
+        if (!physicianProfile) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
@@ -229,7 +229,7 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PROFILE_RETRIEVED,
-            data: { physicianProfile, businessDetails, files },
+            data: { physicianProfile },
         });
     } catch (error) {
         throw error;

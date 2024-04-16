@@ -73,7 +73,7 @@ export const viewFile = async (req: ExpressRequest, res: Response) => {
                 message: messageConstant.FILE_NOT_FOUND,
             });
         } else {
-            res.type(path.extname(filePath))
+            res.type(path.extname(filePath));
             fs.createReadStream(filePath).pipe(res);
         }
     } catch (error) {
@@ -86,7 +86,7 @@ export const downloadFile = async (req: ExpressRequest, res: Response) => {
         const { fileNames } = req.body;
 
         // Validate fileNames array
-        if (!Array.isArray(fileNames) || fileNames.length === 0) {
+        if (!Array.isArray(fileNames) || !fileNames.length) {
             return res
                 .status(httpCode.BAD_REQUEST)
                 .json({ error: messageConstant.NO_FILE_SELECTED });
@@ -99,7 +99,7 @@ export const downloadFile = async (req: ExpressRequest, res: Response) => {
         res.attachment('downloaded-files.zip');
         archive.pipe(res);
 
-        fileNames.forEach((fileName: string) => {
+        for (const fileName of fileNames) {
             const filePath = path.join(
                 __dirname,
                 '..',
@@ -115,9 +115,12 @@ export const downloadFile = async (req: ExpressRequest, res: Response) => {
                     name: fileName,
                 });
             } else {
-                console.warn(`${messageConstant.FILE_NOT_FOUND}: ${fileName}`);
+                return res.status(httpCode.BAD_REQUEST).json({
+                    status: httpCode.BAD_REQUEST,
+                    message: messageConstant.FILE_NOT_FOUND,
+                });
             }
-        });
+        }
 
         await archive.finalize();
     } catch (error) {
@@ -131,7 +134,7 @@ export const deleteFile: Controller = async (req, res) => {
         const { fileNames } = req.body;
 
         // Validate fileNames array
-        if (!Array.isArray(fileNames) || fileNames.length === 0) {
+        if (!Array.isArray(fileNames) || !fileNames.length) {
             return res
                 .status(httpCode.BAD_REQUEST)
                 .json({ error: messageConstant.NO_FILE_SELECTED });
@@ -152,7 +155,7 @@ export const deleteFile: Controller = async (req, res) => {
                 where: { fileName, requestId: id },
             });
 
-            if (!fileRecord || fileRecord === null) {
+            if (!fileRecord) {
                 return res.status(httpCode.BAD_REQUEST).json({
                     status: httpCode.BAD_REQUEST,
                     message: messageConstant.FILE_NOT_FOUND,
@@ -305,7 +308,7 @@ export const getRoles: Controller = async (req, res) => {
         const { accountType } = req.query;
 
         let whereClause = {};
-        if (accountType && accountType !== 'all') {
+        if (accountType && accountType !== 'All') {
             whereClause = { accountType: accountType as string };
         }
 
@@ -314,7 +317,7 @@ export const getRoles: Controller = async (req, res) => {
             where: whereClause,
         });
 
-        if (getRoles.length === 0) {
+        if (!getRoles.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,

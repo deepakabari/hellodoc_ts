@@ -75,6 +75,15 @@ export const addBusiness: Controller = async (req, res) => {
 export const viewBusiness: Controller = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const existingBusiness = await Business.findByPk(id);
+        if (!existingBusiness) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
+
         const viewBusiness = await Business.findAll({
             attributes: [
                 'id',
@@ -91,13 +100,6 @@ export const viewBusiness: Controller = async (req, res) => {
             ],
             where: { id },
         });
-
-        if (viewBusiness.length === 0) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.DATA_NOT_FOUND,
-            });
-        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -123,6 +125,13 @@ export const professions: Controller = async (req, res) => {
             group: ['profession'],
         });
 
+        if (!professions) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
+
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SUCCESS,
@@ -143,10 +152,18 @@ export const professions: Controller = async (req, res) => {
 export const businessByProfession: Controller = async (req, res) => {
     try {
         const { profession } = req.params;
+
         const businessByProfession = await Business.findAll({
             attributes: ['id', 'businessName'],
             where: { profession: profession },
         });
+
+        if (!businessByProfession) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.DATA_NOT_FOUND,
+            });
+        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -168,6 +185,14 @@ export const businessByProfession: Controller = async (req, res) => {
 export const viewSendOrder: Controller = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const existingBusiness = await Business.findByPk(id);
+        if (!existingBusiness) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
 
         const businessDetails = await Business.findAll({
             attributes: ['id', 'businessContact', 'email', 'faxNumber'],
@@ -242,6 +267,7 @@ export const viewVendor: Controller = async (req, res) => {
             limit,
             offset,
         });
+
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.VENDOR_RETRIEVED,
@@ -255,6 +281,15 @@ export const viewVendor: Controller = async (req, res) => {
 export const updateBusiness: Controller = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const existingBusiness = await Business.findByPk(id);
+        if (!existingBusiness) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
+
         const {
             businessName,
             profession,
@@ -301,6 +336,14 @@ export const updateBusiness: Controller = async (req, res) => {
 export const deleteBusiness: Controller = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const existingBusiness = await Business.findByPk(id);
+        if (!existingBusiness) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
 
         await Business.destroy({
             where: { id },

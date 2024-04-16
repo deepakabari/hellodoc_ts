@@ -47,7 +47,12 @@ router.post(
 
 router.get('/viewVendor', isAuth, partnerController.viewVendor);
 
-router.patch('/updateBusiness/:id', isAuth, partnerController.updateBusiness);
+router.patch(
+    '/updateBusiness/:id',
+    isAuth,
+    celebrate(BusinessSchema.updateBusiness),
+    partnerController.updateBusiness,
+);
 
 router.delete('/deleteBusiness/:id', isAuth, partnerController.deleteBusiness);
 

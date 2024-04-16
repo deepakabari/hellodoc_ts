@@ -39,13 +39,6 @@ export const accountAccess: Controller = async (req, res) => {
             offset,
         });
 
-        if (!accountAccess.count) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.DATA_NOT_FOUND,
-            });
-        }
-
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.ACCOUNT_ACCESS_RETRIEVED,
@@ -77,13 +70,6 @@ export const accountAccessByAccountType: Controller = async (req, res) => {
             order: ['accountType'],
             where: whereCondition,
         });
-
-        if (!roles.length) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.DATA_NOT_FOUND,
-            });
-        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -187,13 +173,6 @@ export const userAccess: Controller = async (req, res) => {
             offset,
         });
 
-        if (!users.count) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.DATA_NOT_FOUND,
-            });
-        }
-
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.USER_ACCESS_RETRIEVED,
@@ -234,14 +213,6 @@ export const viewRole: Controller = async (req, res) => {
                 },
             ],
         });
-
-        // Check if the role exists or not
-        if (!viewRole.length) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.ROLE_NOT_FOUND,
-            });
-        }
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -321,6 +292,14 @@ export const deleteRole: Controller = async (req, res) => {
     try {
         // Extract the role ID from the request parameters.
         const { id } = req.params;
+
+        const existingRole = await Role.findByPk(id);
+        if (!existingRole) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
 
         // Delete the role from the database.
         await Role.destroy({
