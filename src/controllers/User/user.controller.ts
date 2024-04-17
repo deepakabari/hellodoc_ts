@@ -608,13 +608,24 @@ const createAdminRequest: Controller = async (req, res) => {
             .slice(0, 2)
             .toUpperCase()}${requestCountStr}`;
 
+        let physicianId, requestStatus, caseTag;
+        if (requestType === 'Physician') {
+            physicianId = req.user.id;
+            requestStatus = RequestStatus.Accepted;
+            caseTag = CaseTag.Pending;
+        } else {
+            requestStatus = RequestStatus.Unassigned;
+            caseTag = CaseTag.New;
+        }
+
         // create a new patient request
         const newRequest = await Request.create({
             userId,
-            requestStatus: RequestStatus.Unassigned,
-            caseTag: CaseTag.New,
+            requestStatus,
+            caseTag,
             confirmationNumber,
             isDeleted: false,
+            physicianId,
             ...req.body,
             createdAt: new Date(),
             updatedAt: new Date(),

@@ -10,7 +10,7 @@ import {
     User,
 } from '../../../db/models/index';
 import { Controller, RequestAttributes } from '../../../interfaces';
-import sequelize, { Order, WhereOptions, col, where } from 'sequelize';
+import sequelize, { Order, WhereOptions } from 'sequelize';
 import { Op } from 'sequelize';
 import json2xls from 'json2xls';
 import { Request as ExpressRequest, Response } from 'express';

@@ -18,7 +18,7 @@ module.exports = {
                 },
             },
             serviceDate: {
-                type: Sequelize.DATE,
+                type: Sequelize.DATEONLY,
                 allowNull: true,
             },
             presentIllnessHistory: {

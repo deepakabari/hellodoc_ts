@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { CallType, CaseTag, RequestStatus } from '../../../utils/enum.constant';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
@@ -6,12 +5,10 @@ import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
 import { MedicalReport, Request } from '../../../db/models/index';
-import { FindAttributeOptions, Op, where } from 'sequelize';
+import { FindAttributeOptions, Includeable, Op, where } from 'sequelize';
 import sequelize from 'sequelize';
 import { Request as ExpressRequest, Response } from 'express';
-import PDFDocument from 'pdfkit';
 import { compileEmailTemplate } from '../../../utils/hbsCompiler';
-import * as exphbs from 'express-handlebars';
 import pdf from 'html-pdf';
 
 /**
@@ -124,6 +121,16 @@ export const getPatientByState: Controller = async (req, res) => {
         ];
 
         let condition;
+        let includeModels = [
+            {
+                model: MedicalReport,
+                attributes: ['isFinalize'],
+                where: {
+                    id: sequelize.col('Request.physicianId'),
+                },
+                required: false,
+            },
+        ];
         let requestTypeWhereClause = {};
         if (requestType && requestType !== 'all') {
             requestTypeWhereClause = { requestType: requestType as string };
@@ -169,6 +176,7 @@ export const getPatientByState: Controller = async (req, res) => {
         // Finding patients based on condition and optional search and requestType
         const patients = await Request.findAndCountAll({
             attributes: attributes as FindAttributeOptions,
+            include: includeModels as unknown as Includeable[],
             where: {
                 ...condition,
                 ...(search
@@ -231,6 +239,47 @@ export const acceptRequest: Controller = async (req, res) => {
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_ACCEPTED,
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * @function updateNotes
+ * @param req - Express request object, expects `id` in the parameters and `adminNotes` in the body.
+ * @param res - Express response object used to send back the HTTP response.
+ * @returns - Returns a Promise that resolves to an Express response object. The response contains the HTTP status code and a success message.
+ * @description This controller function updates the `adminNotes` field for a specific request identified by `id`. It uses the `Request.update` method to apply the changes to the database. Upon successful update, it sends back a response with a status code and a success message.
+ */
+export const updateNotes: Controller = async (req, res) => {
+    try {
+        // Extract id from request parameter
+        const { id } = req.params;
+
+        // Take adminNotes from request body
+        const { physicianNotes } = req.body;
+
+        // Check if request exists or not
+        const exists = await Request.findByPk(id);
+        if (!exists) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.REQUEST_NOT_FOUND,
+            });
+        }
+
+        // To update note in the adminNotes in request table
+        await Request.update(
+            {
+                physicianNotes,
+            },
+            { where: { id } },
+        );
+
+        return res.json({
+            status: httpCode.OK,
+            message: messageConstant.NOTE_UPDATED,
         });
     } catch (error) {
         throw error;

@@ -71,7 +71,7 @@ export const accountAccessByAccountType: Controller = async (req, res) => {
         // Initialize where condition object
         let whereCondition: { [key: string]: any } = {};
 
-        // Check if accountTypes is provided and not 'All', construct where condition
+        // Check if accountTypes is provided and not 'all', construct where condition
         if (accountTypes && accountTypes !== 'All') {
             whereCondition['accountType'] = accountTypes;
         }

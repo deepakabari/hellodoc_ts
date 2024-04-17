@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import {
     AccountType,
@@ -191,7 +190,7 @@ export const getPatientByState: Controller = async (req, res) => {
         let sortByModel;
 
         let requestTypeWhereClause = {};
-        if (requestType && requestType !== 'all') {
+        if (requestType && requestType !== 'All') {
             requestTypeWhereClause = { requestType: requestType as string };
         }
 
@@ -969,7 +968,7 @@ export const sendFileThroughMail: Controller = async (req, res) => {
         if (!Array.isArray(files) || !files.length) {
             return res
                 .status(httpCode.BAD_REQUEST)
-                .json({ error: messageConstant.NO_FILE_SELECTED });
+                .json({ message: messageConstant.NO_FILE_SELECTED });
         }
 
         // Check if user with the provided email exists
@@ -1386,7 +1385,7 @@ export const sendPatientRequest: Controller = async (req, res) => {
         const messageBody = `Hello ${firstName}, To Create a Request on our secure online portal. Please click on the button below to create Your First Request: ${linkConstant.REQUEST_URL}.`;
         sendSMS(messageBody);
 
-        // Log SMS sendin
+        // Log SMS sending
         await SMSLog.create({
             phoneNumber,
             senderId: req.user.id,

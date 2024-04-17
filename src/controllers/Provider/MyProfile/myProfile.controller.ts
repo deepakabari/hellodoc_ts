@@ -3,7 +3,7 @@ import messageConstant from '../../../constants/message.constant';
 import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
-import { User } from '../../../db/models/index';
+import { RequestWiseFiles, User } from '../../../db/models/index';
 import transporter from '../../../utils/email';
 import { compileEmailTemplate } from '../../../utils/hbsCompiler';
 

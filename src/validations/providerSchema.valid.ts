@@ -22,6 +22,15 @@ export const ProviderSchema = {
         }),
     },
 
+    updateNotes: {
+        [Segments.BODY]: Joi.object({
+            physicianNotes: Joi.string().required(),
+        }),
+        [Segments.PARAMS]: {
+            id: Joi.number().required(),
+        },
+    },
+
     concludeCare: {
         [Segments.BODY]: Joi.object({
             providerNotes: Joi.string().required(),
@@ -42,7 +51,37 @@ export const ProviderSchema = {
 
     myProfile: {
         [Segments.BODY]: Joi.object({
-            message: Joi.string().required()
-        })
-    }
+            message: Joi.string().required(),
+        }),
+    },
+
+    encounterForm: {
+        [Segments.BODY]: Joi.object({
+            serviceDate: Joi.date(),
+            presentIllnessHistory: Joi.string(),
+            medicalHistory: Joi.string(),
+            medications: Joi.string(),
+            allergies: Joi.string(),
+            temperature: Joi.number(),
+            heartRate: Joi.number(),
+            repositoryRate: Joi.number(),
+            sisBP: Joi.number(),
+            diaBP: Joi.number(),
+            oxygen: Joi.number(),
+            pain: Joi.string(),
+            heent: Joi.string(),
+            cv: Joi.string(),
+            chest: Joi.string(),
+            abd: Joi.string(),
+            extr: Joi.string(),
+            skin: Joi.string(),
+            neuro: Joi.string(),
+            other: Joi.string(),
+            diagnosis: Joi.string(),
+            treatmentPlan: Joi.string(),
+            medicationDispensed: Joi.string(),
+            procedure: Joi.string(),
+            followUp: Joi.string(),
+        }),
+    },
 };

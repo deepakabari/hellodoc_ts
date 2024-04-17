@@ -13,6 +13,13 @@ router.get('/dashboardCount', isAuth, providerDashboard.requestCount);
 router.patch('/acceptRequest/:id', isAuth, providerDashboard.acceptRequest);
 
 router.patch(
+    '/updateNotes/:id',
+    isAuth,
+    celebrate(ProviderSchema.updateNotes),
+    providerDashboard.updateNotes,
+);
+
+router.patch(
     '/concludeCare/:id',
     isAuth,
     celebrate(ProviderSchema.concludeCare),
@@ -35,7 +42,12 @@ router.patch(
     providerDashboard.transferRequest,
 );
 
-router.post('/encounterForm/:id', isAuth, providerDashboard.encounterForm);
+router.post(
+    '/encounterForm/:id',
+    isAuth,
+    celebrate(ProviderSchema.encounterForm),
+    providerDashboard.encounterForm,
+);
 
 router.patch('/finalizeForm/:id', isAuth, providerDashboard.finalizeForm);
 
@@ -48,6 +60,7 @@ router.get(
 router.patch(
     '/editEncounterForm/:id',
     isAuth,
+    celebrate(ProviderSchema.encounterForm),
     providerDashboard.editEncounterForm,
 );
 

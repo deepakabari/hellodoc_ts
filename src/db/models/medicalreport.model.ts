@@ -25,7 +25,7 @@ class MedicalReport extends Model<
     @Column({ type: DataTypes.INTEGER, allowNull: false })
     requestId: number;
 
-    @Column({ type: DataTypes.DATE, allowNull: true })
+    @Column({ type: DataTypes.DATEONLY, allowNull: true })
     serviceDate: Date;
 
     @Column({ type: DataTypes.STRING, allowNull: true })
