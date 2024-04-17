@@ -45,7 +45,15 @@ export const RequestSchema = {
 
     closeCase: {
         [Segments.BODY]: Joi.object({
-            patientPhoneNumber: Joi.string().required().min(11).max(13),
+            patientPhoneNumber: Joi.string()
+                .required()
+                .min(11)
+                .max(13)
+                .messages({
+                    'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
+                    'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
+                    'string.required': 'Phone number is required', // Custom message for required
+                }),
             patientEmail: Joi.string().required().email(),
         }),
     },
@@ -58,10 +66,22 @@ export const RequestSchema = {
             patientFirstName: Joi.string().required(),
             patientLastName: Joi.string().required(),
             patientEmail: Joi.string().required().email(),
-            patientPhoneNumber: Joi.string().required().min(11).max(13),
+            patientPhoneNumber: Joi.string()
+                .required()
+                .min(11)
+                .max(13)
+                .messages({
+                    'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
+                    'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
+                    'string.required': 'Phone number is required', // Custom message for required
+                }),
             requestorFirstName: Joi.string().optional().allow('', null),
             requestorLastName: Joi.string().optional().allow('', null),
-            requestorPhoneNumber: Joi.string().optional().min(11).max(13).allow('', null),
+            requestorPhoneNumber: Joi.string().min(11).max(13).messages({
+                'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
+                'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
+                'string.required': 'Phone number is required', // Custom message for required
+            }),
             requestorEmail: Joi.string().optional().email().allow('', null),
             isEmail: Joi.boolean().required(),
             password: Joi.string()
@@ -75,7 +95,7 @@ export const RequestSchema = {
             state: Joi.string().required().allow('', null),
             zipCode: Joi.string().optional().allow('', null),
             roomNumber: Joi.string().optional().allow('', null),
-            document: Joi.string().optional().allow('', null)
+            document: Joi.string().optional().allow('', null),
         }).unknown(true),
     },
 };

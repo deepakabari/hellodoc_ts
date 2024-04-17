@@ -25,11 +25,11 @@ export const UserSchema = {
                     is: 'Admin',
                     then: Joi.valid(Joi.ref('email')).required,
                 }),
-            phoneNumber: Joi.string()
-                .min(11)
-                .max(13)
-                .optional()
-                .allow('', null),
+            phoneNumber: Joi.string().min(11).max(13).messages({
+                'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
+                'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
+                'string.required': 'Phone number is required', // Custom message for required
+            }),
             address1: Joi.string().allow('', null).optional(),
             address2: Joi.string().allow('', null).optional(),
             street: Joi.string().allow('', null).optional(),
@@ -40,7 +40,11 @@ export const UserSchema = {
             status: Joi.string()
                 .valid(...Object.values(ProfileStatus))
                 .optional(),
-            altPhone: Joi.string().optional().min(11).max(13).allow('', null),
+            altPhone: Joi.string().min(11).max(13).messages({
+                'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
+                'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
+                'string.required': 'Phone number is required', // Custom message for required
+            }),
             medicalLicense: Joi.string().when('accountType', {
                 is: 'Physician',
                 then: Joi.required(),
@@ -145,7 +149,11 @@ export const UserSchema = {
             firstName: Joi.string(),
             lastName: Joi.string(),
             email: Joi.string().email(),
-            phoneNumber: Joi.string().min(11).max(13),
+            phoneNumber: Joi.string().min(11).max(13).messages({
+                'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
+                'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
+                'string.required': 'Phone number is required', // Custom message for required
+            }),
             medicalLicense: Joi.string(),
             NPINumber: Joi.string(),
             syncEmailAddress: Joi.string().email(),
@@ -154,7 +162,11 @@ export const UserSchema = {
             city: Joi.string(),
             state: Joi.string(),
             zipCode: Joi.string().min(5).max(6),
-            altPhone: Joi.string().min(11).max(13),
+            altPhone: Joi.string().min(11).max(13).messages({
+                'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
+                'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
+                'string.required': 'Phone number is required', // Custom message for required
+            }),
             photo: Joi.string(),
             signature: Joi.string(),
             businessName: Joi.string(),

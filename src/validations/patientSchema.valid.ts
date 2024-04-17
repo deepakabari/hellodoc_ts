@@ -13,9 +13,11 @@ export const PatientSchema = {
             lastName: Joi.string(),
             email: Joi.string().email(),
             dob: Joi.date().iso(),
-            phoneNumber: Joi.string()
-                .min(11)
-                .max(13),
+            phoneNumber: Joi.string().min(11).max(13).messages({
+                'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
+                'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
+                'string.required': 'Phone number is required', // Custom message for required
+            }),
             street: Joi.string(),
             city: Joi.string(),
             state: Joi.string(),

@@ -18,6 +18,7 @@ interface UserAttributes {
     altPhone?: string;
     status?: string;
     accountType?: string;
+    notes?: string;
     medicalLicense?: string;
     photo?: string;
     signature?: string;
@@ -33,7 +34,7 @@ interface UserAttributes {
     onCallStatus?: string;
     isDeleted?: boolean;
     stopNotification?: boolean;
-    roleId?: number
+    roleId?: number;
     createdAt?: Date;
     updatedAt?: Date;
     deletedAt?: Date | null;

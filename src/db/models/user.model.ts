@@ -88,6 +88,12 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     })
     accountType: string;
 
+    @Column({
+        type: DataTypes.STRING,
+        allowNull: true,
+    })
+    notes: string;
+
     @Column({ type: DataTypes.STRING, allowNull: true })
     medicalLicense: string;
 
@@ -164,10 +170,10 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     physicianShifts: Shift[];
 
     @HasMany(() => RequestWiseFiles, {
-        foreignKey: 'requestId',
+        foreignKey: 'userId',
         sourceKey: 'id',
     })
-    requestWiseFiles: RequestWiseFiles[];
+    userFiles: RequestWiseFiles[];
 
     @BelongsTo(() => Role, {
         foreignKey: 'roleId',

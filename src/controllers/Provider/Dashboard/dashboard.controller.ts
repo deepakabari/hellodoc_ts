@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { CallType, CaseTag, RequestStatus } from '../../../utils/enum.constant';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
@@ -9,6 +10,9 @@ import { FindAttributeOptions, Op, where } from 'sequelize';
 import sequelize from 'sequelize';
 import { Request as ExpressRequest, Response } from 'express';
 import PDFDocument from 'pdfkit';
+import { compileEmailTemplate } from '../../../utils/hbsCompiler';
+import * as exphbs from 'express-handlebars';
+import pdf from 'html-pdf';
 
 /**
  * @function requestCount
@@ -338,7 +342,7 @@ export const houseCallType: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
-         // Check if the request exists
+        // Check if the request exists
         const exists = await Request.findByPk(id);
         if (!exists) {
             return res.status(httpCode.BAD_REQUEST).json({
@@ -635,7 +639,7 @@ export const downloadEncounter = async (req: ExpressRequest, res: Response) => {
         const token = req.headers.authorization as string;
 
         // Fetch encounter form data from API
-        const apiUrl = `http:localhost:4000/provider/dashboard/viewEncounterForm/${id}`;
+        const apiUrl = `http://localhost:4000/provider/dashboard/viewEncounterForm/${id}`;
 
         const response = await fetch(apiUrl, {
             headers: {
@@ -650,106 +654,28 @@ export const downloadEncounter = async (req: ExpressRequest, res: Response) => {
         // Parse JSON response
         const jsonData: any = await response.json();
 
-        // Extract encounter data
-        const encounterData = jsonData.data[0];
-
-        // Create PDF document
-        const doc = new PDFDocument();
-
-        // Add content to PDF
-        doc.font('Courier-BoldOblique');
-        doc.fontSize(24)
-            .fillColor('#03c6fc')
-            .text('Medical Report-Confidential', {
-                align: 'center', // Center align the heading
-            });
-        doc.fontSize(15).fillColor('black');
-        doc.moveDown();
-        doc.moveDown();
-        doc.text(`First Name: ${encounterData.request.patientFirstName}`);
-        doc.moveDown();
-        doc.text(`Last Name: ${encounterData.request.patientLastName}`);
-        doc.moveDown();
-        doc.text(
-            `Location: ${encounterData.request.street}, ${encounterData.request.city}, ${encounterData.request.state} - ${encounterData.request.zipCode}.`,
-        );
-        doc.moveDown();
-        doc.text(`Date of Birth: ${encounterData.request.dob}`);
-        doc.moveDown();
-        doc.text(`Service Date: ${encounterData.serviceDate}`);
-        doc.moveDown();
-        doc.text(`Phone Number: ${encounterData.request.patientPhoneNumber}`);
-        doc.moveDown();
-        doc.text(`Email: ${encounterData.request.patientEmail}`);
-        doc.moveDown();
-        doc.text(
-            `History Of Present illness Or injury: ${encounterData.presentIllnessHistory}`,
-        );
-        doc.moveDown();
-        doc.text(`Medical History: ${encounterData.medicalHistory}`);
-        doc.moveDown();
-        doc.text(`Medications: ${encounterData.medications}`);
-        doc.moveDown();
-        doc.text(`Allergies: ${encounterData.allergies}`);
-        doc.moveDown();
-        doc.text(`Temperature: ${encounterData.temperature}`);
-        doc.moveDown();
-        doc.text(`Heart Rate: ${encounterData.heartRate}`);
-        doc.moveDown();
-        doc.text(`Repository Rate: ${encounterData.repositoryRate}`);
-        doc.moveDown();
-        doc.text(`Blood Pressure(systolic): ${encounterData.sisBP}`);
-        doc.moveDown();
-        doc.text(`Blood Pressure(diastolic): ${encounterData.diaBP}`);
-        doc.moveDown();
-        doc.text(`Oxygen: ${encounterData.oxygen}`);
-        doc.moveDown();
-        doc.text(`Pain: ${encounterData.pain}`);
-        doc.moveDown();
-        doc.text(`Heent: ${encounterData.heent}`);
-        doc.moveDown();
-        doc.text(`CV: ${encounterData.cv}`);
-        doc.moveDown();
-        doc.text(`Chest: ${encounterData.chest}`);
-        doc.moveDown();
-        doc.text(`ABD: ${encounterData.abd}`);
-        doc.moveDown();
-        doc.text(`Extr: ${encounterData.extr}`);
-        doc.moveDown();
-        doc.text(`Skin: ${encounterData.skin}`);
-        doc.moveDown();
-        doc.text(`Neuro: ${encounterData.neuro}`);
-        doc.moveDown();
-        doc.text(`Other: ${encounterData.other}`);
-        doc.moveDown();
-        doc.text(`Diagnosis: ${encounterData.diagnosis}`);
-        doc.moveDown();
-        doc.text(`Treatment Plan: ${encounterData.treatmentPlan}`);
-        doc.moveDown();
-        doc.text(`Medication Dispensed: ${encounterData.medicationDispensed}`);
-        doc.moveDown();
-        doc.text(`Procedure: ${encounterData.procedure}`);
-        doc.moveDown();
-        doc.text(`Followup: ${encounterData.followUp}`);
-        doc.moveDown();
-
-        // Create PDF buffer
-        const buffer: Buffer = await new Promise((resolve, reject) => {
-            const chunks: Uint8Array[] = [];
-            doc.on('data', (chunk) => chunks.push(chunk));
-            doc.on('end', () => resolve(Buffer.concat(chunks)));
-            doc.end();
+        const html = await compileEmailTemplate('encounterPdf', {
+            encounterData: jsonData.data[0],
         });
 
-        // Set response headers for PDF download
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader(
-            'Content-Disposition',
-            'attachment; filename=encounter_form.pdf',
-        );
+        const options: any = { format: 'Letter' };
 
-        // Send the PDF buffer as the response
-        res.send(buffer);
+        pdf.create(html, options).toBuffer((err, buffer) => {
+            if (err) {
+                console.error('Error creating PDF', err);
+                return;
+            }
+
+            // Set response headers for PDF download
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader(
+                'Content-Disposition',
+                'attachment; filename=encounter_form.pdf',
+            );
+
+            // Send the PDF buffer as the response
+            res.send(buffer);
+        });
     } catch (error) {
         throw error;
     }

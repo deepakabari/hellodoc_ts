@@ -23,10 +23,16 @@ class RequestWiseFiles extends Model<
     id: number;
 
     @Column({
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.INTEGER,
     })
     requestId: number;
+
+    @Column({
+        allowNull: true,
+        type: DataTypes.INTEGER,
+    })
+    userId: number;
 
     @Column({
         allowNull: false,
@@ -55,7 +61,7 @@ class RequestWiseFiles extends Model<
     @BelongsTo(() => Request, { foreignKey: 'requestId', targetKey: 'id' })
     request: Request;
 
-    @BelongsTo(() => User, { foreignKey: 'requestId', targetKey: 'id' })
+    @BelongsTo(() => User, { foreignKey: 'userId', targetKey: 'id' })
     user: User;
 }
 

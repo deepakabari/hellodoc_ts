@@ -2,7 +2,8 @@ import { Optional } from 'sequelize';
 
 interface RequestWiseFilesAttributes {
     id: number;
-    requestId: number;
+    requestId?: number;
+    userId?: number
     fileName: string;
     docType?: string;
     isDeleted?: boolean;

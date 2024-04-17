@@ -77,6 +77,7 @@ const createAccount: Controller = async (req, res) => {
             backgroundCheck,
             hpaaCompliance,
             nonDisclosureAgreement,
+            notes,
         } = req.body;
 
         const existingUser = await User.findOne({
@@ -154,7 +155,6 @@ const createAccount: Controller = async (req, res) => {
                 });
             }
         } else if (accountType === 'Physician') {
-
             const newUser = await User.create({
                 accountType,
                 userName,
@@ -172,6 +172,7 @@ const createAccount: Controller = async (req, res) => {
                 medicalLicense,
                 NPINumber,
                 roleId,
+                notes,
                 status: ProfileStatus.Active,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -197,6 +198,8 @@ const createAccount: Controller = async (req, res) => {
                 });
 
                 const fileColumnMapping: { [key: string]: string } = {
+                    photo: 'photo',
+                    signature: 'signature',
                     backgroundCheck: 'isBackgroundDoc',
                     nonDisclosureAgreement: 'isNonDisclosureDoc',
                     hipaaCompliance: 'isHipaaDoc',
@@ -206,17 +209,13 @@ const createAccount: Controller = async (req, res) => {
                 const uploadedFiles: { [key: string]: string[] } = {};
 
                 const updateFields: { [key: string]: boolean } = {};
-                
+
                 let files: { [key: string]: Express.Multer.File[] } = {};
 
-                // Type guard to handle both array and object types
-                if (Array.isArray(req.files)) {
-                    // If req.files is an array, assign it to photo field
-                    files['photo'] = req.files as Express.Multer.File[];
-                } else {
-                    // If req.files is an object, assign it directly
-                    files = req.files as { [key: string]: Express.Multer.File[] };
-                }
+                // If req.files is an object, assign it directly
+                files = req.files as {
+                    [key: string]: Express.Multer.File[];
+                };
 
                 for (const fieldName of Object.keys(fileColumnMapping)) {
                     const fieldFiles = files[fieldName];
@@ -228,15 +227,17 @@ const createAccount: Controller = async (req, res) => {
                         // Save file details to RequestWiseFiles table
                         for (const file of fieldFiles) {
                             await RequestWiseFiles.create({
-                                requestId: newUser.id,
+                                userId: newUser.id,
                                 fileName: file.filename,
                                 docType: fieldName,
                                 documentPath: file.path,
                                 createdAt: new Date(),
-            updatedAt: new Date(),
+                                updatedAt: new Date(),
                             });
                         }
-                        uploadedFiles[fieldName] = fieldFiles.map(file => file.filename);
+                        uploadedFiles[fieldName] = fieldFiles.map(
+                            (file) => file.filename,
+                        );
                     }
                 }
 
@@ -468,11 +469,12 @@ const createRequest: Controller = async (req, res) => {
         if (req.file) {
             documentUpload = await RequestWiseFiles.create({
                 requestId: newRequest.id,
+                userId: userId as number,
                 fileName: req.file.originalname,
                 documentPath: req.file.path,
                 docType: 'MedicalReport',
                 createdAt: new Date(),
-            updatedAt: new Date(),
+                updatedAt: new Date(),
             });
         }
 
@@ -623,11 +625,12 @@ const createAdminRequest: Controller = async (req, res) => {
         if (req.file) {
             documentUpload = await RequestWiseFiles.create({
                 requestId: newRequest.id,
+                userId: userId as number,
                 fileName: req.file.originalname,
                 documentPath: req.file.path,
                 docType: 'MedicalReport',
                 createdAt: new Date(),
-            updatedAt: new Date(),
+                updatedAt: new Date(),
             });
         }
 

@@ -1081,6 +1081,7 @@ export const uploadFile: Controller = async (req, res) => {
         // Create record for uploaded file
         const uploadFile = await RequestWiseFiles.create({
             requestId: id,
+            userId: exists.userId,
             fileName: newFileName,
             documentPath: req.file.path,
             createdAt: new Date(),

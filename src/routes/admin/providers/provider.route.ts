@@ -41,8 +41,8 @@ router.patch(
     '/providerProfile/:id',
     isAuth,
     upload.fields([
-        { name: 'photo', maxCount: 1 },
-        { name: 'signature', maxCount: 1 },
+        { name: 'photo' },
+        { name: 'signature' },
         { name: 'independentContract' },
         { name: 'backgroundCheck' },
         { name: 'hipaaCompliance' },

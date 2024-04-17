@@ -219,6 +219,7 @@ export const physicianProfileInAdmin: Controller = async (req, res) => {
                 'zipCode',
                 'altPhone',
                 'photo',
+                'notes',
                 'signature',
                 'isAgreementDoc',
                 'isBackgroundDoc',
@@ -283,15 +284,6 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             files?: { [fieldName: string]: Express.Multer.File[] },
         ) => {
             try {
-                // Update photo and signature if files are provided
-                if (files) {
-                    if (files.photo && files.photo[0]) {
-                        fieldUpdates.photo = files.photo[0].filename;
-                    }
-                    if (files.signature && files.signature[0]) {
-                        fieldUpdates.signature = files.signature[0].filename;
-                    }
-                }
 
                 // Update user and business details
                 await User.update(fieldUpdates, {
@@ -305,6 +297,8 @@ export const editPhysicianProfile: Controller = async (req, res) => {
 
                 // Mapping of file types to database columns
                 const fileColumnMapping: { [key: string]: string } = {
+                    Photo: 'Photo',
+                    Signature: 'Signature',
                     backgroundCheck: 'isBackgroundDoc',
                     nonDisclosureAgreement: 'isNonDisclosureDoc',
                     hipaaCompliance: 'isHipaaDoc',
@@ -320,7 +314,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
                         if (files[key] && files[key][0]) {
                             // Update the requestWiseFiles table
                             await RequestWiseFiles.create({
-                                requestId: id as unknown as number,
+                                userId: id as unknown as number,
                                 fileName: files[key][0].filename,
                                 docType: key,
                                 documentPath: files[key][0].path,
@@ -365,6 +359,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             'zipCode',
             'altPhone',
             'roleId',
+            'notes',
         ];
 
         // Hash password if provided

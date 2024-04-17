@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encounter Form</title>
+    <style>
+        body {
+            font-family: Platypi;
+            margin: 25px;
+            padding-left: 30px;
+        }
+
+        h1 {
+            font-size: 26px;
+            color: #03c6fc;
+            text-align: center;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .bold {
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        span {
+            font-size: 16px;
+            font-weight: 500;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Medical Report - Confidential</h1>
+
+    <div class="section">
+        <div class="section-title">Patient Information</div>
+        <hr>
+        <span class="bold">First Name:</span>
+        <span> {{#if encounterData.request.patientFirstName }}{{ encounterData.request.patientFirstName }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Last Name:</span>
+        <span> {{#if encounterData.request.patientLastName }}{{ encounterData.request.patientLastName }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Location:</span>
+        <span> {{ encounterData.request.street }}, {{ encounterData.request.city }}, {{ encounterData.request.state }} -
+            {{ encounterData.request.zipCode }}</span>
+        <br><br>
+        <span class="bold">Date of Birth:</span>
+        <span> {{#if encounterData.request.dob }}{{ encounterData.request.dob }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Service Date:</span>
+        <span> {{ encounterData.serviceDate }}</span>
+        <br><br>
+        <span class="bold">Phone Number:</span>
+        <span> {{#if encounterData.request.patientPhoneNumber }}{{ encounterData.request.patientPhoneNumber }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Email:</span>
+        <span> {{#if encounterData.request.patientEmail }}{{ encounterData.request.patientEmail }}{{else}}-{{/if}}</span>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Medical Details</div>
+        <hr>
+        <span class="bold">History Of Present illness Or injury:</span>
+        <span> {{#if encounterData.presentIllnessHistory }}{{ encounterData.presentIllnessHistory }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Medical History:</span>
+        <span> {{#if encounterData.medicalHistory }}{{ encounterData.medicalHistory }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Medications:</span>
+        <span> {{#if encounterData.medications }}{{ encounterData.medications }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Allergies::</span>
+        <span> {{#if encounterData.allergies }}{{ encounterData.allergies }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Temperature:</span>
+        <span> {{#if encounterData.temperature }}{{ encounterData.temperature }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Heart Rate:</span>
+        <span> {{#if encounterData.heartRate }}{{ encounterData.heartRate }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Respiratory Rate:</span>
+        <span> {{#if encounterData.repositoryRate }}{{ encounterData.repositoryRate }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Blood Pressure(systolic):</span>
+        <span> {{#if encounterData.sisBP }}{{ encounterData.sisBP }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Blood Pressure(diastolic):</span>
+        <span> {{#if encounterData.diaBP }}{{ encounterData.diaBP }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Oxygen:</span>
+        <span> {{#if encounterData.oxygen }}{{ encounterData.oxygen }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Pain:</span>
+        <span> {{#if encounterData.pain }}{{ encounterData.pain }}{{else}}-{{/if}}</span>
+        <br><br><br><br><br><br>
+        <span class="bold">Heent:</span>
+        <span> {{#if encounterData.heent }}{{ encounterData.heent }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">CV:</span>
+        <span> {{#if encounterData.cv }}{{ encounterData.cv }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Chest:</span>
+        <span> {{#if encounterData.chest }}{{ encounterData.chest }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">ABD:</span>
+        <span> {{#if encounterData.abd }}{{ encounterData.abd }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Extr:</span>
+        <span> {{#if encounterData.extr }}{{ encounterData.extr }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Skin:</span>
+        <span> {{#if encounterData.skin }}{{ encounterData.skin }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Neuro:</span>
+        <span> {{#if encounterData.neuro }}{{ encounterData.neuro }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Other:</span>
+        <span> {{#if encounterData.other }}{{ encounterData.other }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Diagnosis:</span>
+        <span> {{#if encounterData.diagnosis }}{{ encounterData.diagnosis }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Treatment Plan:</span>
+        <span> {{#if encounterData.treatmentPlan }}{{ encounterData.treatmentPlan }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Medication Dispensed:</span>
+        <span> {{#if encounterData.medicationDispensed }}{{ encounterData.medicationDispensed }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Procedure:</span>
+        <span> {{#if encounterData.procedure }}{{ encounterData.procedure }}{{else}}-{{/if}}</span>
+        <br><br>
+        <span class="bold">Followup:</span>
+        <span> {{#if encounterData.followUp }}{{ encounterData.followUp }}{{else}}-{{/if}}</span>
+        <br><br>
+    </div>
+
+</body>
+
+</html>
