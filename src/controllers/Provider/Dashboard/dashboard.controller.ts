@@ -302,11 +302,11 @@ export const typeOfCare: Controller = async (req, res) => {
         let callType, requestStatus, caseTag;
 
         // Determine callType, requestStatus, and caseTag based on typeOfCare
-        if (typeOfCare === 'houseCall') {
+        if (typeOfCare === 'HouseCall') {
             callType = CallType.HouseCall;
             requestStatus = RequestStatus.MDOnSite;
             caseTag = CaseTag.Active;
-        } else if (typeOfCare === 'consult') {
+        } else if (typeOfCare === 'Consult') {
             callType = CallType.Consult;
             requestStatus = RequestStatus.Consult;
             caseTag = CaseTag.Conclude;
