@@ -37,7 +37,7 @@ export const requestToAdmin: Controller = async (req, res) => {
 
         const mailOptions = {
             from: existingUser.email,
-            to: 'admin123@yopmail.com',
+            to: process.env.ADMIN,
             subject: 'Provider Request to Edit Profile',
             html: data,
         };
