@@ -3,7 +3,7 @@ import messageConstant from '../../../constants/message.constant';
 import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
-import { RequestWiseFiles, User } from '../../../db/models/index';
+import { EmailLog, RequestWiseFiles, User } from '../../../db/models/index';
 import transporter from '../../../utils/email';
 import { compileEmailTemplate } from '../../../utils/hbsCompiler';
 
@@ -42,17 +42,30 @@ export const requestToAdmin: Controller = async (req, res) => {
             html: data,
         };
 
-        // Send the email
-        return transporter.sendMail(mailOptions, (error: Error) => {
-            if (error) {
-                throw error;
-            } else {
-                // If email is sent successfully, return success status with message
-                return res.status(httpCode.OK).json({
-                    status: httpCode.OK,
-                    message: messageConstant.EMAIL_SENT,
-                });
-            }
+        new Promise((resolve, reject) => {
+            transporter.sendMail(mailOptions, (error: Error, info: string) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(info);
+                }
+            });
+        }).then(() => {
+            EmailLog.create({
+                email: process.env.ADMIN as string,
+                senderId: existingUser?.id,
+                receiverId: 1,
+                sentDate: new Date(),
+                isEmailSent: true,
+                sentTries: 1,
+                action: 'Edit request to admin',
+            });
+        });
+
+        // If email is sent successfully, return success status with message
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.EMAIL_SENT,
         });
     } catch (error) {
         throw error;

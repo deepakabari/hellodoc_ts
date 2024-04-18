@@ -119,6 +119,7 @@ const messageConstant = {
     FORM_FINALIZED: 'encounter form finalized successfully.',
     FORM_FOUND: 'Encounter form already present.',
     FORM_UPDATED: 'Encounter form updated.',
+    FORM_NOT_FINALIZED: 'Encounter form not finalized',
     DATA_RETRIEVED: 'Data retrieved successfully.',
     INVALID_INPUT: 'Invalid id provided.',
 };

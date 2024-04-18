@@ -299,11 +299,14 @@ export const concludeCare: Controller = async (req, res) => {
 
         const { providerNotes } = req.body;
 
-        const exists = await Request.findByPk(id);
-        if (!exists) {
+        const finalize = await MedicalReport.findOne({
+            where: { requestId: id },
+        });
+
+        if(!finalize?.isFinalize) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
-                message: messageConstant.REQUEST_NOT_FOUND,
+                message: messageConstant.FORM_NOT_FINALIZED,
             });
         }
 

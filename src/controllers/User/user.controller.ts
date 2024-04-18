@@ -362,7 +362,7 @@ const createRequest: Controller = async (req, res) => {
             };
         }
 
-        let userId;
+        let userId: number | null;
 
         if (!isEmail) {
             // hash the password
@@ -415,16 +415,27 @@ const createRequest: Controller = async (req, res) => {
                     html: data,
                 };
 
-                await transporter.sendMail(mailOptions);
-
-                await EmailLog.create({
-                    email: patientEmail,
-                    senderId: userId,
-                    receiverId: userId,
-                    sentDate: new Date(),
-                    isEmailSent: true,
-                    sentTries: 1,
-                    action: 'Create Request',
+                new Promise((resolve, reject) => {
+                    transporter.sendMail(
+                        mailOptions,
+                        (error: Error, info: string) => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve(info);
+                            }
+                        },
+                    );
+                }).then(() => {
+                    EmailLog.create({
+                        email: patientEmail,
+                        senderId: userId,
+                        receiverId: userId,
+                        sentDate: new Date(),
+                        isEmailSent: true,
+                        sentTries: 1,
+                        action: 'Create Request',
+                    });
                 });
             }
         } else {
@@ -562,26 +573,32 @@ const createAdminRequest: Controller = async (req, res) => {
                     html: data,
                 };
 
-                await transporter.sendMail(
-                    mailOptions,
-                    async (error: Error) => {
-                        if (error) {
-                            console.log('>>Error:  ');
-                            throw error;
-                        } else {
-                            await EmailLog.create({
-                                email: patientEmail,
-                                senderId: user.id,
-                                receiverId: user.id,
-                                sentDate: new Date(),
-                                isEmailSent: true,
-                                sentTries: 1,
-                                action: 'Create Request',
-                            });
-                            console.log(messageConstant.REQUEST_EMAIL_SMS_SENT);
-                        }
-                    },
-                );
+                new Promise((resolve, reject) => {
+                    transporter.sendMail(
+                        mailOptions,
+                        (error: Error, info: string) => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve(info);
+                            }
+                        },
+                    );
+                })
+                    .then(() => {
+                        EmailLog.create({
+                            email: patientEmail,
+                            senderId: user.id,
+                            receiverId: user.id,
+                            sentDate: new Date(),
+                            isEmailSent: true,
+                            sentTries: 1,
+                            action: 'Create Request',
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('Error sending email:', error);
+                    });
             }
         } else {
             const existingUser = await User.findOne({

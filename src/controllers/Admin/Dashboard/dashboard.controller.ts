@@ -1,4 +1,4 @@
-import path from 'path';
+import path, { resolve } from 'path';
 import {
     AccountType,
     CaseTag,
@@ -727,24 +727,24 @@ export const sendAgreement: Controller = async (req, res) => {
             html: data,
         };
 
-        // Send the email and handle the callback for success or failure.
-        return transporter.sendMail(mailOptions, async (error: Error) => {
-            if (error) {
-                throw error;
-            } else {
-                console.log('Agreement email Sent Successfully');
+        new Promise((resolve, reject) => {
+            transporter.sendMail(mailOptions, (error: Error, info: string) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(info);
+                }
+            });
+        })
+            .then(() => {
+                // Update the Request table asynchronously
+                Request.update({ isAgreementSent: true }, { where: { id } });
 
-                // Update the Request table to reflect that the agreement has been sent.
-                await Request.update(
-                    { isAgreementSent: true },
-                    { where: { id: req.params.id } },
-                );
-
-                // Prepare the SMS message body with a link to the agreement.
-                const messageBody = `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: http://localhost:3000/agreement.`;
+                // Send SMS asynchronously
+                const messageBody = `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: ${linkConstant.AGREEMENT_URL}`;
                 sendSMS(messageBody);
 
-                await EmailLog.create({
+                EmailLog.create({
                     email,
                     confirmationNumber: user.confirmationNumber,
                     senderId: req.user.id,
@@ -755,7 +755,7 @@ export const sendAgreement: Controller = async (req, res) => {
                     action: 'Send Agreement',
                 });
 
-                await SMSLog.create({
+                SMSLog.create({
                     phoneNumber,
                     confirmationNumber: user.confirmationNumber,
                     senderId: req.user.id,
@@ -765,13 +765,16 @@ export const sendAgreement: Controller = async (req, res) => {
                     sentTries: 1,
                     action: 'Send Agreement',
                 });
+            })
+            .catch((error: Error) => {
+                console.error('Error sending email:', error);
+                // Handle the email sending failure, e.g., by logging or retrying
+            });
 
-                // Return a 200 OK status with a message indicating the email was sent successfully.
-                return res.json({
-                    status: httpCode.OK,
-                    message: messageConstant.AGREEMENT_EMAIL_SENT,
-                });
-            }
+        // Respond immediately to the client with a success message
+        return res.json({
+            status: httpCode.OK,
+            message: messageConstant.AGREEMENT_EMAIL_SENT,
         });
     } catch (error) {
         throw error;
@@ -1001,20 +1004,30 @@ export const sendFileThroughMail: Controller = async (req, res) => {
             })),
         };
 
-        // Send email
-        await transporter.sendMail(mailOptions);
-
-        // Log email sending
-        await EmailLog.create({
-            email,
-            confirmationNumber: user.confirmationNumber,
-            senderId: req.user.id,
-            receiverId: user.id,
-            sentDate: new Date(),
-            isEmailSent: true,
-            sentTries: 1,
-            action: 'Request Medical Files',
-        });
+        new Promise((resolve, reject) => {
+            transporter.sendMail(mailOptions, (error: Error, info: string) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(info);
+                }
+            });
+        })
+            .then(() => {
+                EmailLog.create({
+                    email,
+                    confirmationNumber: user.confirmationNumber,
+                    senderId: req.user.id,
+                    receiverId: user.id,
+                    sentDate: new Date(),
+                    isEmailSent: true,
+                    sentTries: 1,
+                    action: 'Request Medical Files',
+                });
+            })
+            .catch((error: Error) => {
+                console.error('Error Sending mail:', error);
+            });
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -1301,18 +1314,32 @@ export const requestSupport: Controller = async (req, res) => {
                 html: data,
             };
 
-            await transporter.sendMail(mailOptions);
-
-            // Log email sending
-            await EmailLog.create({
-                email: physician.email,
-                senderId: req.user.id,
-                receiverId: physician.id,
-                sentDate: new Date(),
-                isEmailSent: true,
-                sentTries: 1,
-                action: 'Request Support',
-            });
+            new Promise((resolve, reject) => {
+                transporter.sendMail(
+                    mailOptions,
+                    (error: Error, info: string) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(info);
+                        }
+                    },
+                );
+            })
+                .then(() => {
+                    EmailLog.create({
+                        email: physician.email,
+                        senderId: req.user.id,
+                        receiverId: physician.id,
+                        sentDate: new Date(),
+                        isEmailSent: true,
+                        sentTries: 1,
+                        action: 'Request Support',
+                    });
+                })
+                .catch((error: Error) => {
+                    console.error('Error sending mail:', error);
+                });
         }
 
         // Return success response
@@ -1403,25 +1430,29 @@ export const sendPatientRequest: Controller = async (req, res) => {
             html: data,
         };
 
-        // Send email and handle response
-        return transporter.sendMail(mailOptions, async (error: Error) => {
-            if (error) {
-                throw error;
-            } else {
-                await EmailLog.create({
-                    email,
-                    senderId: req.user.id,
-                    sentDate: new Date(),
-                    isEmailSent: true,
-                    sentTries: 1,
-                    action: 'Send request link to patient',
-                });
-                // Return success response
-                return res.json({
-                    status: httpCode.OK,
-                    message: messageConstant.REQUEST_EMAIL_SMS_SENT,
-                });
-            }
+        new Promise((resolve, reject) => {
+            transporter.sendMail(mailOptions, (error: Error, info: string) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(info);
+                }
+            });
+        }).then(() => {
+            EmailLog.create({
+                email,
+                senderId: req.user.id,
+                sentDate: new Date(),
+                isEmailSent: true,
+                sentTries: 1,
+                action: 'Send request link to patient',
+            });
+        });
+
+        // Return success response
+        return res.json({
+            status: httpCode.OK,
+            message: messageConstant.REQUEST_EMAIL_SMS_SENT,
         });
     } catch (error) {
         throw error;

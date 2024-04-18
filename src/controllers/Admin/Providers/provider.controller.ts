@@ -19,6 +19,7 @@ import { sendSMS } from '../../../utils/smsSender';
 import bcrypt from 'bcrypt';
 import { Order } from 'sequelize';
 import { Op } from 'sequelize';
+import { resolve } from 'path';
 dotenv.config();
 
 /**
@@ -124,22 +125,27 @@ export const contactProvider: Controller = async (req, res) => {
                 text: message,
             };
 
-            // Send email
-            return transporter.sendMail(mailOptions, async (error: Error) => {
-                if (error) {
-                    throw error;
-                } else {
-                    await EmailLog.create({
-                        email: user?.email as string,
-                        senderId: req.user.id,
-                        receiverId: user?.id,
-                        sentDate: new Date(),
-                        isEmailSent: true,
-                        sentTries: 1,
-                        action: 'Provider Contact',
-                    });
-                    console.log('Email Sent Successfully');
-                }
+            new Promise((resolve, reject) => {
+                transporter.sendMail(
+                    mailOptions,
+                    (error: Error, info: string) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(info);
+                        }
+                    },
+                );
+            }).then(() => {
+                EmailLog.create({
+                    email: user?.email as string,
+                    senderId: req.user.id,
+                    receiverId: user?.id,
+                    sentDate: new Date(),
+                    isEmailSent: true,
+                    sentTries: 1,
+                    action: 'Provider Contact',
+                });
             });
         };
 
@@ -284,7 +290,6 @@ export const editPhysicianProfile: Controller = async (req, res) => {
             files?: { [fieldName: string]: Express.Multer.File[] },
         ) => {
             try {
-
                 // Update user and business details
                 await User.update(fieldUpdates, {
                     where: { id },

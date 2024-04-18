@@ -150,24 +150,29 @@ export const forgotPassword: Controller = async (req, res) => {
             html: data,
         };
 
-        return transporter.sendMail(mailOptions, async (error: Error) => {
-            if (error) {
-                throw error;
-            } else {
-                await EmailLog.create({
-                    email,
-                    senderId: existingUser?.id,
-                    receiverId: existingUser?.id,
-                    sentDate: new Date(),
-                    isEmailSent: true,
-                    sentTries: 1,
-                    action: 'Forgot Password',
-                });
-                return res.json({
-                    status: httpCode.OK,
-                    message: messageConstant.RESET_EMAIL_SENT,
-                });
-            }
+        new Promise((resolve, reject) => {
+            transporter.sendMail(mailOptions, (error: Error, info: string) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(info);
+                }
+            });
+        }).then(() => {
+            EmailLog.create({
+                email,
+                senderId: existingUser?.id,
+                receiverId: existingUser?.id,
+                sentDate: new Date(),
+                isEmailSent: true,
+                sentTries: 1,
+                action: 'Forgot Password',
+            });
+        });
+
+        return res.json({
+            status: httpCode.OK,
+            message: messageConstant.RESET_EMAIL_SENT,
         });
     } catch (error: any) {
         throw error;
