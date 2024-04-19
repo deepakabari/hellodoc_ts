@@ -599,16 +599,6 @@ export const viewEncounterForm: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const exists = await MedicalReport.findOne({
-            where: { requestId: id },
-        });
-        if (!exists) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.FORM_NOT_FOUND,
-            });
-        }
-
         // Retrieve encounter form data
         const viewEncounterForm = await MedicalReport.findAll({
             attributes: [
