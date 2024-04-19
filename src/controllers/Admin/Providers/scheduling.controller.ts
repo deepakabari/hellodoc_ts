@@ -5,7 +5,7 @@ import { Region, Shift, User } from '../../../db/models/index';
 import { Controller, ShiftWhereAttributes, Group } from '../../../interfaces';
 import dotenv from 'dotenv';
 import { Op, Order } from 'sequelize';
-import sequelize from 'sequelize';
+import { sequelize } from '../../../db/config/db.connection';
 dotenv.config();
 
 /**
@@ -296,7 +296,7 @@ export const unApprovedViewShift: Controller = async (req, res) => {
         const limit = parseInt(pageSize as string, 10) || 10;
         const offset = (pageNumber - 1) * limit;
 
-         // Define sorting options
+        // Define sorting options
         const order =
             sortBy && orderBy
                 ? ([
@@ -354,6 +354,7 @@ export const unApprovedViewShift: Controller = async (req, res) => {
  * @description Updates the 'isApproved' field to true for selected shifts.
  */
 export const approveShift: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         // Extract query parameters
         const { shiftIds } = req.body;
@@ -368,17 +369,21 @@ export const approveShift: Controller = async (req, res) => {
             );
         }
 
+        await transaction.commit();
+
         // Respond with a success message
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SHIFT_APPROVED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw new Error(messageConstant.ERROR_APPROVE_SHIFT);
     }
 };
 
 export const deleteShift: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         const { shiftIds } = req.body;
 
@@ -392,17 +397,21 @@ export const deleteShift: Controller = async (req, res) => {
             );
         }
 
+        await transaction.commit();
+
         // Respond with a success message
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SHIFT_DELETED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw new Error(messageConstant.ERROR_DELETE_SHIFT);
     }
 };
 
 export const editShift: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         // Extract shift ID from request parameters
         const { id } = req.params;
@@ -413,6 +422,7 @@ export const editShift: Controller = async (req, res) => {
         // Check if the shift exists
         const exists = await Shift.findByPk(id);
         if (!exists) {
+            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.SHIFT_NOT_FOUND,
@@ -425,12 +435,15 @@ export const editShift: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        await transaction.commit();
+
         // Respond with success message
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.SHIFT_UPDATED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };

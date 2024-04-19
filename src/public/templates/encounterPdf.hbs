@@ -48,26 +48,25 @@
         <div class="section-title">Patient Information</div>
         <hr>
         <span class="bold">First Name:</span>
-        <span> {{#if encounterData.request.patientFirstName }}{{ encounterData.request.patientFirstName }}{{else}}-{{/if}}</span>
+        <span> {{#if encounterData.firstName }}{{ encounterData.firstName }}{{else}}-{{/if}}</span>
         <br><br>
         <span class="bold">Last Name:</span>
-        <span> {{#if encounterData.request.patientLastName }}{{ encounterData.request.patientLastName }}{{else}}-{{/if}}</span>
+        <span> {{#if encounterData.lastName }}{{ encounterData.lastName }}{{else}}-{{/if}}</span>
         <br><br>
         <span class="bold">Location:</span>
-        <span> {{ encounterData.request.street }}, {{ encounterData.request.city }}, {{ encounterData.request.state }} -
-            {{ encounterData.request.zipCode }}</span>
+        <span> {{#if encounterData.location }}{{ encounterData.location }}{{else}}-{{/if}}</span>
         <br><br>
         <span class="bold">Date of Birth:</span>
-        <span> {{#if encounterData.request.dob }}{{ encounterData.request.dob }}{{else}}-{{/if}}</span>
+        <span> {{#if encounterData.dob }}{{ encounterData.dob }}{{else}}-{{/if}}</span>
         <br><br>
         <span class="bold">Service Date:</span>
         <span> {{ encounterData.serviceDate }}</span>
         <br><br>
         <span class="bold">Phone Number:</span>
-        <span> {{#if encounterData.request.patientPhoneNumber }}{{ encounterData.request.patientPhoneNumber }}{{else}}-{{/if}}</span>
+        <span> {{#if encounterData.phoneNumber }}{{ encounterData.phoneNumber }}{{else}}-{{/if}}</span>
         <br><br>
         <span class="bold">Email:</span>
-        <span> {{#if encounterData.request.patientEmail }}{{ encounterData.request.patientEmail }}{{else}}-{{/if}}</span>
+        <span> {{#if encounterData.email }}{{ encounterData.email }}{{else}}-{{/if}}</span>
     </div>
 
     <div class="section">

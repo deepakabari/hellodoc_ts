@@ -25,8 +25,26 @@ class MedicalReport extends Model<
     @Column({ type: DataTypes.INTEGER, allowNull: false })
     requestId: number;
 
+    @Column({ type: DataTypes.STRING, allowNull: false })
+    firstName: string;
+
+    @Column({ type: DataTypes.STRING, allowNull: false })
+    lastName: string;
+
+    @Column({ type: DataTypes.STRING, allowNull: false })
+    location: string;
+
+    @Column({ type: DataTypes.DATEONLY, allowNull: false })
+    dob: Date;
+
     @Column({ type: DataTypes.DATEONLY, allowNull: true })
     serviceDate: Date;
+
+    @Column({ type: DataTypes.STRING, allowNull: false })
+    phoneNumber: string;
+
+    @Column({ type: DataTypes.STRING, allowNull: false })
+    email: string;
 
     @Column({ type: DataTypes.STRING, allowNull: true })
     presentIllnessHistory: string;

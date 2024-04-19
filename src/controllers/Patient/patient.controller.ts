@@ -4,15 +4,18 @@ import messageConstant from '../../constants/message.constant';
 import { Controller } from '../../interfaces';
 import { Request, RequestWiseFiles, User } from '../../db/models/index';
 import dotenv from 'dotenv';
+import { sequelize } from '../../db/config/db.connection';
 dotenv.config();
 
 export const acceptAgreement: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
         // Check if the request exists
         const exists = await Request.findByPk(id);
         if (!exists) {
+            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -31,17 +34,21 @@ export const acceptAgreement: Controller = async (req, res) => {
             },
         );
 
+        await transaction.commit();
+
         // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.AGREEMENT_ACCEPTED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };
 
 export const cancelAgreement: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
         const { reasonForCancellation } = req.body;
@@ -49,6 +56,7 @@ export const cancelAgreement: Controller = async (req, res) => {
         // Check if the request exists
         const exists = await Request.findByPk(id);
         if (!exists) {
+            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -65,12 +73,15 @@ export const cancelAgreement: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        await transaction.commit();
+
         // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.AGREEMENT_CANCELLED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };
@@ -106,6 +117,7 @@ export const medicalHistory: Controller = async (req, res) => {
 };
 
 export const editPatientProfile: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         const id = req.user.id;
 
@@ -138,12 +150,15 @@ export const editPatientProfile: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        await transaction.commit();
+
         // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PROFILE_UPDATED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };

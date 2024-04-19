@@ -57,7 +57,17 @@ export const ProviderSchema = {
 
     encounterForm: {
         [Segments.BODY]: Joi.object({
+            firstName: Joi.string().required(),
+            lastName: Joi.string().required(),
+            location: Joi.string().required(),
+            dob: Joi.date().required(),
             serviceDate: Joi.date().required(),
+            phoneNumber: Joi.string().min(11).max(13).messages({
+                'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
+                'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
+                'string.required': 'Phone number is required', // Custom message for required
+            }),
+            email: Joi.string().email().required(),
             presentIllnessHistory: Joi.string().optional().allow('', null),
             medicalHistory: Joi.string().optional().allow('', null),
             medications: Joi.string().optional().allow('', null),

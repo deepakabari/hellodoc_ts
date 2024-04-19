@@ -17,9 +17,33 @@ module.exports = {
                     key: 'id',
                 },
             },
+            firstName: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            lastName: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            location: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            dob: {
+                type: Sequelize.DATEONLY,
+                allowNull: false,
+            },
             serviceDate: {
                 type: Sequelize.DATEONLY,
                 allowNull: true,
+            },
+            phoneNumber: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            email: {
+                type: Sequelize.STRING,
+                allowNull: false,
             },
             presentIllnessHistory: {
                 type: Sequelize.STRING,

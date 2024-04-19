@@ -10,6 +10,7 @@ import {
 import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
 import { Op } from 'sequelize';
+import { sequelize } from '../../../db/config/db.connection';
 
 dotenv.config();
 
@@ -101,6 +102,7 @@ export const accountAccessByAccountType: Controller = async (req, res) => {
  * @description This function is an Express controller that handles the creation of a new role for a specific account type. It first checks if a role with the provided name already exists. If it does, it sends a conflict error response. If not, it creates a new role with the provided name and account type, and sends a success response with the created role data.
  */
 export const createRole: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         // Extract query parameters
         const { roleName, accountType, permissionIds } = req.body;
@@ -110,6 +112,7 @@ export const createRole: Controller = async (req, res) => {
 
         // If role already exists, return conflict response
         if (existingRole) {
+            await transaction.rollback();
             return res.status(httpCode.CONFLICT).json({
                 status: httpCode.CONFLICT,
                 message: messageConstant.ROLE_ALREADY_EXISTS,
@@ -134,6 +137,8 @@ export const createRole: Controller = async (req, res) => {
             });
         }
 
+        await transaction.commit();
+
         // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -141,6 +146,7 @@ export const createRole: Controller = async (req, res) => {
             data: createRole,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };
@@ -264,12 +270,14 @@ export const viewRole: Controller = async (req, res) => {
  * @description Updates the permissions associated with a specific role. It first removes all existing permissions and then adds the new permissions provided in the request body.
  */
 export const updateRole: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         // Extract the role ID from the request parameters.
         const { id } = req.params;
 
         const existingRole = await Role.findByPk(id);
         if (!existingRole) {
+            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.INVALID_INPUT,
@@ -303,12 +311,15 @@ export const updateRole: Controller = async (req, res) => {
             });
         }
 
+        await transaction.commit();
+
         // Send a success response with a status message.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.ROLE_UPDATED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };
@@ -321,12 +332,14 @@ export const updateRole: Controller = async (req, res) => {
  * @description Deletes a specific role from the database based on the role ID provided in the request parameters.
  */
 export const deleteRole: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         // Extract the role ID from the request parameters.
         const { id } = req.params;
 
         const existingRole = await Role.findByPk(id);
         if (!existingRole) {
+            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.INVALID_INPUT,
@@ -338,12 +351,15 @@ export const deleteRole: Controller = async (req, res) => {
             where: { id }, // Specify the condition to find the role to delete.
         });
 
+        await transaction.commit();
+
         // Send a success response with a status message.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.ROLE_DELETED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };

@@ -19,7 +19,7 @@ import { sendSMS } from '../../../utils/smsSender';
 import bcrypt from 'bcrypt';
 import { Order } from 'sequelize';
 import { Op } from 'sequelize';
-import { resolve } from 'path';
+import { sequelize } from '../../../db/config/db.connection';
 dotenv.config();
 
 /**
@@ -428,6 +428,7 @@ export const editPhysicianProfile: Controller = async (req, res) => {
 };
 
 export const updateNotification: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         // Extract physician IDs from request body
         const { physicianIds } = req.body;
@@ -449,16 +450,20 @@ export const updateNotification: Controller = async (req, res) => {
             },
         );
 
+        await transaction.commit();
+
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.NOTIFICATION_UPDATED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };
 
 export const deleteAccount: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         // Extract user ID from request parameters
         const { id } = req.params;
@@ -466,6 +471,7 @@ export const deleteAccount: Controller = async (req, res) => {
         // Check if user with the given ID exists
         const exists = await User.findByPk(id);
         if (!exists) {
+            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.INVALID_INPUT,
@@ -477,11 +483,14 @@ export const deleteAccount: Controller = async (req, res) => {
             where: { id },
         });
 
+        await transaction.commit();
+
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.USER_DELETED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };

@@ -10,8 +10,8 @@ import {
     User,
 } from '../../../db/models/index';
 import { Controller, RequestAttributes } from '../../../interfaces';
-import sequelize, { Order, WhereOptions } from 'sequelize';
-import { Op } from 'sequelize';
+import { Order, WhereOptions, Op } from 'sequelize';
+import { sequelize } from '../../../db/config/db.connection';
 import json2xls from 'json2xls';
 import { Request as ExpressRequest, Response } from 'express';
 import dotenv from 'dotenv';
@@ -341,6 +341,7 @@ export const searchRecord: Controller = async (req, res) => {
 };
 
 export const unBlockPatient: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         // Extract record ID from request parameters
         const { id } = req.params;
@@ -348,6 +349,7 @@ export const unBlockPatient: Controller = async (req, res) => {
         // Check if the record exists in the database
         const exists = await Request.findByPk(id);
         if (!exists) {
+            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -363,17 +365,21 @@ export const unBlockPatient: Controller = async (req, res) => {
             { where: { id } },
         );
 
+        await transaction.commit();
+
         // Return a success response after unblocking the patient
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PATIENT_UNBLOCK,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };
 
 export const deleteRecord: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         // Extract record ID from request parameters
         const { id } = req.params;
@@ -381,6 +387,7 @@ export const deleteRecord: Controller = async (req, res) => {
         // Check if the record exists in the database
         const exists = await Request.findByPk(id);
         if (!exists) {
+            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -392,12 +399,15 @@ export const deleteRecord: Controller = async (req, res) => {
             where: { id },
         });
 
+        await transaction.commit();
+
         // Return a success response after deleting the record
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_DELETED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };

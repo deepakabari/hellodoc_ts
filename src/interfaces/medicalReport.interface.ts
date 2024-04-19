@@ -3,7 +3,13 @@ import { Optional } from 'sequelize';
 interface MedicalReportAttributes {
     id: number;
     requestId: number;
+    firstName: string;
+    lastName: string;
+    location: string;
+    dob: Date;
     serviceDate?: Date;
+    phoneNumber: string;
+    email: string;
     presentIllnessHistory?: string;
     medicalHistory?: string;
     medications?: string;

@@ -35,7 +35,7 @@ export const getLoggedData: Controller = async (req, res) => {
         });
 
         // if there is no userDetails then give not found message
-        if (userDetails.length === 0) {
+        if (!userDetails.length) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.DATA_NOT_FOUND,
