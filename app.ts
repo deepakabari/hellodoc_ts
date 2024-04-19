@@ -43,6 +43,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(router);
 app.use(errors());
 
+app.get('/', (req: Request, res: Response) => {
+    res.send('API is working...');
+});
+
 app.use('*', (req: Request, res: Response) => {
     res.status(httpCode.NOT_FOUND).json({
         status: httpCode.NOT_FOUND,
@@ -55,10 +59,6 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     const statusCode = err.statusCode || 500;
     const errorMessage = err.message || 'Internal Server Error';
     res.status(statusCode).json({ statusCode, errorMessage });
-});
-
-app.get('/', (req: Request, res: Response) => {
-    res.send('API is working...');
 });
 
 app.use(errorHandler);

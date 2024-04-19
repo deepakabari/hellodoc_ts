@@ -672,7 +672,9 @@ export const editEncounterForm: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const exists = await MedicalReport.findByPk(id);
+        const exists = await MedicalReport.findOne({
+            where: { requestId: id },
+        });
         if (!exists) {
             await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
@@ -687,7 +689,7 @@ export const editEncounterForm: Controller = async (req, res) => {
                 ...req.body,
             },
             {
-                where: { id },
+                where: { requestId: id },
             },
         );
 
