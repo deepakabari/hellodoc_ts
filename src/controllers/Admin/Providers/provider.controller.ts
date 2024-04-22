@@ -436,7 +436,7 @@ export const updateNotification: Controller = async (req, res) => {
         // Set stopNotification to false for all physicians
         await User.update(
             { stopNotification: false },
-            { where: { accountType: AccountType.Physician } },
+            { where: { accountType: AccountType.Physician }, transaction },
         );
 
         // Set stopNotification to true for the provided physicianIds
@@ -447,6 +447,7 @@ export const updateNotification: Controller = async (req, res) => {
                     id: { [Op.in]: physicianIds },
                     accountType: AccountType.Physician,
                 },
+                transaction,
             },
         );
 
@@ -481,6 +482,7 @@ export const deleteAccount: Controller = async (req, res) => {
         // Delete the user
         await User.destroy({
             where: { id },
+            transaction,
         });
 
         await transaction.commit();

@@ -3,10 +3,10 @@ export enum RequestType {
     Family = 'Family/Friend',
     Concierge = 'Concierge',
     Business = 'Business',
-    Vip = 'VIP',
     Admin = 'Admin',
     Physician = 'Physician',
     User = 'User',
+    SomeoneElse = 'SomeoneElse',
 }
 
 export enum AccountType {

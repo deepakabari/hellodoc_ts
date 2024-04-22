@@ -145,7 +145,7 @@ export const downloadFile = async (req: ExpressRequest, res: Response) => {
 
 export const deleteFile: Controller = async (req, res) => {
     try {
-          // Extract request parameters
+        // Extract request parameters
         const { id } = req.params;
         const { fileNames } = req.body;
 
@@ -184,7 +184,7 @@ export const deleteFile: Controller = async (req, res) => {
             // Delete the file from the file system
             await unlinkAsync(filePath);
 
-             // Destroy the file record from the database
+            // Destroy the file record from the database
             await fileRecord.destroy();
         }
 
@@ -264,7 +264,7 @@ export const exportFile = async (req: ExpressRequest, res: Response) => {
 
 export const exportAll = async (req: ExpressRequest, res: Response) => {
     try {
-         // Define attributes for exporting
+        // Define attributes for exporting
         let attributes = [
             ['requestType', 'Request Type'],
             ['patientFirstName', 'Patient First Name'],

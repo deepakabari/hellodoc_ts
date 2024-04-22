@@ -11,7 +11,7 @@ export const RequestSchema = {
 
     updateNotes: {
         [Segments.BODY]: Joi.object({
-            adminNotes: Joi.string().required(),
+            adminNotes: Joi.string().trim().required(),
         }),
         [Segments.PARAMS]: {
             id: Joi.number().required(),
@@ -20,7 +20,7 @@ export const RequestSchema = {
 
     cancelCase: {
         [Segments.BODY]: Joi.object({
-            adminNotes: Joi.string().required(),
+            adminNotes: Joi.string().trim().required(),
             reasonForCancellation: Joi.string().required(),
         }),
         [Segments.PARAMS]: {
@@ -30,7 +30,7 @@ export const RequestSchema = {
 
     blockCase: {
         [Segments.BODY]: Joi.object({
-            reasonForCancellation: Joi.string().required(),
+            reasonForCancellation: Joi.string().trim().required(),
         }),
         [Segments.PARAMS]: {
             id: Joi.number().required(),
@@ -39,8 +39,8 @@ export const RequestSchema = {
 
     assignCase: {
         [Segments.BODY]: Joi.object({
-            transferNote: Joi.string().required(),
-        }).unknown(true),
+            transferNote: Joi.string().trim().required(),
+        }),
     },
 
     closeCase: {
@@ -54,7 +54,7 @@ export const RequestSchema = {
                     'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
                     'string.required': 'Phone number is required', // Custom message for required
                 }),
-            patientEmail: Joi.string().required().email(),
+            patientEmail: Joi.string().trim().required().email(),
         }),
     },
 
@@ -63,9 +63,9 @@ export const RequestSchema = {
             requestType: Joi.string()
                 .valid(...Object.values(RequestType))
                 .required(),
-            patientFirstName: Joi.string().required(),
-            patientLastName: Joi.string().required(),
-            patientEmail: Joi.string().required().email(),
+            patientFirstName: Joi.string().trim().required(),
+            patientLastName: Joi.string().trim().required(),
+            patientEmail: Joi.string().trim().required().email(),
             patientPhoneNumber: Joi.string()
                 .required()
                 .min(11)
@@ -75,26 +75,27 @@ export const RequestSchema = {
                     'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
                     'string.required': 'Phone number is required', // Custom message for required
                 }),
-            requestorFirstName: Joi.string().optional().allow('', null),
-            requestorLastName: Joi.string().optional().allow('', null),
+            requestorFirstName: Joi.string().trim().optional().allow('', null),
+            requestorLastName: Joi.string().trim().optional().allow('', null),
             requestorPhoneNumber: Joi.string().min(11).max(13).messages({
                 'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
                 'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
                 'string.required': 'Phone number is required', // Custom message for required
             }),
-            requestorEmail: Joi.string().optional().email().allow('', null),
+            requestorEmail: Joi.string().trim().optional().email().allow('', null),
             isEmail: Joi.boolean().required(),
             password: Joi.string()
                 .regex(RegExp(linkConstant.PASSWORD_REGEX))
                 .optional()
                 .allow('', null),
-            relationName: Joi.string().optional().allow('', null),
-            street: Joi.string().required(),
+            relationName: Joi.string().trim().optional().allow('', null),
+            street: Joi.string().trim().required(),
             dob: Joi.date().required(),
-            city: Joi.string().required().allow('', null),
-            state: Joi.string().required().allow('', null),
-            zipCode: Joi.string().optional().allow('', null),
-            roomNumber: Joi.string().optional().allow('', null),
+            city: Joi.string().trim().required().allow('', null),
+            state: Joi.string().trim().required().allow('', null),
+            zipCode: Joi.string().trim().optional().allow('', null),
+            roomNumber: Joi.string().trim().optional().allow('', null),
+            caseNumber: Joi.string().trim().optional().allow('', null),
             document: Joi.string().optional().allow('', null),
         }).unknown(true),
     },

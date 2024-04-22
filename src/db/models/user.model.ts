@@ -124,6 +124,9 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     @Column({ type: DataTypes.STRING, allowNull: true })
     syncEmailAddress: string;
 
+    @Column({ type: DataTypes.INTEGER, allowNull: true })
+    createdBy: number
+
     @Column({ type: DataTypes.STRING, allowNull: true })
     resetToken: string;
 

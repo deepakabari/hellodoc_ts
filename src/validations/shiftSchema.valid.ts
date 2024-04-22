@@ -3,13 +3,14 @@ import { Joi, Segments } from 'celebrate';
 export const ShiftSchema = {
     createShift: {
         [Segments.BODY]: Joi.object({
+            accountType: Joi.string().valid('Admin', 'Physician').required(),
             region: Joi.string().required(),
-            physicianId: Joi.required(),
+            physicianId: Joi.optional().allow('', null),
             shiftDate: Joi.date().required(),
             startTime: Joi.string().required(),
             endTime: Joi.string().required(),
             isRepeat: Joi.boolean().optional().allow('', null),
-            repeatUpto: Joi.number().optional(),
+            repeatUpto: Joi.number().optional().allow('', null),
             sunday: Joi.boolean().optional().allow('', null),
             monday: Joi.boolean().optional().allow('', null),
             tuesday: Joi.boolean().optional().allow('', null),

@@ -101,8 +101,8 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: true,
             },
-            isUrgentEmailSent: {
-                type: Sequelize.BOOLEAN,
+            caseNumber: {
+                type: Sequelize.STRING,
                 allowNull: true,
             },
             lastWellnessDate: {

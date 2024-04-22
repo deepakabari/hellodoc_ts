@@ -252,10 +252,12 @@ export const searchRecord: Controller = async (req, res) => {
         const dateRange =
             fromDate && toDate
                 ? {
-                      [Op.between]: [
-                          new Date(fromDate as string),
-                          new Date(toDate as string),
-                      ],
+                      acceptedDate: {
+                          [Op.between]: [
+                              new Date(fromDate as string),
+                              new Date(toDate as string),
+                          ],
+                      },
                   }
                 : {};
 
@@ -286,7 +288,7 @@ export const searchRecord: Controller = async (req, res) => {
                 'patientLastName',
                 'requestType',
                 'acceptedDate',
-                'updatedAt',
+                'concludedDate',
                 'patientEmail',
                 'patientPhoneNumber',
                 'street',
@@ -362,7 +364,7 @@ export const unBlockPatient: Controller = async (req, res) => {
                 requestStatus: RequestStatus.Unassigned,
                 isDeleted: false,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         await transaction.commit();
@@ -397,6 +399,7 @@ export const deleteRecord: Controller = async (req, res) => {
         // Delete the record from the database
         await Request.destroy({
             where: { id },
+            transaction,
         });
 
         await transaction.commit();
@@ -416,27 +419,38 @@ export const exportToExcel = async (req: ExpressRequest, res: Response) => {
     try {
         // Extract token from request headers
         const token = req.headers.authorization as string;
+        let allData: any = [],
+            page = 1,
+            pageSize = 10,
+            totalPages = 0;
 
-        // Fetch data from the specified endpoint
-        const response = await fetch(
-            'http://localhost:4000/admin/records/searchRecord',
-            {
-                headers: {
-                    Authorization: token,
+        do {
+            // Fetch data from the specified endpoint
+            const response = await fetch(
+                `http://localhost:4000/admin/records/searchRecord?page=${page}&pageSize=${pageSize}`,
+                {
+                    headers: {
+                        Authorization: token,
+                    },
                 },
-            },
-        );
+            );
 
-        // Check if the response is successful
-        if (!response.ok) {
-            throw new Error(`Failed to fetch data: ${response.statusText}`);
-        }
+            // Check if the response is successful
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data: ${response.statusText}`);
+            }
 
-        // Parse response data as JSON
-        const jsonData: any = await response.json();
+            // Parse response data as JSON
+            const jsonData: any = await response.json();
+            totalPages = Math.ceil(jsonData.data.count / pageSize);
+
+            allData = allData.concat(jsonData.data.rows);
+
+            page++;
+        } while (page <= totalPages);
 
         // Format the data for Excel export
-        const formattedData = jsonData.data.rows.map((row: any) => {
+        const formattedData = allData.map((row: any) => {
             return {
                 ...row,
                 physicianId: row?.physician?.id,
@@ -601,7 +615,7 @@ export const smsLog: Controller = async (req, res) => {
 
         // Create a where clause for phoneNumber if it's provided
         const phoneWhereClause = phoneNumber
-            ? { email: { [Op.substring]: phoneNumber } }
+            ? { phoneNumber: { [Op.substring]: phoneNumber } }
             : {};
 
         // Create a where clause for created date if it's provided

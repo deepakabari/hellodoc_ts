@@ -233,8 +233,9 @@ export const acceptRequest: Controller = async (req, res) => {
             {
                 caseTag: CaseTag.Pending,
                 requestStatus: RequestStatus.Accepted,
+                acceptedDate: new Date(),
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         await transaction.commit();
@@ -283,7 +284,7 @@ export const updateNotes: Controller = async (req, res) => {
             {
                 physicianNotes,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         await transaction.commit();
@@ -343,8 +344,9 @@ export const concludeCare: Controller = async (req, res) => {
                 physicianNotes: providerNotes,
                 caseTag: CaseTag.Close,
                 requestStatus: RequestStatus.Conclude,
+                concludedDate: new Date(),
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         // Commit the transaction after all operations are successful
@@ -369,6 +371,7 @@ export const concludeCare: Controller = async (req, res) => {
  * @description Updates type of care for a request
  */
 export const typeOfCare: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
@@ -376,6 +379,7 @@ export const typeOfCare: Controller = async (req, res) => {
 
         const exists = await Request.findByPk(id);
         if (!exists) {
+            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -408,8 +412,10 @@ export const typeOfCare: Controller = async (req, res) => {
                 requestStatus,
                 caseTag,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
+
+        await transaction.commit();
 
         // Sending response indicating request is updated
         return res.status(httpCode.OK).json({
@@ -417,17 +423,20 @@ export const typeOfCare: Controller = async (req, res) => {
             message: messageConstant.REQUEST_UPDATED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };
 
 export const houseCallType: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
         // Check if the request exists
         const exists = await Request.findByPk(id);
         if (!exists) {
+            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -440,8 +449,10 @@ export const houseCallType: Controller = async (req, res) => {
                 caseTag: CaseTag.Conclude,
                 requestStatus: RequestStatus.Consult,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
+
+        await transaction.commit();
 
         // Return success response
         return res.status(httpCode.OK).json({
@@ -449,6 +460,7 @@ export const houseCallType: Controller = async (req, res) => {
             message: messageConstant.REQUEST_UPDATED,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };
@@ -486,7 +498,7 @@ export const transferRequest: Controller = async (req, res) => {
                 transferNote: description,
                 caseTag: CaseTag.New,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         await transaction.commit();
@@ -572,7 +584,7 @@ export const finalizeForm: Controller = async (req, res) => {
             {
                 isFinalize: true,
             },
-            { where: { requestId: id } },
+            { where: { requestId: id }, transaction },
         );
 
         transaction.commit();
@@ -690,6 +702,7 @@ export const editEncounterForm: Controller = async (req, res) => {
             },
             {
                 where: { requestId: id },
+                transaction,
             },
         );
 

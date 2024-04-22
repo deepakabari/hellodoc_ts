@@ -117,6 +117,7 @@ const createAccount: Controller = async (req, res) => {
                 altPhone,
                 roleId,
                 status: ProfileStatus.Active,
+                createdBy: req.user.id,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });
@@ -174,6 +175,7 @@ const createAccount: Controller = async (req, res) => {
                 roleId,
                 notes,
                 status: ProfileStatus.Active,
+                createdBy: req.user.id,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });
@@ -266,34 +268,6 @@ const createAccount: Controller = async (req, res) => {
                     data: { userResponse, newBusiness, uploadedFiles },
                 });
             }
-        } else if (accountType === 'User') {
-            if (password.localeCompare(confirmPassword) != 0) {
-                return res.status(httpCode.BAD_REQUEST).json({
-                    status: httpCode.BAD_REQUEST,
-                    message: messageConstant.PASSWORD_NOT_MATCH,
-                });
-            }
-            const userName = email.substring(0, email.indexOf('@'));
-            const newUser = await User.create({
-                email,
-                userName,
-                password: hashedPassword,
-                status: ProfileStatus.Active,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            });
-
-            if (!newUser) {
-                return res.status(httpCode.BAD_REQUEST).json({
-                    status: httpCode.BAD_REQUEST,
-                    message: messageConstant.USER_CREATION_FAILED,
-                });
-            }
-
-            return res.status(httpCode.OK).json({
-                status: httpCode.OK,
-                message: messageConstant.USER_CREATED,
-            });
         } else {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -302,6 +276,58 @@ const createAccount: Controller = async (req, res) => {
         }
     } catch (error) {
         console.log('Catch:', error);
+        throw error;
+    }
+};
+
+const createPatient: Controller = async (req, res) => {
+    try {
+        const { email, password, confirmPassword } = req.body;
+
+        const existingUser = await User.findOne({ where: { email } });
+        if(!existingUser) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.USER_NOT_EXIST,
+            });
+        }
+
+        // secure the password using bcrypt hashing algorithm
+        const hashedPassword = await bcrypt.hash(password, Number(ITERATION));
+
+        if (password.localeCompare(confirmPassword) != 0) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.PASSWORD_NOT_MATCH,
+            });
+        }
+
+        const userName = email.substring(0, email.indexOf('@'));
+        const newUser = await User.update(
+            {
+                email,
+                userName,
+                password: hashedPassword,
+                status: ProfileStatus.Active,
+                updatedAt: new Date(),
+            },
+            {
+                where: { email },
+            },
+        );
+
+        if (!newUser) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.USER_CREATION_FAILED,
+            });
+        }
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.USER_CREATED,
+        });
+    } catch (error) {
         throw error;
     }
 };
@@ -350,6 +376,7 @@ const createRequest: Controller = async (req, res) => {
             isEmail,
             patientPhoneNumber,
             state,
+            caseNumber,
         } = req.body;
 
         if (requestType === 'Patient') {
@@ -471,6 +498,7 @@ const createRequest: Controller = async (req, res) => {
             confirmationNumber,
             isDeleted: false,
             ...req.body,
+            caseNumber,
             createdAt: new Date(),
             updatedAt: new Date(),
         });
@@ -675,6 +703,7 @@ const createAdminRequest: Controller = async (req, res) => {
 
 export default {
     createAccount,
+    createPatient,
     createRequest,
     isEmailFound,
     createAdminRequest,

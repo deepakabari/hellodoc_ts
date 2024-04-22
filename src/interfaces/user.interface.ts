@@ -29,6 +29,7 @@ interface UserAttributes {
     isLicenseDoc?: boolean;
     NPINumber?: string;
     syncEmailAddress?: string;
+    createdBy?: number;
     resetToken?: string | null;
     expireToken?: Date | null;
     onCallStatus?: string;

@@ -21,7 +21,7 @@ import { Op } from 'sequelize';
 import { compileEmailTemplate } from '../../../utils/hbsCompiler';
 import linkConstant from '../../../constants/link.constant';
 import { sendSMS } from '../../../utils/smsSender';
-import { sequelize } from '../../../db/config/db.connection'
+import { sequelize } from '../../../db/config/db.connection';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -438,7 +438,7 @@ export const updateNotes: Controller = async (req, res) => {
             {
                 adminNotes,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         await transaction.commit();
@@ -553,6 +553,7 @@ export const cancelCase: Controller = async (req, res) => {
                 where: {
                     id,
                 },
+                transaction,
             },
         );
 
@@ -602,7 +603,7 @@ export const blockCase: Controller = async (req, res) => {
                 requestStatus: RequestStatus.Blocked,
                 isDeleted: true,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         await transaction.commit();
@@ -649,6 +650,7 @@ export const clearCase: Controller = async (req, res) => {
             },
             {
                 where: { id },
+                transaction,
             },
         );
 
@@ -916,7 +918,7 @@ export const assignCase: Controller = async (req, res) => {
                 physicianId,
                 transferNote,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         await transaction.commit();
@@ -1256,7 +1258,7 @@ export const updateCloseCase: Controller = async (req, res) => {
                 patientPhoneNumber,
                 patientEmail,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         await transaction.commit();
@@ -1294,8 +1296,12 @@ export const closeCase: Controller = async (req, res) => {
         }
 
         await Request.update(
-            { requestStatus: RequestStatus.Closed, caseTag: CaseTag.UnPaid },
-            { where: { id, caseTag: CaseTag.Close } },
+            {
+                requestStatus: RequestStatus.Closed,
+                caseTag: CaseTag.UnPaid,
+                concludedDate: new Date(),
+            },
+            { where: { id, caseTag: CaseTag.Close }, transaction },
         );
 
         await transaction.commit();
@@ -1412,7 +1418,10 @@ export const transferRequest: Controller = async (req, res) => {
             });
         }
 
-        await Request.update({ physicianId, transferNote }, { where: { id } });
+        await Request.update(
+            { physicianId, transferNote },
+            { where: { id }, transaction },
+        );
 
         await transaction.commit();
 

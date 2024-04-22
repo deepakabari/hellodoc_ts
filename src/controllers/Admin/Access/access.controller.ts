@@ -120,21 +120,27 @@ export const createRole: Controller = async (req, res) => {
         }
 
         // Create new role
-        const createRole = await Role.create({
-            Name: roleName,
-            accountType,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        });
+        const createRole = await Role.create(
+            {
+                Name: roleName,
+                accountType,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            { transaction },
+        );
 
         // Associate permissions with the new role
         for (const permissionId of permissionIds) {
-            await RolePermissionMap.create({
-                roleId: createRole.id,
-                permissionId,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            });
+            await RolePermissionMap.create(
+                {
+                    roleId: createRole.id,
+                    permissionId,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                },
+                { transaction },
+            );
         }
 
         await transaction.commit();
@@ -292,23 +298,27 @@ export const updateRole: Controller = async (req, res) => {
                 Name: roleName,
                 accountType,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         // Remove all existing permissions associated with the role
         await RolePermissionMap.destroy({
             where: { roleId: id },
             force: true,
+            transaction,
         });
 
         // Add new permissions to the role
         for (const permissionId of permissionIds) {
-            await RolePermissionMap.create({
-                roleId: id as unknown as number,
-                permissionId: permissionId,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            });
+            await RolePermissionMap.create(
+                {
+                    roleId: id as unknown as number,
+                    permissionId: permissionId,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                },
+                { transaction },
+            );
         }
 
         await transaction.commit();
@@ -349,6 +359,7 @@ export const deleteRole: Controller = async (req, res) => {
         // Delete the role from the database.
         await Role.destroy({
             where: { id }, // Specify the condition to find the role to delete.
+            transaction,
         });
 
         await transaction.commit();

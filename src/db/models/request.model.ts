@@ -167,9 +167,9 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
 
     @Column({
         allowNull: true,
-        type: DataTypes.BOOLEAN,
+        type: DataTypes.STRING,
     })
-    isUrgentEmailSent: boolean;
+    caseNumber: string;
 
     @Column({
         allowNull: true,

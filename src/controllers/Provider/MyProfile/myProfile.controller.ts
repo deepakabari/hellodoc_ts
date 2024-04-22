@@ -25,6 +25,14 @@ export const requestToAdmin: Controller = async (req, res) => {
             });
         }
 
+        const creator = await User.findByPk(existingUser.createdBy);
+        if (!creator) {
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.USER_NOT_EXIST,
+            });
+        }
+
         // Prepare data for the email template
         const templateData = {
             providerId: id,
@@ -37,7 +45,7 @@ export const requestToAdmin: Controller = async (req, res) => {
 
         const mailOptions = {
             from: existingUser.email,
-            to: process.env.ADMIN,
+            to: creator.email,
             subject: 'Provider Request to Edit Profile',
             html: data,
         };

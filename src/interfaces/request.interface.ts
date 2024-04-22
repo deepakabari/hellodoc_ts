@@ -25,7 +25,7 @@ interface RequestAttributes {
     confirmationNumber?: string;
     isDeleted?: boolean;
     declinedBy?: number;
-    isUrgentEmailSent?: boolean;
+    caseNumber?: string;
     lastWellnessDate?: Date;
     callType?: string;
     completedByPhysician?: boolean;

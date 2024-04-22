@@ -29,7 +29,7 @@ export const addBusiness: Controller = async (req, res) => {
             zipCode,
         } = req.body;
 
-         // Check if business with the same email already exists
+        // Check if business with the same email already exists
         const business = await Business.findOne({
             where: { email },
         });
@@ -302,16 +302,6 @@ export const updateBusiness: Controller = async (req, res) => {
         // Extract business ID from request parameters
         const { id } = req.params;
 
-        // Check if business with the given ID exists
-        const existingBusiness = await Business.findByPk(id);
-        if (!existingBusiness) {
-            await transaction.rollback();
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.INVALID_INPUT,
-            });
-        }
-
         // Extract business details from request body
         const {
             businessName,
@@ -326,6 +316,15 @@ export const updateBusiness: Controller = async (req, res) => {
             zipCode,
         } = req.body;
 
+        // Check if business with the given ID exists
+        const existingBusiness = await Business.findByPk(id);
+        if (!existingBusiness) {
+            await transaction.rollback();
+            return res.status(httpCode.BAD_REQUEST).json({
+                status: httpCode.BAD_REQUEST,
+                message: messageConstant.INVALID_INPUT,
+            });
+        }
 
         // Update business details
         await Business.update(
@@ -341,7 +340,7 @@ export const updateBusiness: Controller = async (req, res) => {
                 state,
                 zipCode,
             },
-            { where: { id }, transaction: transaction },
+            { where: { id }, transaction },
         );
 
         // If the update is successful, commit the transaction
@@ -376,6 +375,7 @@ export const deleteBusiness: Controller = async (req, res) => {
         // Delete the business
         await Business.destroy({
             where: { id },
+            transaction,
         });
 
         await transaction.commit();

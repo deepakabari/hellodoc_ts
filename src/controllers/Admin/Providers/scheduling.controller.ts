@@ -65,7 +65,8 @@ export const providerOnCall: Controller = async (req, res) => {
 export const addNewShift: Controller = async (req, res) => {
     try {
         // Extract shift details from the request body.
-        const {
+        let {
+            accountType,
             region,
             physicianId,
             shiftDate,
@@ -81,6 +82,11 @@ export const addNewShift: Controller = async (req, res) => {
             saturday,
             repeatUpto,
         } = req.body;
+
+        // If the accountType is 'Physician', set the physicianId to the logged-in user's id.
+        if (accountType === 'Physician') {
+            physicianId = req.user.id;
+        }
 
         // Create a new shift record in the database.
         const newShift = await Shift.create({
@@ -365,7 +371,7 @@ export const approveShift: Controller = async (req, res) => {
                 {
                     isApproved: true,
                 },
-                { where: { id: shiftId } },
+                { where: { id: shiftId }, transaction },
             );
         }
 
@@ -393,7 +399,7 @@ export const deleteShift: Controller = async (req, res) => {
                 {
                     isDeleted: true,
                 },
-                { where: { id: shiftId } },
+                { where: { id: shiftId }, transaction },
             );
         }
 
@@ -432,7 +438,7 @@ export const editShift: Controller = async (req, res) => {
         // Update the shift with the provided details
         await Shift.update(
             { shiftDate, startTime, endTime },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         await transaction.commit();

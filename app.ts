@@ -10,6 +10,7 @@ import dotenv from 'dotenv';
 import json2xls from 'json2xls';
 import httpCode from './src/constants/http.constant';
 import messageConstant from './src/constants/message.constant';
+import { validation } from './src/middleware/validation';
 dotenv.config();
 
 const PORT = process.env.PORT;
@@ -41,7 +42,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 app.use(router);
-app.use(errors());
+app.use(validation);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('API is working...');
@@ -55,7 +56,7 @@ app.use('*', (req: Request, res: Response) => {
 });
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    console.error(err); // Log the error for debugging purposes
+    console.error('>> err: ', err); // Log the error for debugging purposes
     const statusCode = err.statusCode || 500;
     const errorMessage = err.message || 'Internal Server Error';
     res.status(statusCode).json({ statusCode, errorMessage });

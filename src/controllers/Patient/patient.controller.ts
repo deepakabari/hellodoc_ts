@@ -31,6 +31,7 @@ export const acceptAgreement: Controller = async (req, res) => {
             },
             {
                 where: { id },
+                transaction,
             },
         );
 
@@ -70,7 +71,7 @@ export const cancelAgreement: Controller = async (req, res) => {
                 requestStatus: RequestStatus.Declined,
                 caseTag: CaseTag.Close,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         await transaction.commit();
@@ -96,13 +97,6 @@ export const medicalHistory: Controller = async (req, res) => {
             where: {
                 userId: id,
             },
-            include: [
-                {
-                    model: RequestWiseFiles,
-                    attributes: ['id', 'fileName', 'docType', 'documentPath'],
-                    required: false,
-                },
-            ],
         });
 
         // Return success response with medical history data
@@ -147,7 +141,7 @@ export const editPatientProfile: Controller = async (req, res) => {
                 state,
                 zipCode,
             },
-            { where: { id } },
+            { where: { id }, transaction },
         );
 
         await transaction.commit();

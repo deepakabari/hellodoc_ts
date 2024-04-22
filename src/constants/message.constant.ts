@@ -17,6 +17,7 @@ const messageConstant = {
     POST_DELETED: 'Post deleted successfully',
     POST_NOT_FOUND: 'Post not found',
     BAD_REQUEST: 'Bad request',
+    VALIDATION_FAILED: 'Validation failed',
     EMAIL_IN_USED: 'Email already in used',
     IMAGE_NOT_UPLOADED: 'Upload the image',
     FILE_NOT_UPLOADED:
