@@ -5,12 +5,13 @@ import messageConstant from '../../../constants/message.constant';
 import {
     EmailLog,
     Request,
+    RequestWiseFiles,
     Role,
     SMSLog,
     User,
 } from '../../../db/models/index';
 import { Controller, RequestAttributes } from '../../../interfaces';
-import { Order, WhereOptions, Op } from 'sequelize';
+import { Order, WhereOptions, Op, Sequelize } from 'sequelize';
 import { sequelize } from '../../../db/config/db.connection';
 import json2xls from 'json2xls';
 import { Request as ExpressRequest, Response } from 'express';
@@ -197,15 +198,24 @@ export const patientRecord: Controller = async (req, res) => {
                 'confirmationNumber',
                 'concludedDate',
                 'requestStatus',
+                [sequelize.literal(`(
+                    SELECT COUNT(*)
+                    FROM RequestWiseFiles
+                    WHERE
+                        RequestWiseFiles.requestId = Request.id
+                )`), 'filesCount'],
             ],
-            include: {
-                model: User,
-                as: 'physician',
-                attributes: ['id', 'firstName', 'lastName'],
-                where: { id: sequelize.col('Request.physicianId') },
-                required: false,
-            },
             where: { userId: id },
+            include: [
+                {
+                    model: User,
+                    as: 'physician',
+                    attributes: ['id', 'firstName', 'lastName'],
+                    where: { id: sequelize.col('Request.physicianId') },
+                    required: false,
+                },
+            ],
+            distinct: true,
             order,
             limit,
             offset,
@@ -343,7 +353,6 @@ export const searchRecord: Controller = async (req, res) => {
 };
 
 export const unBlockPatient: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract record ID from request parameters
         const { id } = req.params;
@@ -351,7 +360,6 @@ export const unBlockPatient: Controller = async (req, res) => {
         // Check if the record exists in the database
         const exists = await Request.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -364,10 +372,8 @@ export const unBlockPatient: Controller = async (req, res) => {
                 requestStatus: RequestStatus.Unassigned,
                 isDeleted: false,
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        await transaction.commit();
 
         // Return a success response after unblocking the patient
         return res.status(httpCode.OK).json({
@@ -375,13 +381,11 @@ export const unBlockPatient: Controller = async (req, res) => {
             message: messageConstant.PATIENT_UNBLOCK,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
 
 export const deleteRecord: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract record ID from request parameters
         const { id } = req.params;
@@ -389,7 +393,6 @@ export const deleteRecord: Controller = async (req, res) => {
         // Check if the record exists in the database
         const exists = await Request.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -399,10 +402,7 @@ export const deleteRecord: Controller = async (req, res) => {
         // Delete the record from the database
         await Request.destroy({
             where: { id },
-            transaction,
         });
-
-        await transaction.commit();
 
         // Return a success response after deleting the record
         return res.status(httpCode.OK).json({
@@ -410,7 +410,6 @@ export const deleteRecord: Controller = async (req, res) => {
             message: messageConstant.REQUEST_DELETED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };

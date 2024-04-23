@@ -216,13 +216,11 @@ export const getPatientByState: Controller = async (req, res) => {
  * @description Accepts a request and updates its status to Accepted
  */
 export const acceptRequest: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
         const exists = await Request.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -235,10 +233,8 @@ export const acceptRequest: Controller = async (req, res) => {
                 requestStatus: RequestStatus.Accepted,
                 acceptedDate: new Date(),
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        await transaction.commit();
 
         // Sending response indicating request is accepted
         return res.status(httpCode.OK).json({
@@ -246,7 +242,6 @@ export const acceptRequest: Controller = async (req, res) => {
             message: messageConstant.REQUEST_ACCEPTED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -259,8 +254,6 @@ export const acceptRequest: Controller = async (req, res) => {
  * @description This controller function updates the `adminNotes` field for a specific request identified by `id`. It uses the `Request.update` method to apply the changes to the database. Upon successful update, it sends back a response with a status code and a success message.
  */
 export const updateNotes: Controller = async (req, res) => {
-    // Start a new transaction
-    const transaction = await sequelize.transaction();
     try {
         // Extract id from request parameter
         const { id } = req.params;
@@ -271,8 +264,6 @@ export const updateNotes: Controller = async (req, res) => {
         // Check if request exists or not
         const exists = await Request.findByPk(id);
         if (!exists) {
-            // Rollback transaction if request does not exist
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -284,17 +275,14 @@ export const updateNotes: Controller = async (req, res) => {
             {
                 physicianNotes,
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        await transaction.commit();
 
         return res.json({
             status: httpCode.OK,
             message: messageConstant.NOTE_UPDATED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -307,8 +295,6 @@ export const updateNotes: Controller = async (req, res) => {
  * @description Concludes care for a request by updating its status and adding physician notes
  */
 export const concludeCare: Controller = async (req, res) => {
-    // Start a new transaction
-    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
@@ -317,8 +303,6 @@ export const concludeCare: Controller = async (req, res) => {
         // Check if request exists or not
         const exists = await Request.findByPk(id);
         if (!exists) {
-            // Rollback transaction if request does not exist
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -330,8 +314,6 @@ export const concludeCare: Controller = async (req, res) => {
         });
 
         if (!finalize?.isFinalize) {
-            // Rollback transaction if form is not finalized
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.FORM_NOT_FINALIZED,
@@ -346,11 +328,8 @@ export const concludeCare: Controller = async (req, res) => {
                 requestStatus: RequestStatus.Conclude,
                 concludedDate: new Date(),
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        // Commit the transaction after all operations are successful
-        await transaction.commit();
 
         // Sending response indicating care is concluded
         return res.status(httpCode.OK).json({
@@ -358,7 +337,6 @@ export const concludeCare: Controller = async (req, res) => {
             message: messageConstant.CARE_CONCLUDED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -371,7 +349,6 @@ export const concludeCare: Controller = async (req, res) => {
  * @description Updates type of care for a request
  */
 export const typeOfCare: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
@@ -379,7 +356,6 @@ export const typeOfCare: Controller = async (req, res) => {
 
         const exists = await Request.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -412,10 +388,8 @@ export const typeOfCare: Controller = async (req, res) => {
                 requestStatus,
                 caseTag,
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        await transaction.commit();
 
         // Sending response indicating request is updated
         return res.status(httpCode.OK).json({
@@ -423,20 +397,17 @@ export const typeOfCare: Controller = async (req, res) => {
             message: messageConstant.REQUEST_UPDATED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
 
 export const houseCallType: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
         // Check if the request exists
         const exists = await Request.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -449,10 +420,8 @@ export const houseCallType: Controller = async (req, res) => {
                 caseTag: CaseTag.Conclude,
                 requestStatus: RequestStatus.Consult,
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        await transaction.commit();
 
         // Return success response
         return res.status(httpCode.OK).json({
@@ -460,7 +429,6 @@ export const houseCallType: Controller = async (req, res) => {
             message: messageConstant.REQUEST_UPDATED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -473,7 +441,6 @@ export const houseCallType: Controller = async (req, res) => {
  * @description Transfers a request to another provider
  */
 export const transferRequest: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
@@ -483,7 +450,6 @@ export const transferRequest: Controller = async (req, res) => {
         // Check if the request exists
         const exists = await Request.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -498,10 +464,8 @@ export const transferRequest: Controller = async (req, res) => {
                 transferNote: description,
                 caseTag: CaseTag.New,
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        await transaction.commit();
 
         // Sending response indicating request is transferred
         return res.status(httpCode.OK).json({
@@ -509,7 +473,6 @@ export const transferRequest: Controller = async (req, res) => {
             message: messageConstant.REQUEST_TRANSFERRED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -564,7 +527,6 @@ export const encounterForm: Controller = async (req, res) => {
  * @description Finalizes a medical report
  */
 export const finalizeForm: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
@@ -572,7 +534,6 @@ export const finalizeForm: Controller = async (req, res) => {
             where: { requestId: id },
         });
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.INVALID_INPUT,
@@ -584,10 +545,8 @@ export const finalizeForm: Controller = async (req, res) => {
             {
                 isFinalize: true,
             },
-            { where: { requestId: id }, transaction },
+            { where: { requestId: id } },
         );
-
-        transaction.commit();
 
         // Sending response indicating form is finalized
         return res.status(httpCode.OK).json({
@@ -595,7 +554,6 @@ export const finalizeForm: Controller = async (req, res) => {
             message: messageConstant.FORM_FINALIZED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -680,7 +638,6 @@ export const viewEncounterForm: Controller = async (req, res) => {
  * @description Edits an existing encounter form
  */
 export const editEncounterForm: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
@@ -688,7 +645,6 @@ export const editEncounterForm: Controller = async (req, res) => {
             where: { requestId: id },
         });
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.FORM_NOT_FOUND,
@@ -702,11 +658,8 @@ export const editEncounterForm: Controller = async (req, res) => {
             },
             {
                 where: { requestId: id },
-                transaction,
             },
         );
-
-        await transaction.commit();
 
         // Sending response indicating encounter form is updated
         return res.status(httpCode.OK).json({
@@ -714,7 +667,6 @@ export const editEncounterForm: Controller = async (req, res) => {
             message: messageConstant.FORM_UPDATED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };

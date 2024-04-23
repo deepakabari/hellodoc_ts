@@ -339,7 +339,6 @@ export const editPhysicianProfile: Controller = async (req, res) => {
 
                 return true;
             } catch (error) {
-                console.error('Transaction failed:', error);
                 return false;
             }
         };
@@ -464,7 +463,6 @@ export const updateNotification: Controller = async (req, res) => {
 };
 
 export const deleteAccount: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract user ID from request parameters
         const { id } = req.params;
@@ -472,7 +470,6 @@ export const deleteAccount: Controller = async (req, res) => {
         // Check if user with the given ID exists
         const exists = await User.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.INVALID_INPUT,
@@ -482,17 +479,13 @@ export const deleteAccount: Controller = async (req, res) => {
         // Delete the user
         await User.destroy({
             where: { id },
-            transaction,
         });
-
-        await transaction.commit();
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.USER_DELETED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };

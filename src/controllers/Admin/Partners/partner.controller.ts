@@ -297,7 +297,6 @@ export const viewVendor: Controller = async (req, res) => {
 };
 
 export const updateBusiness: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract business ID from request parameters
         const { id } = req.params;
@@ -319,7 +318,6 @@ export const updateBusiness: Controller = async (req, res) => {
         // Check if business with the given ID exists
         const existingBusiness = await Business.findByPk(id);
         if (!existingBusiness) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.INVALID_INPUT,
@@ -340,24 +338,19 @@ export const updateBusiness: Controller = async (req, res) => {
                 state,
                 zipCode,
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        // If the update is successful, commit the transaction
-        await transaction.commit();
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.BUSINESS_UPDATED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
 
 export const deleteBusiness: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract business ID from request parameters
         const { id } = req.params;
@@ -365,7 +358,6 @@ export const deleteBusiness: Controller = async (req, res) => {
         // Check if business with the given ID exists
         const existingBusiness = await Business.findByPk(id);
         if (!existingBusiness) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.INVALID_INPUT,
@@ -375,17 +367,13 @@ export const deleteBusiness: Controller = async (req, res) => {
         // Delete the business
         await Business.destroy({
             where: { id },
-            transaction,
         });
-
-        await transaction.commit();
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.BUSINESS_DELETED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };

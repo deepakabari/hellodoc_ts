@@ -342,14 +342,12 @@ export const updateRole: Controller = async (req, res) => {
  * @description Deletes a specific role from the database based on the role ID provided in the request parameters.
  */
 export const deleteRole: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract the role ID from the request parameters.
         const { id } = req.params;
 
         const existingRole = await Role.findByPk(id);
         if (!existingRole) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.INVALID_INPUT,
@@ -359,10 +357,7 @@ export const deleteRole: Controller = async (req, res) => {
         // Delete the role from the database.
         await Role.destroy({
             where: { id }, // Specify the condition to find the role to delete.
-            transaction,
         });
-
-        await transaction.commit();
 
         // Send a success response with a status message.
         return res.status(httpCode.OK).json({
@@ -370,7 +365,6 @@ export const deleteRole: Controller = async (req, res) => {
             message: messageConstant.ROLE_DELETED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };

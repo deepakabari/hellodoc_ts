@@ -6,4 +6,6 @@ const router = express.Router();
 
 router.get('/mySchedule', isAuth, providerSchedule.viewSchedule);
 
+router.get('/invoice/:id', providerSchedule.invoices);
+
 export default router;

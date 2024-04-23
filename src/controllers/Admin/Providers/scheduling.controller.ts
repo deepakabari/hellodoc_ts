@@ -417,7 +417,6 @@ export const deleteShift: Controller = async (req, res) => {
 };
 
 export const editShift: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract shift ID from request parameters
         const { id } = req.params;
@@ -428,7 +427,6 @@ export const editShift: Controller = async (req, res) => {
         // Check if the shift exists
         const exists = await Shift.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.SHIFT_NOT_FOUND,
@@ -438,10 +436,8 @@ export const editShift: Controller = async (req, res) => {
         // Update the shift with the provided details
         await Shift.update(
             { shiftDate, startTime, endTime },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        await transaction.commit();
 
         // Respond with success message
         return res.status(httpCode.OK).json({
@@ -449,7 +445,6 @@ export const editShift: Controller = async (req, res) => {
             message: messageConstant.SHIFT_UPDATED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };

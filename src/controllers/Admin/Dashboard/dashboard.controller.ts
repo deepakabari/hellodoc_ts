@@ -415,7 +415,6 @@ export const viewNotes: Controller = async (req, res) => {
  * @description This controller function updates the `adminNotes` field for a specific request identified by `id`. It uses the `Request.update` method to apply the changes to the database. Upon successful update, it sends back a response with a status code and a success message.
  */
 export const updateNotes: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract id from request parameter
         const { id } = req.params;
@@ -426,7 +425,6 @@ export const updateNotes: Controller = async (req, res) => {
         // Check if request exists or not
         const exists = await Request.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -438,17 +436,14 @@ export const updateNotes: Controller = async (req, res) => {
             {
                 adminNotes,
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        await transaction.commit();
 
         return res.json({
             status: httpCode.OK,
             message: messageConstant.NOTE_UPDATED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -519,7 +514,6 @@ export const getPatientData: Controller = async (req, res) => {
  * @description This function is an Express controller that updates a case with the provided admin notes and cancellation reason, changes the status of the case to 'CancelledByAdmin', and sends the updated case data in the response.
  */
 export const cancelCase: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract id from request parameter
         const { id } = req.params;
@@ -533,7 +527,6 @@ export const cancelCase: Controller = async (req, res) => {
             !exists ||
             exists.requestStatus === RequestStatus.CancelledByAdmin
         ) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_CANCELLED,
@@ -553,11 +546,8 @@ export const cancelCase: Controller = async (req, res) => {
                 where: {
                     id,
                 },
-                transaction,
             },
         );
-
-        await transaction.commit();
 
         // success response
         return res.status(httpCode.OK).json({
@@ -565,7 +555,6 @@ export const cancelCase: Controller = async (req, res) => {
             message: messageConstant.CASE_CANCELLED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -578,7 +567,6 @@ export const cancelCase: Controller = async (req, res) => {
  * @description This function is an Express controller that updates a case with the provided description, changes the status of the case to 'Blocked'.
  */
 export const blockCase: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract id from request parameter
         const { id } = req.params;
@@ -589,7 +577,6 @@ export const blockCase: Controller = async (req, res) => {
         // Check if request exists or not
         const exists = await Request.findByPk(id);
         if (!exists || exists.requestStatus === RequestStatus.Blocked) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_BLOCKED,
@@ -603,10 +590,8 @@ export const blockCase: Controller = async (req, res) => {
                 requestStatus: RequestStatus.Blocked,
                 isDeleted: true,
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        await transaction.commit();
 
         // success response
         return res.status(httpCode.OK).json({
@@ -614,7 +599,6 @@ export const blockCase: Controller = async (req, res) => {
             message: messageConstant.CASE_BLOCKED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -627,14 +611,12 @@ export const blockCase: Controller = async (req, res) => {
  * @description This function is an Express controller that updates the status of a case to 'Cleared'.
  */
 export const clearCase: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
         // Check if request exists or not
         const exists = await Request.findByPk(id);
         if (!exists || exists.requestStatus === RequestStatus.Cleared) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_CLEARED,
@@ -650,18 +632,14 @@ export const clearCase: Controller = async (req, res) => {
             },
             {
                 where: { id },
-                transaction,
             },
         );
-
-        await transaction.commit();
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.CASE_CLEARED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -895,7 +873,6 @@ export const getPhysicianByRegion: Controller = async (req, res) => {
  * @description This function is an Express controller that assigns a case based on the provided physicianId, admin note and update physicianId and adminNotes and caseTag: Pending.
  */
 export const assignCase: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract request parameters and body data
         const { id } = req.params;
@@ -904,7 +881,6 @@ export const assignCase: Controller = async (req, res) => {
         // Check if request exists or not
         const exists = await Request.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             // If request doesn't exist, return bad request response
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -918,10 +894,8 @@ export const assignCase: Controller = async (req, res) => {
                 physicianId,
                 transferNote,
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        await transaction.commit();
 
         // Return success response
         return res.status(httpCode.OK).json({
@@ -929,7 +903,6 @@ export const assignCase: Controller = async (req, res) => {
             message: messageConstant.CASE_ASSIGNED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -1234,7 +1207,6 @@ export const closeCaseView: Controller = async (req, res) => {
  * @description This function is an Express controller that updates the close case.
  */
 export const updateCloseCase: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract the request id from request parameters.
         const { id } = req.params;
@@ -1245,7 +1217,6 @@ export const updateCloseCase: Controller = async (req, res) => {
         // Check if request exists or not
         const exists = await Request.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -1258,17 +1229,14 @@ export const updateCloseCase: Controller = async (req, res) => {
                 patientPhoneNumber,
                 patientEmail,
             },
-            { where: { id }, transaction },
+            { where: { id } },
         );
-
-        await transaction.commit();
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.CLOSE_CASE_UPDATED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -1281,14 +1249,12 @@ export const updateCloseCase: Controller = async (req, res) => {
  * @description This controller function updates the status of a case to 'Closed' and its case tag to 'UnPaid'. It is triggered when a case with the tag 'Close' needs to be updated to reflect its closure. The function responds with a success message upon successful update.
  */
 export const closeCase: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         const { id } = req.params;
 
         // Check if request exists or not
         const exists = await Request.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
@@ -1301,17 +1267,14 @@ export const closeCase: Controller = async (req, res) => {
                 caseTag: CaseTag.UnPaid,
                 concludedDate: new Date(),
             },
-            { where: { id, caseTag: CaseTag.Close }, transaction },
+            { where: { id, caseTag: CaseTag.Close } },
         );
-
-        await transaction.commit();
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.CASE_CLOSED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
@@ -1402,7 +1365,6 @@ export const requestSupport: Controller = async (req, res) => {
  * @description This function is an Express controller that handles request transfer. It updates the `physicianId` and `transferNote` of a request with the given `id` and sends a success response.
  */
 export const transferRequest: Controller = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         // Extract Request id from request parameters.
         const { id } = req.params;
@@ -1411,26 +1373,19 @@ export const transferRequest: Controller = async (req, res) => {
         // Check if request exists or not
         const exists = await Request.findByPk(id);
         if (!exists) {
-            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.REQUEST_NOT_FOUND,
             });
         }
 
-        await Request.update(
-            { physicianId, transferNote },
-            { where: { id }, transaction },
-        );
-
-        await transaction.commit();
+        await Request.update({ physicianId, transferNote }, { where: { id } });
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.REQUEST_TRANSFERRED,
         });
     } catch (error) {
-        await transaction.rollback();
         throw error;
     }
 };
