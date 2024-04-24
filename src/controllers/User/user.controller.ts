@@ -20,9 +20,8 @@ import { Op } from 'sequelize';
 import dotenv from 'dotenv';
 import linkConstant from '../../constants/link.constant';
 import { compileEmailTemplate } from '../../utils/hbsCompiler';
-import transporter from '../../utils/email';
+import { sendEmail } from '../../utils/email';
 import { getAbbreviationFromDb } from '../../utils/regionAbbreviation';
-import { upload } from '../../utils/multerConfig';
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
@@ -285,7 +284,7 @@ const createPatient: Controller = async (req, res) => {
         const { email, password, confirmPassword } = req.body;
 
         const existingUser = await User.findOne({ where: { email } });
-        if(!existingUser) {
+        if (!existingUser) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.USER_NOT_EXIST,
@@ -435,34 +434,20 @@ const createRequest: Controller = async (req, res) => {
                     templateData,
                 );
 
-                const mailOptions = {
-                    from: process.env.EMAIL_FROM,
+                sendEmail({
                     to: patientEmail,
                     subject: linkConstant.createAccountSubject,
                     html: data,
-                };
+                });
 
-                new Promise((resolve, reject) => {
-                    transporter.sendMail(
-                        mailOptions,
-                        (error: Error, info: string) => {
-                            if (error) {
-                                reject(error);
-                            } else {
-                                resolve(info);
-                            }
-                        },
-                    );
-                }).then(() => {
-                    EmailLog.create({
-                        email: patientEmail,
-                        senderId: userId,
-                        receiverId: userId,
-                        sentDate: new Date(),
-                        isEmailSent: true,
-                        sentTries: 1,
-                        action: 'Create Request',
-                    });
+                EmailLog.create({
+                    email: patientEmail,
+                    senderId: userId,
+                    receiverId: userId,
+                    sentDate: new Date(),
+                    isEmailSent: true,
+                    sentTries: 1,
+                    action: 'Create Request',
                 });
             }
         } else {
@@ -596,39 +581,21 @@ const createAdminRequest: Controller = async (req, res) => {
                     templateData,
                 );
 
-                const mailOptions = {
-                    from: process.env.EMAIL_FROM,
+                sendEmail({
                     to: patientEmail,
                     subject: linkConstant.createAccountSubject,
                     html: data,
-                };
+                });
 
-                new Promise((resolve, reject) => {
-                    transporter.sendMail(
-                        mailOptions,
-                        (error: Error, info: string) => {
-                            if (error) {
-                                reject(error);
-                            } else {
-                                resolve(info);
-                            }
-                        },
-                    );
-                })
-                    .then(() => {
-                        EmailLog.create({
-                            email: patientEmail,
-                            senderId: user.id,
-                            receiverId: user.id,
-                            sentDate: new Date(),
-                            isEmailSent: true,
-                            sentTries: 1,
-                            action: 'Create Request',
-                        });
-                    })
-                    .catch((error) => {
-                        console.error('Error sending email:', error);
-                    });
+                EmailLog.create({
+                    email: patientEmail,
+                    senderId: user.id,
+                    receiverId: user.id,
+                    sentDate: new Date(),
+                    isEmailSent: true,
+                    sentTries: 1,
+                    action: 'Create Request',
+                });
             }
         } else {
             const existingUser = await User.findOne({

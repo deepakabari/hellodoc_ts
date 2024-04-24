@@ -39,7 +39,7 @@
             color: #777;
         }
 
-        a.button {
+        .button {
             background-color: #28a745;
             color: #ffffff;
             padding: 10px 20px;
@@ -47,6 +47,8 @@
             border-radius: 5px;
             margin-top: 20px;
             display: inline-block;
+            border: 1px solid #28a745;
+            cursor: pointer;
         }
         .contactLink {
             text-decoration: underline;
@@ -63,7 +65,7 @@
         <div class="content">
             <p>Hello {{recipientName}},</p>
             <p>Please review and sign the agreement by following the link below:</p>
-            <a href="{{agreementLink}}" class="button"><button>Agreement</button></a>
+            <a href="{{agreementLink}}"><button class="button">Agreement</button></a>
             <p>If you have any questions, please do not hesitate to contact us.</p>
             <p><a href="mailto:arcadecohort2.1@gmail.com" class="contactLink">Email us at arcadecohort2.1@gmail.com</a></p>
         </div>

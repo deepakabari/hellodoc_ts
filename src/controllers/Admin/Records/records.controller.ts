@@ -550,15 +550,21 @@ export const emailLog: Controller = async (req, res) => {
             ],
             include: [
                 {
-                    model: User,
+                    model: Request,
                     as: 'receiver',
-                    attributes: ['id', 'firstName', 'lastName'],
+                    attributes: ['id', 'patientFirstName', 'patientLastName'],
                     include: [
                         {
-                            model: Role,
-                            as: 'role',
-                            attributes: ['Name'],
-                            where: roleWhereClause,
+                            model: User,
+                            as: 'user',
+                            attributes: ['id', 'roleId'],
+                            include: [
+                                {
+                                    model: Role,
+                                    attributes: ['id', 'Name'],
+                                    where: roleWhereClause,
+                                },
+                            ],
                         },
                     ],
                     where: receiverWhereClause,
@@ -657,15 +663,21 @@ export const smsLog: Controller = async (req, res) => {
             ],
             include: [
                 {
-                    model: User,
+                    model: Request,
                     as: 'receiver',
-                    attributes: ['id', 'firstName', 'lastName'],
+                    attributes: ['id', 'patientFirstName', 'patientLastName'],
                     include: [
                         {
-                            model: Role,
-                            as: 'role',
-                            attributes: ['Name'],
-                            where: roleWhereClause,
+                            model: User,
+                            as: 'user',
+                            attributes: ['id', 'roleId'],
+                            include: [
+                                {
+                                    model: Role,
+                                    attributes: ['id', 'Name'],
+                                    where: roleWhereClause,
+                                },
+                            ],
                         },
                     ],
                     where: receiverWhereClause,

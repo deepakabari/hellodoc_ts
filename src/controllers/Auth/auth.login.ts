@@ -1,7 +1,7 @@
 import httpCode from '../../constants/http.constant';
 import messageConstant from '../../constants/message.constant';
 import jwt from 'jsonwebtoken';
-import transporter from '../../utils/email';
+import { sendEmail } from '../../utils/email';
 import { Controller } from '../../interfaces';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
@@ -143,31 +143,20 @@ export const forgotPassword: Controller = async (req, res) => {
 
         const data = await compileEmailTemplate('resetEmail', templateData);
 
-        const mailOptions = {
-            from: EMAIL_FROM,
+        sendEmail({
             to: email,
             subject: 'Password Reset Email',
             html: data,
-        };
+        });
 
-        new Promise((resolve, reject) => {
-            transporter.sendMail(mailOptions, (error: Error, info: string) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(info);
-                }
-            });
-        }).then(() => {
-            EmailLog.create({
-                email,
-                senderId: existingUser?.id,
-                receiverId: existingUser?.id,
-                sentDate: new Date(),
-                isEmailSent: true,
-                sentTries: 1,
-                action: 'Forgot Password',
-            });
+        EmailLog.create({
+            email,
+            senderId: existingUser?.id,
+            receiverId: existingUser?.id,
+            sentDate: new Date(),
+            isEmailSent: true,
+            sentTries: 1,
+            action: 'Forgot Password',
         });
 
         return res.json({

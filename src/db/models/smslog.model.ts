@@ -1,7 +1,7 @@
 import { Table, Column, Model, BelongsTo } from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
 import { SMSLogAttributes, SMSLogCreationAttributes } from '../../interfaces';
-import { Role, User } from './index';
+import { Role, Request, User } from './index';
 
 @Table({
     timestamps: true,
@@ -50,12 +50,18 @@ class SMSLog extends Model<SMSLogAttributes, SMSLogCreationAttributes> {
     })
     sender: User;
 
-    @BelongsTo(() => User, {
+    @BelongsTo(() => Request, {
         foreignKey: 'receiverId',
         targetKey: 'id',
         as: 'receiver',
     })
-    receiver: User;
+    receiver: Request;
+
+    @BelongsTo(() => Role, {
+        foreignKey: 'roleId',
+        targetKey: 'id',
+    })
+    role: Role;
 }
 
 export default SMSLog;

@@ -14,7 +14,7 @@ import {
 import { Controller, FieldUpdates } from '../../../interfaces';
 import dotenv from 'dotenv';
 import linkConstant from '../../../constants/link.constant';
-import transporter from '../../../utils/email';
+import { sendEmail } from '../../../utils/email';
 import { sendSMS } from '../../../utils/smsSender';
 import bcrypt from 'bcrypt';
 import { Order } from 'sequelize';
@@ -118,39 +118,6 @@ export const contactProvider: Controller = async (req, res) => {
         // Extract message body and contact method from request body
         const { messageBody, contactMethod } = req.body;
 
-        // Function to send email to the provider
-        const sendEmail = (message: string) => {
-            let mailOptions = {
-                from: process.env.EMAIL_FROM,
-                to: user.email,
-                subject: linkConstant.contactSubject,
-                text: message,
-            };
-
-            new Promise((resolve, reject) => {
-                transporter.sendMail(
-                    mailOptions,
-                    (error: Error, info: string) => {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            resolve(info);
-                        }
-                    },
-                );
-            }).then(() => {
-                EmailLog.create({
-                    email: user?.email as string,
-                    senderId: req.user.id,
-                    receiverId: user?.id,
-                    sentDate: new Date(),
-                    isEmailSent: true,
-                    sentTries: 1,
-                    action: 'Provider Contact',
-                });
-            });
-        };
-
         // Switch based on the contact method chosen
         switch (contactMethod) {
             case 'sms':
@@ -163,7 +130,11 @@ export const contactProvider: Controller = async (req, res) => {
                 );
                 break;
             case 'email':
-                sendEmail(messageBody);
+                sendEmail({
+                    to: user.email,
+                    subject: linkConstant.contactSubject,
+                    text: messageBody,
+                });
                 break;
             case 'both':
                 sendSMS(
@@ -173,9 +144,23 @@ export const contactProvider: Controller = async (req, res) => {
                     'Provider Contact',
                     user.id,
                 );
-                sendEmail(messageBody);
+                sendEmail({
+                    to: user.email,
+                    subject: linkConstant.contactSubject,
+                    text: messageBody,
+                });
                 break;
         }
+
+        EmailLog.create({
+            email: user?.email as string,
+            senderId: req.user.id,
+            receiverId: user?.id,
+            sentDate: new Date(),
+            isEmailSent: true,
+            sentTries: 1,
+            action: 'Provider Contact',
+        });
 
         // Return success response
         return res.status(httpCode.OK).json({

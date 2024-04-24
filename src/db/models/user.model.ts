@@ -128,7 +128,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     syncEmailAddress: string;
 
     @Column({ type: DataTypes.INTEGER, allowNull: true })
-    createdBy: number
+    createdBy: number;
 
     @Column({ type: DataTypes.STRING, allowNull: true })
     resetToken: string;
@@ -189,31 +189,15 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
 
     @HasMany(() => EmailLog, {
         foreignKey: 'senderId',
-        sourceKey: 'id',
-        as: 'senderEmailLogs',
+        as: 'userEmailLogs',
     })
-    senderEmailLogs: EmailLog[];
-
-    @HasMany(() => EmailLog, {
-        foreignKey: 'receiverId',
-        sourceKey: 'id',
-        as: 'receiverEmailLogs',
-    })
-    receiverEmailLogs: EmailLog[];
+    userEmailLogs: EmailLog[];
 
     @HasMany(() => SMSLog, {
         foreignKey: 'senderId',
-        sourceKey: 'id',
-        as: 'senderSMSLogs',
+        as: 'userSMSLogs',
     })
-    senderSMSLogs: SMSLog[];
-
-    @HasMany(() => SMSLog, {
-        foreignKey: 'receiverId',
-        sourceKey: 'id',
-        as: 'receiverSMSLogs',
-    })
-    receiverSMSLogs: SMSLog[];
+    userSMSLogs: SMSLog[];
 
     @HasOne(() => Business, { foreignKey: 'userId' })
     business: Business;

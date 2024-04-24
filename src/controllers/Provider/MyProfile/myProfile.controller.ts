@@ -4,7 +4,7 @@ import { Controller } from '../../../interfaces';
 import dotenv from 'dotenv';
 dotenv.config();
 import { EmailLog, RequestWiseFiles, User } from '../../../db/models/index';
-import transporter from '../../../utils/email';
+import { sendEmail } from '../../../utils/email';
 import { compileEmailTemplate } from '../../../utils/hbsCompiler';
 
 export const requestToAdmin: Controller = async (req, res) => {
@@ -43,31 +43,20 @@ export const requestToAdmin: Controller = async (req, res) => {
         // Compile email template using the provided data
         const data = await compileEmailTemplate('requestToAdmin', templateData);
 
-        const mailOptions = {
-            from: existingUser.email,
+        sendEmail({
             to: creator.email,
             subject: 'Provider Request to Edit Profile',
             html: data,
-        };
+        });
 
-        new Promise((resolve, reject) => {
-            transporter.sendMail(mailOptions, (error: Error, info: string) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(info);
-                }
-            });
-        }).then(() => {
-            EmailLog.create({
-                email: process.env.ADMIN as string,
-                senderId: existingUser?.id,
-                receiverId: 1,
-                sentDate: new Date(),
-                isEmailSent: true,
-                sentTries: 1,
-                action: 'Edit request to admin',
-            });
+        EmailLog.create({
+            email: process.env.ADMIN as string,
+            senderId: existingUser?.id,
+            receiverId: 1,
+            sentDate: new Date(),
+            isEmailSent: true,
+            sentTries: 1,
+            action: 'Edit request to admin',
         });
 
         // If email is sent successfully, return success status with message

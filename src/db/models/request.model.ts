@@ -281,22 +281,20 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
     })
     requestWiseFiles: RequestWiseFiles[];
 
+    @HasOne(() => MedicalReport, { foreignKey: 'requestId' })
+    medicalReport: MedicalReport;
+
     @HasMany(() => EmailLog, {
-        foreignKey: 'requestId',
-        sourceKey: 'id',
-        as: 'requestEmailLog',
+        foreignKey: 'receiverId',
+        as: 'requestEmailLogs',
     })
     requestEmailLogs: EmailLog[];
 
     @HasMany(() => SMSLog, {
-        foreignKey: 'requestId',
-        sourceKey: 'id',
-        as: 'requestSMSLog',
+        foreignKey: 'receiverId',
+        as: 'requestSMSLogs',
     })
     requestSMSLogs: SMSLog[];
-
-    @HasOne(() => MedicalReport, { foreignKey: 'requestId' })
-    medicalReport: MedicalReport;
 }
 
 export default Request;

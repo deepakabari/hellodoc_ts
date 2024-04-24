@@ -15,7 +15,7 @@ import {
     User,
 } from '../../../db/models/index';
 import { Controller } from '../../../interfaces';
-import transporter from '../../../utils/email';
+import { sendEmail } from '../../../utils/email';
 import { FindAttributeOptions, Includeable, Order } from 'sequelize';
 import { Op } from 'sequelize';
 import { compileEmailTemplate } from '../../../utils/hbsCompiler';
@@ -693,6 +693,7 @@ export const viewSendAgreement: Controller = async (req, res) => {
  * @description This function is an Express controller that retrieves a user by their ID, sends an agreement to the user's email and phone number, and sends a success response.
  */
 export const sendAgreement: Controller = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         let { id } = req.params;
 
@@ -701,6 +702,7 @@ export const sendAgreement: Controller = async (req, res) => {
 
         // If no user is found, return a 400 Bad Request status with a user not exist message.
         if (!user) {
+            await transaction.rollback();
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.USER_NOT_EXIST,
@@ -710,8 +712,8 @@ export const sendAgreement: Controller = async (req, res) => {
         // Extract the patient's phone number and email from the retrieved user details.
         const phoneNumber = user.patientPhoneNumber;
         const email = user.patientEmail;
-        
-        id = id.toString()
+
+        id = id.toString();
 
         const encryptedId = encryptId(id);
 
@@ -721,59 +723,42 @@ export const sendAgreement: Controller = async (req, res) => {
             recipientName: user.patientFirstName,
         };
 
+        console.log(user.id);
+
         // Compile the email template with the provided data.
         const data = await compileEmailTemplate(
             'sendAgreementEmail',
             templateData,
         );
 
-        // Define the email options, including sender, recipient, subject, and HTML content.
-        let mailOptions = {
-            from: process.env.EMAIL_FROM,
+
+        sendEmail({
             to: email,
             subject: linkConstant.agreementSubject,
             html: data,
-        };
+        });
 
-        new Promise((resolve, reject) => {
-            transporter.sendMail(mailOptions, (error: Error, info: string) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(info);
-                }
-            });
-        })
-            .then(() => {
-                // Update the Request table asynchronously
-                Request.update({ isAgreementSent: true }, { where: { id } });
+        // Update the Request table asynchronously
+        Request.update(
+            { isAgreementSent: true },
+            { where: { id }, transaction },
+        );
 
-                // Send SMS asynchronously
-                const messageBody = `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: ${linkConstant.AGREEMENT_URL}/${encryptedId}`;
+        // Send SMS asynchronously
+        const messageBody = `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: ${linkConstant.AGREEMENT_URL}/${encryptedId}`;
 
-                sendSMS(
-                    messageBody,
-                    myNumber,
-                    req.user.id,
-                    'Send Agreement',
-                    user.id,
-                );
+        sendSMS(messageBody, myNumber, req.user.id, 'Send Agreement', user.id);
 
-                EmailLog.create({
-                    email,
-                    confirmationNumber: user.confirmationNumber,
-                    senderId: req.user.id,
-                    receiverId: user.id,
-                    sentDate: new Date(),
-                    isEmailSent: true,
-                    sentTries: 1,
-                    action: 'Send Agreement',
-                });
-            })
-            .catch((error: Error) => {
-                console.error('Error sending email:', error);
-                // Handle the email sending failure, e.g., by logging or retrying
-            });
+        EmailLog.create({
+            email,
+            confirmationNumber: user.confirmationNumber,
+            senderId: req.user.id,
+            receiverId: user.id,
+            sentDate: new Date(),
+            isEmailSent: true,
+            sentTries: 1,
+            action: 'Send Agreement',
+        });
 
         // Respond immediately to the client with a success message
         return res.json({
@@ -996,9 +981,7 @@ export const sendFileThroughMail: Controller = async (req, res) => {
             'images',
         );
 
-        // Construct email message
-        const mailOptions = {
-            from: process.env.EMAIL_FROM,
+        sendEmail({
             to: email,
             subject: 'Medical Files Attached',
             text: 'Here is your Medical Report, Prescription file, Medical Tests files.',
@@ -1006,32 +989,18 @@ export const sendFileThroughMail: Controller = async (req, res) => {
                 filename: file,
                 path: `${filePath}/${file}`,
             })),
-        };
+        });
 
-        new Promise((resolve, reject) => {
-            transporter.sendMail(mailOptions, (error: Error, info: string) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(info);
-                }
-            });
-        })
-            .then(() => {
-                EmailLog.create({
-                    email,
-                    confirmationNumber: user.confirmationNumber,
-                    senderId: req.user.id,
-                    receiverId: user.id,
-                    sentDate: new Date(),
-                    isEmailSent: true,
-                    sentTries: 1,
-                    action: 'Request Medical Files',
-                });
-            })
-            .catch((error: Error) => {
-                console.error('Error Sending mail:', error);
-            });
+        EmailLog.create({
+            email,
+            confirmationNumber: user.confirmationNumber,
+            senderId: req.user.id,
+            receiverId: user.id,
+            sentDate: new Date(),
+            isEmailSent: true,
+            sentTries: 1,
+            action: 'Request Medical Files',
+        });
 
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
@@ -1313,41 +1282,22 @@ export const requestSupport: Controller = async (req, res) => {
                 templateData,
             );
 
-            // Construct email options
-            const mailOptions = {
-                from: process.env.EMAIL_FROM,
+            sendEmail({
                 to: physician.email,
                 subject:
                     'Immediate On-Call Support Required - Your Assistance Needed',
                 html: data,
-            };
+            });
 
-            new Promise((resolve, reject) => {
-                transporter.sendMail(
-                    mailOptions,
-                    (error: Error, info: string) => {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            resolve(info);
-                        }
-                    },
-                );
-            })
-                .then(() => {
-                    EmailLog.create({
-                        email: physician.email,
-                        senderId: req.user.id,
-                        receiverId: physician.id,
-                        sentDate: new Date(),
-                        isEmailSent: true,
-                        sentTries: 1,
-                        action: 'Request Support',
-                    });
-                })
-                .catch((error: Error) => {
-                    console.error('Error sending mail:', error);
-                });
+            EmailLog.create({
+                email: physician.email,
+                senderId: req.user.id,
+                receiverId: physician.id,
+                sentDate: new Date(),
+                isEmailSent: true,
+                sentTries: 1,
+                action: 'Request Support',
+            });
         }
 
         // Return success response
@@ -1415,6 +1365,12 @@ export const sendPatientRequest: Controller = async (req, res) => {
             'sendRequestEmail',
             templateData,
         );
+        
+        sendEmail({
+            to: email,
+            subject: linkConstant.createRequestSubject,
+            html: data,
+        });
 
         // Send SMS to patient
         const messageBody = `Hello ${firstName}, To Create a Request on our secure online portal. Please click on the button below to create Your First Request: ${linkConstant.REQUEST_URL}.`;
@@ -1425,31 +1381,13 @@ export const sendPatientRequest: Controller = async (req, res) => {
             'Send request link to patient',
         );
 
-        // Construct email options
-        const mailOptions = {
-            from: process.env.EMAIL_FROM,
-            to: email,
-            subject: linkConstant.createRequestSubject,
-            html: data,
-        };
-
-        new Promise((resolve, reject) => {
-            transporter.sendMail(mailOptions, (error: Error, info: string) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(info);
-                }
-            });
-        }).then(() => {
-            EmailLog.create({
-                email,
-                senderId: req.user.id,
-                sentDate: new Date(),
-                isEmailSent: true,
-                sentTries: 1,
-                action: 'Send request link to patient',
-            });
+        EmailLog.create({
+            email,
+            senderId: req.user.id,
+            sentDate: new Date(),
+            isEmailSent: true,
+            sentTries: 1,
+            action: 'Send request link to patient',
         });
 
         // Return success response

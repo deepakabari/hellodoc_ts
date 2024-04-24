@@ -1,8 +1,8 @@
 import { Sequelize } from 'sequelize-typescript';
 import {
     User,
-    Role,
     Request,
+    Role,
     Region,
     UserRegion,
     RequestWiseFiles,
@@ -32,8 +32,8 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
     },
     models: [
         User,
-        Role,
         Request,
+        Role,
         Region,
         UserRegion,
         RequestWiseFiles,
