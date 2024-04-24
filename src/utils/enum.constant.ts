@@ -81,3 +81,9 @@ export enum AllowedMimetype {
     'image/jpeg',
     'application/pdf',
 }
+
+export enum PhoneType {
+    Mobile = 'Mobile',
+    Phone = 'Phone',
+    Landline = 'Landline',
+}

@@ -125,10 +125,8 @@ export const invoices = async (req: ExpressRequest, res: Response) => {
         });
 
         const html = await compileEmailTemplate('invoice', {
-            invoiceData: invoices,
+            invoiceData: invoices[0].dataValues,
         });
-
-        console.log(invoices);
 
         const options: any = { format: 'Letter' };
 

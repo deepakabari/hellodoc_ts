@@ -33,6 +33,7 @@ export const myProfile: Controller = async (req, res) => {
                 'firstName',
                 'lastName',
                 'email',
+                'phoneType',
                 'phoneNumber',
                 'dob',
                 'street',

@@ -7,6 +7,7 @@ interface UserAttributes {
     password?: string;
     firstName?: string;
     lastName?: string;
+    phoneType?: string;
     phoneNumber?: string;
     street?: string;
     address1?: string;

@@ -549,10 +549,12 @@ const createAdminRequest: Controller = async (req, res) => {
             state,
         } = req.body;
 
+        console.log(req.body);
+
         if (
             requestType === 'Admin' ||
             requestType === 'Physician' ||
-            requestType === 'User'
+            requestType === 'Patient'
         ) {
             req.body = {
                 ...req.body,

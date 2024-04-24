@@ -53,6 +53,9 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     lastName: string;
 
     @Column({ type: DataTypes.STRING, allowNull: true })
+    phoneType: string;
+
+    @Column({ type: DataTypes.STRING, allowNull: true })
     phoneNumber: string;
 
     @Column({ type: DataTypes.STRING, allowNull: true })

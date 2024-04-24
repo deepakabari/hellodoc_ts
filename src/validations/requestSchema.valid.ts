@@ -39,6 +39,7 @@ export const RequestSchema = {
 
     assignCase: {
         [Segments.BODY]: Joi.object({
+            physicianId: Joi.number().required(),
             transferNote: Joi.string().trim().required(),
         }),
     },
@@ -82,7 +83,11 @@ export const RequestSchema = {
                 'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
                 'string.required': 'Phone number is required', // Custom message for required
             }),
-            requestorEmail: Joi.string().trim().optional().email().allow('', null),
+            requestorEmail: Joi.string()
+                .trim()
+                .optional()
+                .email()
+                .allow('', null),
             isEmail: Joi.boolean().required(),
             password: Joi.string()
                 .regex(RegExp(linkConstant.PASSWORD_REGEX))

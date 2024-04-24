@@ -22,6 +22,8 @@ import { Op } from 'sequelize';
 import { sequelize } from '../../../db/config/db.connection';
 dotenv.config();
 
+const myNumber = process.env.MY_PHONE_NUMBER as string;
+
 /**
  * @function providerInformation
  * @param req - Express request object.
@@ -152,27 +154,28 @@ export const contactProvider: Controller = async (req, res) => {
         // Switch based on the contact method chosen
         switch (contactMethod) {
             case 'sms':
-                sendSMS(messageBody);
+                sendSMS(
+                    messageBody,
+                    myNumber,
+                    req.user.id,
+                    'Provider Contact',
+                    user.id,
+                );
                 break;
             case 'email':
                 sendEmail(messageBody);
                 break;
             case 'both':
-                sendSMS(messageBody);
+                sendSMS(
+                    messageBody,
+                    myNumber,
+                    req.user.id,
+                    'Provider Contact',
+                    user.id,
+                );
                 sendEmail(messageBody);
                 break;
         }
-
-        // Log SMS sending
-        await SMSLog.create({
-            phoneNumber: user?.phoneNumber as string,
-            senderId: req.user.id,
-            receiverId: user?.id,
-            sentDate: new Date(),
-            isSMSSent: true,
-            sentTries: 1,
-            action: 'Provider Contact',
-        });
 
         // Return success response
         return res.status(httpCode.OK).json({

@@ -5,15 +5,18 @@ import { Controller } from '../../interfaces';
 import { Request, RequestWiseFiles, User } from '../../db/models/index';
 import dotenv from 'dotenv';
 import { sequelize } from '../../db/config/db.connection';
-import { Order, Sequelize } from 'sequelize';
+import { decryptId } from '../../utils/encryptdecrypt';
+import { Order } from 'sequelize';
 dotenv.config();
 
 export const acceptAgreement: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
+        const originalId = decryptId(id);
+
         // Check if the request exists
-        const exists = await Request.findByPk(id);
+        const exists = await Request.findByPk(originalId);
         if (!exists) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -29,7 +32,7 @@ export const acceptAgreement: Controller = async (req, res) => {
                 isAgreementAccepted: true,
             },
             {
-                where: { id },
+                where: { id: originalId },
             },
         );
 
@@ -48,8 +51,10 @@ export const cancelAgreement: Controller = async (req, res) => {
         const { id } = req.params;
         const { reasonForCancellation } = req.body;
 
+        const originalId = decryptId(id);
+
         // Check if the request exists
-        const exists = await Request.findByPk(id);
+        const exists = await Request.findByPk(originalId);
         if (!exists) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
@@ -64,7 +69,7 @@ export const cancelAgreement: Controller = async (req, res) => {
                 requestStatus: RequestStatus.Declined,
                 caseTag: CaseTag.Close,
             },
-            { where: { id } },
+            { where: { id: originalId } },
         );
 
         // Return success response
@@ -137,6 +142,7 @@ export const editPatientProfile: Controller = async (req, res) => {
             lastName,
             email,
             dob,
+            phoneType,
             phoneNumber,
             street,
             city,
@@ -151,6 +157,7 @@ export const editPatientProfile: Controller = async (req, res) => {
                 lastName,
                 email,
                 dob,
+                phoneType,
                 phoneNumber,
                 street,
                 city,

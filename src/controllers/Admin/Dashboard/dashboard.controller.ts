@@ -22,8 +22,11 @@ import { compileEmailTemplate } from '../../../utils/hbsCompiler';
 import linkConstant from '../../../constants/link.constant';
 import { sendSMS } from '../../../utils/smsSender';
 import { sequelize } from '../../../db/config/db.connection';
+import { encryptId } from '../../../utils/encryptdecrypt';
 import dotenv from 'dotenv';
 dotenv.config();
+
+const myNumber = process.env.MY_PHONE_NUMBER as string;
 
 /**
  * @function requestCount
@@ -691,7 +694,7 @@ export const viewSendAgreement: Controller = async (req, res) => {
  */
 export const sendAgreement: Controller = async (req, res) => {
     try {
-        const { id } = req.params;
+        let { id } = req.params;
 
         // Attempt to retrieve the user's details from the Request table using the ID from the request parameters.
         const user = await Request.findOne({ where: { id } });
@@ -707,10 +710,14 @@ export const sendAgreement: Controller = async (req, res) => {
         // Extract the patient's phone number and email from the retrieved user details.
         const phoneNumber = user.patientPhoneNumber;
         const email = user.patientEmail;
+        
+        id = id.toString()
+
+        const encryptedId = encryptId(id);
 
         // Prepare the data for the email template, including the agreement link and the recipient's name.
         const templateData = {
-            agreementLink: linkConstant.AGREEMENT_URL,
+            agreementLink: `${linkConstant.AGREEMENT_URL}/${encryptedId}`,
             recipientName: user.patientFirstName,
         };
 
@@ -742,8 +749,15 @@ export const sendAgreement: Controller = async (req, res) => {
                 Request.update({ isAgreementSent: true }, { where: { id } });
 
                 // Send SMS asynchronously
-                const messageBody = `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: ${linkConstant.AGREEMENT_URL}`;
-                sendSMS(messageBody);
+                const messageBody = `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: ${linkConstant.AGREEMENT_URL}/${encryptedId}`;
+
+                sendSMS(
+                    messageBody,
+                    myNumber,
+                    req.user.id,
+                    'Send Agreement',
+                    user.id,
+                );
 
                 EmailLog.create({
                     email,
@@ -752,17 +766,6 @@ export const sendAgreement: Controller = async (req, res) => {
                     receiverId: user.id,
                     sentDate: new Date(),
                     isEmailSent: true,
-                    sentTries: 1,
-                    action: 'Send Agreement',
-                });
-
-                SMSLog.create({
-                    phoneNumber,
-                    confirmationNumber: user.confirmationNumber,
-                    senderId: req.user.id,
-                    receiverId: user.id,
-                    sentDate: new Date(),
-                    isSMSSent: true,
                     sentTries: 1,
                     action: 'Send Agreement',
                 });
@@ -1415,17 +1418,12 @@ export const sendPatientRequest: Controller = async (req, res) => {
 
         // Send SMS to patient
         const messageBody = `Hello ${firstName}, To Create a Request on our secure online portal. Please click on the button below to create Your First Request: ${linkConstant.REQUEST_URL}.`;
-        sendSMS(messageBody);
-
-        // Log SMS sending
-        await SMSLog.create({
-            phoneNumber,
-            senderId: req.user.id,
-            sentDate: new Date(),
-            isSMSSent: true,
-            sentTries: 1,
-            action: 'Send request link to patient',
-        });
+        sendSMS(
+            messageBody,
+            myNumber,
+            req.user.id,
+            'Send request link to patient',
+        );
 
         // Construct email options
         const mailOptions = {

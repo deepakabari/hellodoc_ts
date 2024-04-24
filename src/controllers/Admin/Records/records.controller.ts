@@ -198,12 +198,15 @@ export const patientRecord: Controller = async (req, res) => {
                 'confirmationNumber',
                 'concludedDate',
                 'requestStatus',
-                [sequelize.literal(`(
+                [
+                    sequelize.literal(`(
                     SELECT COUNT(*)
                     FROM RequestWiseFiles
                     WHERE
                         RequestWiseFiles.requestId = Request.id
-                )`), 'filesCount'],
+                )`),
+                    'filesCount',
+                ],
             ],
             where: { userId: id },
             include: [

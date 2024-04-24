@@ -42,6 +42,7 @@ router.post(
 
 router.post(
     '/createAdminRequest',
+    upload.single('document'),
     isAuth,
     celebrate(RequestSchema.createRequest),
     userController.createAdminRequest,

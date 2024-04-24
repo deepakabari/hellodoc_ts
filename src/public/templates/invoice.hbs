@@ -1,206 +1,211 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Doctor's Invoice</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 20px;
-                background-color: #f2f2f2;
-            }
 
-            .container {
-                max-width: 800px;
-                margin: 0 auto;
-                background-color: #fff;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            }
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Doctor's Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
 
-            .header {
-                text-align: center;
-                margin-bottom: 20px;
-            }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
 
-            .invoice-details {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 20px;
-            }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-            .invoice-details div {
-                flex: 1;
-            }
+        .invoice-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
 
-            .invoice-details .doctor-info {
-                text-align: left;
-            }
+        .invoice-details .info-section {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            background-color: #f2f5f8;
+        }
 
-            .invoice-details .patient-info {
-                text-align: right;
-            }
+        .invoice-details .info-section h2 {
+            color: #007bff;
+            margin-bottom: 10px;
+        }
 
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-bottom: 20px;
-            }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
 
-            th,
-            td {
-                padding: 12px;
-                border-bottom: 1px solid #ddd;
-            }
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
 
-            th {
-                background-color: #f2f2f2;
-                text-align: left;
-                font-weight: bold;
-            }
+        th {
+            background-color: #f8f9fa;
+            text-align: left;
+            font-weight: bold;
+        }
 
-            td {
-                text-align: left;
-            }
+        td {
+            text-align: left;
+        }
 
-            .total {
-                text-align: right;
-                font-size: 18px;
-                font-weight: bold;
-            }
+        .total {
+            text-align: right;
+            font-size: 18px;
+            font-weight: bold;
+        }
 
-            .footer {
-                margin-top: 20px;
-                text-align: center;
-                font-size: 12px;
-                color: #666;
-            }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
 
-            .footer p {
-                margin: 0;
-            }
+        .footer p {
+            margin: 0;
+        }
 
-            .invoice-title {
-                font-size: 24px;
-                color: #333;
-                margin-bottom: 10px;
-            }
+        .invoice-title {
+            font-size: 24px;
+            color: #343a40;
+            margin-bottom: 10px;
+        }
 
-            .section-title {
-                font-size: 18px;
-                color: #555;
-                margin-bottom: 10px;
-            }
+        .section-title {
+            font-size: 18px;
+            color: #343a40;
+            margin-bottom: 10px;
+        }
 
-            .info-item {
-                margin-bottom: 5px;
-            }
+        .info-item {
+            margin-bottom: 5px;
+        }
 
-            .info-item p {
-                margin: 0;
-            }
+        .info-item p {
+            margin: 0;
+        }
 
-            .itemized-services {
-                margin-bottom: 20px;
-            }
+        .itemized-services {
+            margin-bottom: 20px;
+        }
 
-            .itemized-services tr:last-child {
-                border-bottom: none;
-            }
+        .itemized-services tr:last-child {
+            border-bottom: none;
+        }
 
-            .itemized-services th,
-            .itemized-services td {
-                padding: 10px;
-            }
+        .itemized-services th,
+        .itemized-services td {
+            padding: 10px;
+        }
 
-            .itemized-services th:first-child,
-            .itemized-services td:first-child {
-                padding-left: 20px;
-            }
+        .itemized-services th:first-child,
+        .itemized-services td:first-child {
+            padding-left: 20px;
+        }
 
-            .itemized-services th:last-child,
-            .itemized-services td:last-child {
-                padding-right: 20px;
-            }
+        .itemized-services th:last-child,
+        .itemized-services td:last-child {
+            padding-right: 20px;
+        }
 
-            .itemized-services th {
-                background-color: #f2f2f2;
-                font-weight: normal;
-            }
+        .itemized-services th {
+            background-color: #f8f9fa;
+            font-weight: normal;
+        }
 
-            .itemized-services td {
-                text-align: right;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h1 class="invoice-title">Hallodoc Platform</h1>
-            </div>
-            <div class="invoice-details">
-                <div class="doctor-info">
-                    <h2 class="section-title">Doctor Information</h2>
-                    <div class="info-item">
-                        <p>Name: {{ invoiceData.physician.firstName }} {{ invoiceData.physician.lastName }}</p>
-                        <p>Address: {{ invoiceData.physician.address1 }}, {{ invoiceData.physician.address2 }}</p>
-                        <p>{{ invoiceData.physician.city }}, {{ invoiceData.physician.state }} - {{ invoiceData.physician.zipCode }}</p>
-                        <p>Email: {{ invoiceData.physician.email }}</p>
-                        <p>Phone: {{ invoiceData.physician.phoneNumber }}</p>
-                    </div>
-                </div>
-                <div class="patient-info">
-                    <h2 class="section-title">Patient Information</h2>
-                    <div class="info-item">
-                        <p>Name: {{ invoiceData.patientFirstName }} {{ invoiceData.patientLastName }}</p>
-                        <p>Date of Birth: {{ invoiceData.dob }}</p>
-                        <p>Address: {{ invoiceData.street }}</p>
-                        <p>{{ invoiceData.city }}, {{ invoiceData.state }} - {{ invoiceData.zipCode }}</p>
-                        <p>Email: {{ invoiceData.patientEmail }}</p>
-                        <p>Phone: {{ invoiceData.patientPhoneNumber }}</p>
-                    </div>
+        .itemized-services td {
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="invoice-title">Hallodoc Platform</h1>
+        </div>
+        <div class="invoice-details">
+            <div class="info-section doctor-info">
+                <h2 class="section-title">Doctor Information</h2>
+                <div class="info-item">
+                    <p>Name: Dr. {{ invoiceData.physician.dataValues.firstName }} {{
+                        invoiceData.physician.dataValues.lastName }}</p>
+                    <p>Address: {{ invoiceData.physician.dataValues.address1 }}, {{
+                        invoiceData.physician.dataValues.address2 }}</p>
+                    <p>{{ invoiceData.physician.dataValues.city }}, {{ invoiceData.physician.dataValues.state }} - {{
+                        invoiceData.physician.dataValues.zipCode }}</p>
+                    <p>Email: {{ invoiceData.physician.dataValues.email }}</p>
+                    <p>Phone: {{ invoiceData.physician.dataValues.phoneNumber }}</p>
                 </div>
             </div>
-            <table class="itemized-services">
-                <thead>
-                    <tr>
-                        <th>Service</th>
-                        <th>Quantity</th>
-                        <th>Unit Price</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Consultation</td>
-                        <td>1</td>
-                        <td>$100.00</td>
-                        <td>$100.00</td>
-                    </tr>
-                    <tr>
-                        <td>X-Ray</td>
-                        <td>2</td>
-                        <td>$50.00</td>
-                        <td>$100.00</td>
-                    </tr>
-                    <!-- Add more rows for additional services -->
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="3" class="total">Total</td>
-                        <td>$200.00</td>
-                    </tr>
-                </tfoot>
-            </table>
-            <div class="footer">
-                <p>
-                    This is a computer-generated invoice and does not require a
-                    signature.
-                </p>
+            <div class="info-section patient-info">
+                <h2 class="section-title">Patient Information</h2>
+                <div class="info-item">
+                    <p>Name: {{ invoiceData.patientFirstName }} {{ invoiceData.patientLastName }}</p>
+                    <p>Date of Birth: {{ invoiceData.dob }}</p>
+                    <p>Address: {{ invoiceData.street }}</p>
+                    <p>{{ invoiceData.city }}, {{ invoiceData.state }} - {{ invoiceData.zipCode }}</p>
+                    <p>Email: {{ invoiceData.patientEmail }}</p>
+                    <p>Phone: {{ invoiceData.patientPhoneNumber }}</p>
+                </div>
             </div>
         </div>
-    </body>
+        <table class="itemized-services">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Consultation</td>
+                    <td>1</td>
+                    <td>$100.00</td>
+                    <td>$100.00</td>
+                </tr>
+                <tr>
+                    <td>X-Ray</td>
+                    <td>2</td>
+                    <td>$50.00</td>
+                    <td>$100.00</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="total">Total</td>
+                    <td>$200.00</td>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="footer">
+            <p>
+                This is a computer-generated invoice and does not require a
+                signature.
+            </p>
+        </div>
+    </div>
+</body>
+
 </html>

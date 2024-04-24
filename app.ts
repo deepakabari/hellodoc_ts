@@ -42,7 +42,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 app.use(router);
-app.use(validation);
+app.use(errors());
 
 app.get('/', (req: Request, res: Response) => {
     res.send('API is working...');

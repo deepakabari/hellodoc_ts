@@ -1,4 +1,5 @@
 import { Joi, Segments } from 'celebrate';
+import { PhoneType } from '../utils/enum.constant';
 
 export const PatientSchema = {
     cancelAgreement: {
@@ -13,6 +14,7 @@ export const PatientSchema = {
             lastName: Joi.string().trim(),
             email: Joi.string().email().trim(),
             dob: Joi.date().iso(),
+            phoneType: Joi.string().valid(...Object.values(PhoneType)),
             phoneNumber: Joi.string().min(11).max(13).messages({
                 'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
                 'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
