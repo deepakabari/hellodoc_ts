@@ -16,7 +16,7 @@ export const sendSMS = (
     client.messages
         .create({
             body: message,
-            to: phoneNumber,
+            to: "+" + phoneNumber,
             from: process.env.TWILIO_PHONE_NUMBER,
         })
         .then((message) => console.log(message.sid))

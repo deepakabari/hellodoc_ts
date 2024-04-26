@@ -31,6 +31,7 @@ const currentDate = new Date();
 
 const day = String(currentDate.getDate()).padStart(2, '0'); // display the date in 2 digit format
 const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // display the month in 2 digit format
+const year = String(currentDate.getFullYear()).padStart(2, '0');
 
 const startOfDay = new Date();
 startOfDay.setHours(0, 0, 0, 0);
@@ -470,7 +471,7 @@ const createRequest: Controller = async (req, res) => {
 
         // Generate the confirmation number
         const confirmationNumber = `${regionAbbreviation}${
-            day + month
+            day + month + year
         }${patientLastName.slice(0, 2).toUpperCase()}${patientFirstName
             .slice(0, 2)
             .toUpperCase()}${requestCountStr}`;
@@ -617,7 +618,7 @@ const createAdminRequest: Controller = async (req, res) => {
 
         // Generate the confirmation number
         const confirmationNumber = `${regionAbbreviation}${
-            day + month
+            day + month + year
         }${patientLastName.slice(0, 2).toUpperCase()}${patientFirstName
             .slice(0, 2)
             .toUpperCase()}${requestCountStr}`;

@@ -43,7 +43,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 app.use(router);
-app.use(errors());
+app.use(validation);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('API is working...');
@@ -67,5 +67,7 @@ app.use(errorHandler);
 dbConnection();
 
 app.listen(PORT, () => {
-    logger.info(`Port ${PORT} has been conquered! Our server flag is flying high!`);
+    logger.info(
+        `Port ${PORT} has been conquered! Our server flag is flying high!`,
+    );
 });

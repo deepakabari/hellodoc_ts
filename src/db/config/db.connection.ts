@@ -47,7 +47,15 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
         SMSLog,
         MedicalReport,
     ],
-    logging: () => logger.info('The database is now our best friend. Connection achieved!'),
+    logging: (msg) => {
+        if (msg === 'Executing (default): SELECT 1+1 AS result') {
+            logger.info(
+                'The database is now our best friend. Connection achieved!',
+            );
+        } else {
+            logger.info(msg);
+        }
+    },
 });
 
 export const dbConnection = async (): Promise<Sequelize> => {
@@ -57,7 +65,7 @@ export const dbConnection = async (): Promise<Sequelize> => {
             logger.info('The database just swiped right. It’s a match!');
         })
         .catch((err: Error) =>
-            logger.error('Unable to connect to the database.', err)
+            logger.error('Unable to connect to the database.', err),
         );
     return sequelize;
 };

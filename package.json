@@ -6,9 +6,12 @@
     "type": "commonjs",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
+        "lint": "eslint src/**/*.ts",
         "start": "nodemon app.ts",
-        "dev": "ts-node-dev app.ts",
-        "build": "tsc"
+        "dev": "ts-node-dev --no-notify --clear --debounce 1000 app.ts",
+        "build": "tsc",
+        "migrate": "npx sequelize-cli db:migrate",
+        "seed": "npx sequelize-cli db:seed:all"
     },
     "keywords": [
         "halloDoc",
