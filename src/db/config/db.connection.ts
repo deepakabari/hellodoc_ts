@@ -13,8 +13,9 @@ import {
     RolePermissionMap,
     EmailLog,
     SMSLog,
-    MedicalReport
+    MedicalReport,
 } from '../models/index';
+import { logger } from '../../utils/logger';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -44,18 +45,19 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
         RolePermissionMap,
         EmailLog,
         SMSLog,
-        MedicalReport
+        MedicalReport,
     ],
+    logging: () => logger.info('The database is now our best friend. Connection achieved!'),
 });
 
 export const dbConnection = async (): Promise<Sequelize> => {
     await sequelize
         .authenticate()
         .then(() => {
-            console.log('Connection has been established successfully.');
+            logger.info('The database just swiped right. It’s a match!');
         })
         .catch((err: Error) =>
-            console.log('Unable to connect to the database.', err),
+            logger.error('Unable to connect to the database.', err)
         );
     return sequelize;
 };

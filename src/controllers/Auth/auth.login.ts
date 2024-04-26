@@ -58,6 +58,7 @@ export const login: Controller = async (req, res) => {
                     lastName: user.lastName,
                     phoneNumber: user.phoneNumber,
                     accountType: user.accountType,
+                    roleId: user.roleId,
                 },
                 SECRET as string,
                 {

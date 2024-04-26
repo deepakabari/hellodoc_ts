@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { AccountType } from '../../../utils/enum.constant';
 import httpCode from '../../../constants/http.constant';
 import messageConstant from '../../../constants/message.constant';
@@ -305,6 +306,28 @@ export const editPhysicianProfile: Controller = async (req, res) => {
                         fileColumnMapping,
                     )) {
                         if (files[key] && files[key][0]) {
+                            const existingFile = await RequestWiseFiles.findOne(
+                                {
+                                    where: {
+                                        userId: id,
+                                        docType: key,
+                                    },
+                                },
+                            );
+
+                            if (existingFile) {
+                                await fs.promises.unlink(
+                                    existingFile.documentPath as string,
+                                );
+
+                                await RequestWiseFiles.destroy({
+                                    where: {
+                                        userId: id,
+                                        docType: key,
+                                    },
+                                });
+                            }
+
                             // Update the requestWiseFiles table
                             await RequestWiseFiles.create({
                                 userId: id as unknown as number,

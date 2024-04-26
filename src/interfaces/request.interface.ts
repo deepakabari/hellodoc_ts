@@ -41,6 +41,7 @@ interface RequestAttributes {
     reasonForCancellation?: string;
     isAgreementSent?: boolean;
     isAgreementAccepted?: boolean;
+    agreementToken?: string | null
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

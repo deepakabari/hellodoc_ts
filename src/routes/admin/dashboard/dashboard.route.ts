@@ -4,16 +4,28 @@ import isAuth from '../../../middleware/in-auth';
 import { celebrate } from 'celebrate';
 import { RequestSchema, UserSchema } from '../../../validations/index';
 import { upload } from '../../../utils/multerConfig';
+import verifyRole from '../../../middleware/verifyRole';
 
 const router = express.Router();
 
-router.get('/dashboard', isAuth, dashboardController.requestCount);
+router.get(
+    '/dashboard',
+    isAuth,
+    verifyRole(['Dashboard']),
+    dashboardController.requestCount,
+);
 
-router.get('/', isAuth, dashboardController.getPatientByState);
+router.get(
+    '/',
+    isAuth,
+    verifyRole(['Dashboard']),
+    dashboardController.getPatientByState,
+);
 
 router.get(
     '/viewCase/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(RequestSchema.idParams),
     dashboardController.viewCase,
 );
@@ -21,6 +33,7 @@ router.get(
 router.get(
     '/viewNotes/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(RequestSchema.idParams),
     dashboardController.viewNotes,
 );
@@ -28,6 +41,7 @@ router.get(
 router.patch(
     '/updateNotes/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(RequestSchema.updateNotes),
     dashboardController.updateNotes,
 );
@@ -42,6 +56,7 @@ router.get(
 router.patch(
     '/cancelCase/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(RequestSchema.cancelCase),
     dashboardController.cancelCase,
 );
@@ -49,6 +64,7 @@ router.patch(
 router.patch(
     '/blockCase/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(RequestSchema.blockCase),
     dashboardController.blockCase,
 );
@@ -56,6 +72,7 @@ router.patch(
 router.post(
     '/clearCase/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(RequestSchema.idParams),
     dashboardController.clearCase,
 );
@@ -63,21 +80,29 @@ router.post(
 router.get(
     '/viewSendAgreement/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     dashboardController.viewSendAgreement,
 );
 
 router.post(
     '/sendAgreement/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(RequestSchema.idParams),
     dashboardController.sendAgreement,
 );
 
-router.get('/regions', isAuth, dashboardController.getRegions);
+router.get(
+    '/regions',
+    isAuth,
+    verifyRole(['Dashboard']),
+    dashboardController.getRegions,
+);
 
 router.get(
     '/physicianByRegion/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(RequestSchema.idParams),
     dashboardController.getPhysicianByRegion,
 );
@@ -85,6 +110,7 @@ router.get(
 router.post(
     '/assignCase/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(RequestSchema.assignCase),
     dashboardController.assignCase,
 );
@@ -92,24 +118,36 @@ router.post(
 router.post(
     '/requestSupport',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(UserSchema.requestSupport),
     dashboardController.requestSupport,
 );
 
-router.get('/viewUploads/:id', isAuth, dashboardController.viewUploads);
+router.get(
+    '/viewUploads/:id',
+    isAuth,
+    dashboardController.viewUploads,
+);
 
 router.post(
     '/uploadFile/:id',
     upload.single('document'),
     isAuth,
+    verifyRole(['Dashboard']),
     dashboardController.uploadFile,
 );
 
-router.get('/closeCaseView/:id', isAuth, dashboardController.closeCaseView);
+router.get(
+    '/closeCaseView/:id',
+    isAuth,
+    verifyRole(['Dashboard']),
+    dashboardController.closeCaseView,
+);
 
 router.patch(
     '/closeCase/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(RequestSchema.idParams),
     dashboardController.closeCase,
 );
@@ -117,12 +155,14 @@ router.patch(
 router.patch(
     '/updateCloseCase/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     dashboardController.updateCloseCase,
 );
 
 router.post(
     '/transferRequest/:id',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(RequestSchema.assignCase),
     dashboardController.transferRequest,
 );
@@ -130,6 +170,7 @@ router.post(
 router.post(
     '/sendPatientRequest',
     isAuth,
+    verifyRole(['Dashboard']),
     celebrate(UserSchema.sendPatientRequest),
     dashboardController.sendPatientRequest,
 );
@@ -137,6 +178,7 @@ router.post(
 router.post(
     '/sendFilesByEmail',
     isAuth,
+    verifyRole(['Dashboard']),
     dashboardController.sendFileThroughMail,
 );
 export default router;

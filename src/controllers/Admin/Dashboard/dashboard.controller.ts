@@ -22,7 +22,7 @@ import { compileEmailTemplate } from '../../../utils/hbsCompiler';
 import linkConstant from '../../../constants/link.constant';
 import { sendSMS } from '../../../utils/smsSender';
 import { sequelize } from '../../../db/config/db.connection';
-import { encryptId } from '../../../utils/encryptdecrypt';
+import { generateToken } from '../../../utils/encryptdecrypt';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -713,9 +713,7 @@ export const sendAgreement: Controller = async (req, res) => {
         const phoneNumber = user.patientPhoneNumber;
         const email = user.patientEmail;
 
-        id = id.toString();
-
-        const encryptedId = encryptId(id);
+        const encryptedId = generateToken(id.toString());
 
         // Prepare the data for the email template, including the agreement link and the recipient's name.
         const templateData = {
@@ -723,14 +721,11 @@ export const sendAgreement: Controller = async (req, res) => {
             recipientName: user.patientFirstName,
         };
 
-        console.log(user.id);
-
         // Compile the email template with the provided data.
         const data = await compileEmailTemplate(
             'sendAgreementEmail',
             templateData,
         );
-
 
         sendEmail({
             to: email,
@@ -739,17 +734,19 @@ export const sendAgreement: Controller = async (req, res) => {
         });
 
         // Update the Request table asynchronously
-        Request.update(
-            { isAgreementSent: true },
+        await Request.update(
+            { isAgreementSent: true, agreementToken: encryptedId },
             { where: { id }, transaction },
         );
+
+        await transaction.commit();
 
         // Send SMS asynchronously
         const messageBody = `Hello ${user.patientFirstName}, \n\n Please review and sign the agreement by following the link below: ${linkConstant.AGREEMENT_URL}/${encryptedId}`;
 
         sendSMS(messageBody, myNumber, req.user.id, 'Send Agreement', user.id);
 
-        EmailLog.create({
+        await EmailLog.create({
             email,
             confirmationNumber: user.confirmationNumber,
             senderId: req.user.id,
@@ -766,6 +763,7 @@ export const sendAgreement: Controller = async (req, res) => {
             message: messageConstant.AGREEMENT_EMAIL_SENT,
         });
     } catch (error) {
+        await transaction.rollback();
         throw error;
     }
 };
@@ -1365,7 +1363,7 @@ export const sendPatientRequest: Controller = async (req, res) => {
             'sendRequestEmail',
             templateData,
         );
-        
+
         sendEmail({
             to: email,
             subject: linkConstant.createRequestSubject,

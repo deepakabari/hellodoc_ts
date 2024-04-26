@@ -4,6 +4,7 @@ import {
 } from '../../../controllers/index';
 import express from 'express';
 import isAuth from '../../../middleware/in-auth';
+import verifyRole from '../../../middleware/verifyRole';
 import { celebrate } from 'celebrate';
 import {
     ProviderSchema,
@@ -18,12 +19,14 @@ const router = express.Router();
 router.get(
     '/providerInformation',
     isAuth,
+    verifyRole(['Provider']),
     providerController.providerInformation,
 );
 
 router.post(
     '/contactProvider/:id',
     isAuth,
+    verifyRole(['Provider']),
     celebrate(ProviderSchema.contactProvider),
     providerController.contactProvider,
 );
@@ -31,15 +34,22 @@ router.post(
 router.get(
     '/physicianProfile/:id',
     isAuth,
+    verifyRole(['Provider']),
     celebrate(RequestSchema.idParams),
     providerController.physicianProfileInAdmin,
 );
 
-router.get('/providerOnCall', isAuth, schedulingController.providerOnCall);
+router.get(
+    '/providerOnCall',
+    isAuth,
+    verifyRole(['Provider']),
+    schedulingController.providerOnCall,
+);
 
 router.patch(
     '/providerProfile/:id',
     isAuth,
+    verifyRole(['Provider']),
     upload.fields([
         { name: 'photo' },
         { name: 'signature' },
@@ -56,6 +66,7 @@ router.patch(
 router.patch(
     '/updateNotification',
     isAuth,
+    verifyRole(['Provider']),
     celebrate(ProviderSchema.updateNotification),
     providerController.updateNotification,
 );
@@ -63,23 +74,36 @@ router.patch(
 router.post(
     '/addNewShift',
     isAuth,
+    verifyRole(['Scheduling']),
     celebrate(ShiftSchema.createShift),
     schedulingController.addNewShift,
 );
 
-router.get('/viewShift/:id', isAuth, schedulingController.viewShift);
+router.get(
+    '/viewShift/:id',
+    isAuth,
+    verifyRole(['Scheduling']),
+    schedulingController.viewShift,
+);
 
-router.get('/viewShiftFilter', isAuth, schedulingController.viewShiftFilter);
+router.get(
+    '/viewShiftFilter',
+    isAuth,
+    verifyRole(['Scheduling']),
+    schedulingController.viewShiftFilter,
+);
 
 router.get(
     '/unApprovedShift',
     isAuth,
+    verifyRole(['Scheduling']),
     schedulingController.unApprovedViewShift,
 );
 
 router.put(
     '/approveShift',
     isAuth,
+    verifyRole(['Scheduling']),
     celebrate(ShiftSchema.approveShift),
     schedulingController.approveShift,
 );
@@ -87,6 +111,7 @@ router.put(
 router.patch(
     '/editShift/:id',
     isAuth,
+    verifyRole(['Scheduling']),
     celebrate(ShiftSchema.editShift),
     schedulingController.editShift,
 );
@@ -94,12 +119,14 @@ router.patch(
 router.patch(
     '/toggleApproval/:id',
     isAuth,
+    verifyRole(['Scheduling']),
     schedulingController.toggleShiftApproval,
 );
 
 router.delete(
     '/deleteShift',
     isAuth,
+    verifyRole(['Scheduling']),
     celebrate(ShiftSchema.approveShift),
     schedulingController.deleteShift,
 );

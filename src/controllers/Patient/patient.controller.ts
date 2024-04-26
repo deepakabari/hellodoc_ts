@@ -5,7 +5,7 @@ import { Controller } from '../../interfaces';
 import { Request, RequestWiseFiles, User } from '../../db/models/index';
 import dotenv from 'dotenv';
 import { sequelize } from '../../db/config/db.connection';
-import { decryptId } from '../../utils/encryptdecrypt';
+import { validateAndDecryptToken } from '../../utils/encryptdecrypt';
 import { Order } from 'sequelize';
 dotenv.config();
 
@@ -13,14 +13,18 @@ export const acceptAgreement: Controller = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const originalId = decryptId(id);
+        const originalId = validateAndDecryptToken(id);
 
         // Check if the request exists
-        const exists = await Request.findByPk(originalId);
+        const exists = await Request.findOne({
+            where: {
+                agreementToken: id,
+            },
+        });
         if (!exists) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
-                message: messageConstant.REQUEST_NOT_FOUND,
+                message: messageConstant.INVALID_RESET_TOKEN,
             });
         }
 
@@ -30,6 +34,7 @@ export const acceptAgreement: Controller = async (req, res) => {
                 caseTag: CaseTag.Active,
                 requestStatus: RequestStatus.MDOnRoute,
                 isAgreementAccepted: true,
+                agreementToken: null,
             },
             {
                 where: { id: originalId },
@@ -51,14 +56,19 @@ export const cancelAgreement: Controller = async (req, res) => {
         const { id } = req.params;
         const { reasonForCancellation } = req.body;
 
-        const originalId = decryptId(id);
+        const originalId = validateAndDecryptToken(id);
+
+        const exists = await Request.findOne({
+            where: {
+                agreementToken: id,
+            },
+        });
 
         // Check if the request exists
-        const exists = await Request.findByPk(originalId);
         if (!exists) {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
-                message: messageConstant.REQUEST_NOT_FOUND,
+                message: messageConstant.INVALID_RESET_TOKEN,
             });
         }
 
@@ -68,6 +78,7 @@ export const cancelAgreement: Controller = async (req, res) => {
                 reasonForCancellation,
                 requestStatus: RequestStatus.Declined,
                 caseTag: CaseTag.Close,
+                agreementToken: null,
             },
             { where: { id: originalId } },
         );

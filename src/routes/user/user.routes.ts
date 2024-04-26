@@ -4,6 +4,7 @@ import { RequestSchema, UserSchema } from '../../validations/index';
 import { celebrate } from 'celebrate';
 import { upload } from '../../utils/multerConfig';
 import isAuth from '../../middleware/in-auth';
+import verifyRole from '../../middleware/verifyRole';
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.post(
         { name: 'nonDisclosureAgreement' },
     ]),
     isAuth,
+    verifyRole(['Accounts']),
     celebrate(UserSchema.createUser),
     userController.createAccount,
 );

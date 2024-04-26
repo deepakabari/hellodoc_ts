@@ -322,7 +322,7 @@ export const searchRecord: Controller = async (req, res) => {
                     id: sequelize.col('Request.physicianId'),
                     ...physicianNameFilter,
                 },
-                required: false,
+                required: physicianName ? true : false,
             },
             order,
             where: {
@@ -527,8 +527,8 @@ export const emailLog: Controller = async (req, res) => {
         const receiverWhereClause = receiverName
             ? {
                   [Op.or]: [
-                      { firstName: { [Op.substring]: receiverName } },
-                      { lastName: { [Op.substring]: receiverName } },
+                      { patientFirstName: { [Op.substring]: receiverName } },
+                      { patientLastName: { [Op.substring]: receiverName } },
                   ],
               }
             : {};
@@ -563,11 +563,14 @@ export const emailLog: Controller = async (req, res) => {
                                     model: Role,
                                     attributes: ['id', 'Name'],
                                     where: roleWhereClause,
+                                    required: roleName ? true : false,
                                 },
                             ],
+                            required: true,
                         },
                     ],
                     where: receiverWhereClause,
+                    required: true,
                 },
             ],
             where: {
@@ -640,8 +643,8 @@ export const smsLog: Controller = async (req, res) => {
         const receiverWhereClause = receiverName
             ? {
                   [Op.or]: [
-                      { firstName: { [Op.substring]: receiverName } },
-                      { lastName: { [Op.substring]: receiverName } },
+                      { patientFirstName: { [Op.substring]: receiverName } },
+                      { patientLastName: { [Op.substring]: receiverName } },
                   ],
               }
             : {};
@@ -676,11 +679,14 @@ export const smsLog: Controller = async (req, res) => {
                                     model: Role,
                                     attributes: ['id', 'Name'],
                                     where: roleWhereClause,
+                                    required: roleName ? true : false,
                                 },
                             ],
+                            required: true,
                         },
                     ],
                     where: receiverWhereClause,
+                    required: true,
                 },
             ],
             where: {

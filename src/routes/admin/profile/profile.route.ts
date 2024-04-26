@@ -1,7 +1,6 @@
 import { myProfileController } from '../../../controllers/index';
 import express from 'express';
 import isAuth from '../../../middleware/in-auth';
-import { celebrate } from 'celebrate';
 
 const router = express.Router();
 

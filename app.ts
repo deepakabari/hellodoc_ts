@@ -11,6 +11,7 @@ import json2xls from 'json2xls';
 import httpCode from './src/constants/http.constant';
 import messageConstant from './src/constants/message.constant';
 import { validation } from './src/middleware/validation';
+import { logger } from './src/utils/logger';
 dotenv.config();
 
 const PORT = process.env.PORT;
@@ -66,5 +67,5 @@ app.use(errorHandler);
 dbConnection();
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    logger.info(`Port ${PORT} has been conquered! Our server flag is flying high!`);
 });

@@ -8,6 +8,7 @@ import {
     RequestSchema,
 } from '../../../validations/index';
 const router = express.Router();
+import verifyRole from '../../../middleware/verifyRole';
 
 router.post(
     '/addBusiness',
@@ -33,19 +34,19 @@ router.get(
 
 router.get(
     '/viewSendOrder/:id',
-    isAuth,
+    isAuth, verifyRole(['Dashboard', 'SendOrder']),
     celebrate(RequestSchema.idParams),
     partnerController.viewSendOrder,
 );
 
 router.post(
     '/sendOrder/:id',
-    isAuth,
+    isAuth, verifyRole(['Dashboard', 'SendOrder']),
     celebrate(PartnerSchema.sendOrder),
     partnerController.sendOrder,
 );
 
-router.get('/viewVendor', isAuth, partnerController.viewVendor);
+router.get('/viewVendor', isAuth, verifyRole(['Dashboard', 'VendorsInfo']), partnerController.viewVendor);
 
 router.patch(
     '/updateBusiness/:id',

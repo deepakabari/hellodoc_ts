@@ -13,6 +13,7 @@ import {
 } from '../../interfaces/';
 import { EmailLog, MedicalReport, SMSLog, User } from '../models/index';
 import { RequestWiseFiles } from './index';
+import { allColors } from 'winston/lib/winston/config';
 
 @Table({
     timestamps: true,
@@ -260,6 +261,9 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
         type: DataTypes.BOOLEAN,
     })
     isAgreementAccepted: boolean;
+
+    @Column({ type: DataTypes.STRING, allowNull: true})
+    agreementToken?: string
 
     @BelongsTo(() => User, {
         foreignKey: 'userId',

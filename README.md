@@ -32,13 +32,7 @@ This project is an internship project developed in Node.js with MySQL as the dat
 
 3. *Create a `.env` file in the project root directory to store database credentials:*
 
-    ```bash
-    DATABASE_HOST=your_database_host
-    DATABASE_PORT=your_database_port
-    DATABASE_USERNAME=your_database_username
-    DATABASE_PASSWORD=your_database_password
-    DATABASE_NAME=your_database_name
-    ```
+    - Create **.env** file from **.env.example**
 
 ### Database Setup
 
