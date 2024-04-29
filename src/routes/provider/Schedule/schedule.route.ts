@@ -8,12 +8,13 @@ const router = express.Router();
 router.get(
     '/mySchedule',
     isAuth,
-    verifyRole(['MySchedule']),
+    verifyRole(['Scheduling']),
     providerSchedule.viewSchedule,
 );
 
 router.get(
     '/invoice/:id',
+    isAuth,
     verifyRole(['Invoicing']),
     providerSchedule.invoices,
 );

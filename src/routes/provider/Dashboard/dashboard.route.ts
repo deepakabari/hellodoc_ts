@@ -99,6 +99,7 @@ router.patch(
 
 router.get(
     '/download/:id',
+    isAuth,
     verifyRole(['Dashboard']),
     providerDashboard.downloadEncounter,
 );

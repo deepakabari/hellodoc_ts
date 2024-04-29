@@ -150,7 +150,7 @@ export const forgotPassword: Controller = async (req, res) => {
             html: data,
         });
 
-        EmailLog.create({
+        await EmailLog.create({
             email,
             senderId: existingUser?.id,
             receiverId: existingUser?.id,

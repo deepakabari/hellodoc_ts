@@ -16,6 +16,7 @@ module.exports = {
             email: {
                 type: Sequelize.STRING,
                 allowNull: false,
+                unique: true,
             },
             password: {
                 type: Sequelize.STRING,
@@ -32,6 +33,7 @@ module.exports = {
             phoneNumber: {
                 type: Sequelize.STRING,
                 allowNull: true,
+                unique: true,
             },
             dob: {
                 type: Sequelize.DATEONLY,

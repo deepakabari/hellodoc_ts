@@ -274,9 +274,21 @@ const createAccount: Controller = async (req, res) => {
                 message: messageConstant.BAD_REQUEST,
             });
         }
-    } catch (error) {
-        console.log('Catch:', error);
-        throw error;
+    } catch (error: any) {
+        // If an error occurs, check if it's a SequelizeUniqueConstraintError
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            // Send a custom error message
+            return res.status(httpCode.CONFLICT).json({
+                status: httpCode.CONFLICT,
+                message: messageConstant.UNIQUE_CONSTRAINT,
+            });
+        } else {
+            // For other types of errors, send a generic error message
+            return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
+                status: httpCode.INTERNAL_SERVER_ERROR,
+                message: messageConstant.INTERNAL_SERVER_ERROR,
+            });
+        }
     }
 };
 
@@ -441,7 +453,7 @@ const createRequest: Controller = async (req, res) => {
                     html: data,
                 });
 
-                EmailLog.create({
+                await EmailLog.create({
                     email: patientEmail,
                     senderId: userId,
                     receiverId: userId,
@@ -535,8 +547,6 @@ const createAdminRequest: Controller = async (req, res) => {
             state,
         } = req.body;
 
-        console.log(req.body);
-
         if (
             requestType === 'Admin' ||
             requestType === 'Physician' ||
@@ -588,7 +598,7 @@ const createAdminRequest: Controller = async (req, res) => {
                     html: data,
                 });
 
-                EmailLog.create({
+                await EmailLog.create({
                     email: patientEmail,
                     senderId: user.id,
                     receiverId: user.id,

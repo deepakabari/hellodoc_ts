@@ -989,7 +989,7 @@ export const sendFileThroughMail: Controller = async (req, res) => {
             })),
         });
 
-        EmailLog.create({
+        await EmailLog.create({
             email,
             confirmationNumber: user.confirmationNumber,
             senderId: req.user.id,
@@ -1287,7 +1287,7 @@ export const requestSupport: Controller = async (req, res) => {
                 html: data,
             });
 
-            EmailLog.create({
+            await EmailLog.create({
                 email: physician.email,
                 senderId: req.user.id,
                 receiverId: physician.id,
@@ -1379,7 +1379,7 @@ export const sendPatientRequest: Controller = async (req, res) => {
             'Send request link to patient',
         );
 
-        EmailLog.create({
+        await EmailLog.create({
             email,
             senderId: req.user.id,
             sentDate: new Date(),

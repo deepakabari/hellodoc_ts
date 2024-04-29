@@ -77,6 +77,7 @@ export const providerInformation: Controller = async (req, res) => {
                 attributes: [],
                 through: { attributes: [] },
                 where: regionWhereClause,
+                required: false,
             },
             distinct: true,
             order: sortByModel,
@@ -153,7 +154,7 @@ export const contactProvider: Controller = async (req, res) => {
                 break;
         }
 
-        EmailLog.create({
+        await EmailLog.create({
             email: user?.email as string,
             senderId: req.user.id,
             receiverId: user?.id,

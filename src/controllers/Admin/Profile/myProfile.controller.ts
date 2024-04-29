@@ -45,6 +45,7 @@ export const myProfile: Controller = async (req, res) => {
                 'altPhone',
                 'medicalLicense',
                 'NPINumber',
+                'notes',
             ],
             where: {
                 id, // Use the authenticated user's ID as the search criterion.

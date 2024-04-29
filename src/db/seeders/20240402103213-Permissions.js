@@ -105,7 +105,7 @@ module.exports = {
                 accountType: 'Physician',
             },
             {
-                name: 'MySchedule',
+                name: 'Scheduling',
                 accountType: 'Physician',
             },
             {

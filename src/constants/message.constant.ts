@@ -5,6 +5,7 @@ const messageConstant = {
     ACCESS_DENIED: 'You have no permission..!',
     ERROR_VERIFY_PERMISSION: 'An error occurred while verifying permissions.',
     INTERNAL_SERVER_ERROR: 'Internal server error',
+    UNIQUE_CONSTRAINT: 'Email or phone number already exists.',
     USER_CREATED: 'User created successfully',
     USER_CREATION_FAILED: 'User creation failed',
     USER_DELETED: 'User deleted successfully.',

@@ -41,22 +41,29 @@ export const UserSchema = {
                 'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
                 'string.required': 'Phone number is required', // Custom message for required
             }),
-            medicalLicense: Joi.string().trim().when('accountType', {
-                is: 'Physician',
-                then: Joi.required(),
-                otherwise: Joi.optional().allow('', null),
-            }),
-            NPINumber: Joi.string().trim().when('accountType', {
-                is: 'Physician',
-                then: Joi.required(),
-                otherwise: Joi.optional().allow('', null),
-            }),
-            businessName: Joi.string().trim().when('accountType', {
-                is: 'Physician',
-                then: Joi.required(),
-                otherwise: Joi.optional().allow('', null),
-            }),
-            businessWebsite: Joi.string().trim()
+            medicalLicense: Joi.string()
+                .trim()
+                .when('accountType', {
+                    is: 'Physician',
+                    then: Joi.required(),
+                    otherwise: Joi.optional().allow('', null),
+                }),
+            NPINumber: Joi.string()
+                .trim()
+                .when('accountType', {
+                    is: 'Physician',
+                    then: Joi.required(),
+                    otherwise: Joi.optional().allow('', null),
+                }),
+            businessName: Joi.string()
+                .trim()
+                .when('accountType', {
+                    is: 'Physician',
+                    then: Joi.required(),
+                    otherwise: Joi.optional().allow('', null),
+                }),
+            businessWebsite: Joi.string()
+                .trim()
                 .uri()
                 .when('accountType', { is: 'Physician', then: Joi.required() }),
             photo: Joi.string().optional().allow('', null),
@@ -150,33 +157,38 @@ export const UserSchema = {
         [Segments.BODY]: Joi.object({
             password: Joi.string()
                 .regex(RegExp(linkConstant.PASSWORD_REGEX))
-                .optional(),
+                .optional()
+                .allow('', null),
             status: Joi.string().valid(...Object.values(ProfileStatus)),
-            firstName: Joi.string().trim(),
-            lastName: Joi.string().trim(),
-            email: Joi.string().email().trim(),
+            firstName: Joi.string().trim().optional().allow('', null),
+            lastName: Joi.string().trim().optional().allow('', null),
+            email: Joi.string().email().trim().optional().allow('', null),
             phoneNumber: Joi.string().min(11).max(13).messages({
                 'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
                 'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
                 'string.required': 'Phone number is required', // Custom message for required
             }),
-            medicalLicense: Joi.string().trim(),
-            NPINumber: Joi.string().trim(),
-            syncEmailAddress: Joi.string().email().trim(),
-            address1: Joi.string().trim(),
-            address2: Joi.string().trim(),
-            city: Joi.string().trim(),
-            state: Joi.string().trim(),
-            zipCode: Joi.string().min(5).max(6),
+            medicalLicense: Joi.string().trim().optional().allow('', null),
+            NPINumber: Joi.string().trim().optional().allow('', null),
+            syncEmailAddress: Joi.string()
+                .email()
+                .trim()
+                .optional()
+                .allow('', null),
+            address1: Joi.string().trim().optional().allow('', null),
+            address2: Joi.string().trim().optional().allow('', null),
+            city: Joi.string().trim().optional().allow('', null),
+            state: Joi.string().trim().optional().allow('', null),
+            zipCode: Joi.string().min(5).max(6).optional().allow('', null),
             altPhone: Joi.string().min(11).max(13).messages({
                 'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
                 'string.max': 'Phone number must not exceed 13 digits', // Custom message for max length
                 'string.required': 'Phone number is required', // Custom message for required
             }),
-            photo: Joi.string(),
-            signature: Joi.string(),
-            businessName: Joi.string().trim(),
-            businessWebsite: Joi.string().trim(),
+            photo: Joi.string().optional().allow('', null),
+            signature: Joi.string().optional().allow('', null),
+            businessName: Joi.string().trim().optional().allow('', null),
+            businessWebsite: Joi.string().trim().optional().allow('', null),
             roleId: Joi.string().allow('', null).optional(),
             regions: Joi.array().items(Joi.number().integer()).optional(),
         }).unknown(true),

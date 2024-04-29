@@ -49,7 +49,7 @@ export const requestToAdmin: Controller = async (req, res) => {
             html: data,
         });
 
-        EmailLog.create({
+        await EmailLog.create({
             email: process.env.ADMIN as string,
             senderId: existingUser?.id,
             receiverId: 1,

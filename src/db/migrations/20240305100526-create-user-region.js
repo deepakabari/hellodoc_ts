@@ -32,6 +32,12 @@ module.exports = {
                 allowNull: true,
             },
         });
+
+        await queryInterface.addConstraint('UserRegion', {
+            fields: ['userId', 'regionId'],
+            type: 'unique',
+            name: 'user_region_unique_constraint',
+        });
     },
     async down(queryInterface) {
         await queryInterface.dropTable('UserRegion');

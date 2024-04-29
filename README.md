@@ -37,6 +37,8 @@ This project is an internship project developed in Node.js with MySQL as the dat
 ### Database Setup
 
 1. *Create a MySQL database with the name specified in your `.env` file.*
+2. Run migration to create tables script using this command - **`npm run migrate`**
+3. Run seeder script using this command - **`npm run seed`**
 
 ### Running the Application
 
