@@ -3,7 +3,6 @@ import router from './src/routes/index';
 import { dbConnection } from './src/db/config/index';
 import path from 'path';
 import bodyParser from 'body-parser';
-import { errors } from 'celebrate';
 import { errorHandler } from './src/utils/errorHandler';
 import { engine } from 'express-handlebars';
 import dotenv from 'dotenv';
@@ -23,7 +22,7 @@ app.set('view engine', 'hbs');
 
 app.use(
     '/images',
-    express.static(path.join(__dirname, 'src', 'public', 'images')),
+    express.static(path.join(__dirname, 'src', 'public')),
 );
 
 app.use(json2xls.middleware);

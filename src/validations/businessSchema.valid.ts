@@ -4,7 +4,7 @@ export const BusinessSchema = {
     createBusiness: {
         [Segments.BODY]: Joi.object({
             businessName: Joi.string().trim().required(),
-            profession: Joi.string().required(),
+            professionId: Joi.number().required(),
             faxNumber: Joi.string().trim().optional().allow('', null),
             phoneNumber: Joi.string().required().min(11).max(13).messages({
                 'string.min': 'Phone number must be a 10 digit number', // Custom message for min length
@@ -23,7 +23,7 @@ export const BusinessSchema = {
     updateBusiness: {
         [Segments.BODY]: Joi.object({
             businessName: Joi.string().trim(),
-            profession: Joi.string(),
+            professionId: Joi.number(),
             faxNumber: Joi.string().trim(),
             phoneNumber: Joi.string().min(11).max(13).messages({
                 'string.min': 'Phone number must be a 10 digit number', // Custom message for min length

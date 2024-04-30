@@ -1,6 +1,6 @@
 import { createTransport, SentMessageInfo } from 'nodemailer';
 import dotenv from 'dotenv';
-import { EmailLog } from '../db/models';
+import { logger } from './logger';
 dotenv.config();
 
 interface EmailAuth {
@@ -39,13 +39,14 @@ export const sendEmail = async ({
         attachments,
     };
 
-    new Promise((resolve, reject) => {
-        transporter.sendMail(mailOptions, (error: Error, info: string) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(info);
-            }
-        });
+    new Promise(() => {
+        transporter
+            .sendMail(mailOptions)
+            .then((info: string) => {
+                logger.info(info);
+            })
+            .catch((err: Error) => {
+                logger.error('Error in sent', err);
+            });
     });
 };

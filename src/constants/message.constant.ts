@@ -62,6 +62,7 @@ const messageConstant = {
     ROLE_DELETED: 'Role deleted successfully',
     REQUEST_EMAIL_SMS_SENT: 'Request email and sms sent successfully',
     EMAIL_SENT: 'Email sent successfully.',
+    SMS_SENT: 'SMS sent successfully.',
     MISSING_SECTION_OR_UPDATED_DATA: 'Missing section or updates data',
     UPDATE_FAILED: 'Update failed...',
     AGREEMENT_EMAIL_SENT: 'Agreement email sent successfully',

@@ -11,7 +11,8 @@
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        button.a {
+
+        button {
             background-color: #28a745;
             color: #ffffff;
             padding: 10px 20px;
@@ -19,6 +20,8 @@
             border-radius: 5px;
             margin-top: 20px;
             display: inline-block;
+            border: 1px solid #28a745;
+            cursor: pointer;
         }
     </style>
 
@@ -32,7 +35,7 @@
         </p>
         <p>To Create a Request on our secure online portal. Please click on the button below to create Your First
             Request:</p>
-        <button type="submit"><a href="{{createRequestLink}}">Create Request</a></button>
+        <a href="{{createRequestLink}}"><button class="button">Create Request</button></a>
         <p>Once you create your request, you can log in anytime using your email and password.</p>
         <p>Thank you,</p>
         <p>HalloDoc Team</p>

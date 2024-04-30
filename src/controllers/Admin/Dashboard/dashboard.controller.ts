@@ -163,6 +163,8 @@ export const getPatientByState: Controller = async (req, res) => {
                 'Address',
             ],
             ['patientNote', 'Patient Note'],
+            ['adminNotes', 'Admin Note'],
+            ['physicianNotes', 'Physician Note'],
             ['updatedAt', 'Date Of Service'],
             ['requestType', 'Requestor Type'],
             ['state', 'Region'],

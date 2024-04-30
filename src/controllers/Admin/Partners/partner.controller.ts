@@ -283,7 +283,9 @@ export const viewVendor: Controller = async (req, res) => {
                 {
                     model: Profession,
                     attributes: ['id', 'name'],
-                    required: false,
+                    where: {
+                        ...(professions ? { name: professions as string } : {}),
+                    },
                 },
             ],
             where: {
@@ -292,7 +294,6 @@ export const viewVendor: Controller = async (req, res) => {
                           businessName: { [Op.substring]: `${search}` },
                       }
                     : {}),
-                ...(professions ? { profession: professions as string } : {}),
             },
             limit,
             offset,

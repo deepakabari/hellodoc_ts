@@ -120,6 +120,8 @@ export const contactProvider: Controller = async (req, res) => {
         // Extract message body and contact method from request body
         const { messageBody, contactMethod } = req.body;
 
+        let message;
+
         // Switch based on the contact method chosen
         switch (contactMethod) {
             case 'sms':
@@ -130,6 +132,7 @@ export const contactProvider: Controller = async (req, res) => {
                     'Provider Contact',
                     user.id,
                 );
+                message = messageConstant.SMS_SENT;
                 break;
             case 'email':
                 sendEmail({
@@ -137,6 +140,7 @@ export const contactProvider: Controller = async (req, res) => {
                     subject: linkConstant.contactSubject,
                     text: messageBody,
                 });
+                message = messageConstant.EMAIL_SENT
                 break;
             case 'both':
                 sendSMS(
@@ -151,6 +155,7 @@ export const contactProvider: Controller = async (req, res) => {
                     subject: linkConstant.contactSubject,
                     text: messageBody,
                 });
+                message = messageConstant.EMAIL_SMS_SENT
                 break;
         }
 
@@ -167,7 +172,7 @@ export const contactProvider: Controller = async (req, res) => {
         // Return success response
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
-            message: messageConstant.EMAIL_SMS_SENT,
+            message,
         });
     } catch (error) {
         throw error;
