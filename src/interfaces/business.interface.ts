@@ -8,7 +8,7 @@ interface BusinessAttributes {
     businessWebsite?: string;
     businessContact?: string;
     faxNumber?: string;
-    profession?: string;
+    professionId?: number;
     phoneNumber: string;
     email: string;
     street: string;

@@ -203,7 +203,7 @@ export const patientRecord: Controller = async (req, res) => {
                     SELECT COUNT(*)
                     FROM RequestWiseFiles
                     WHERE
-                        RequestWiseFiles.requestId = Request.id
+                        RequestWiseFiles.requestId = Request.id AND deletedAt = null
                 )`),
                     'filesCount',
                 ],

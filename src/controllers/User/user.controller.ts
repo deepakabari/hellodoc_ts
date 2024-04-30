@@ -523,7 +523,20 @@ const createRequest: Controller = async (req, res) => {
         });
         // any error generated then give error message
     } catch (error: any) {
-        throw error;
+        // If an error occurs, check if it's a SequelizeUniqueConstraintError
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            // Send a custom error message
+            return res.status(httpCode.CONFLICT).json({
+                status: httpCode.CONFLICT,
+                message: messageConstant.UNIQUE_CONSTRAINT,
+            });
+        } else {
+            // For other types of errors, send a generic error message
+            return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
+                status: httpCode.INTERNAL_SERVER_ERROR,
+                message: messageConstant.INTERNAL_SERVER_ERROR,
+            });
+        }
     }
 };
 
@@ -676,8 +689,21 @@ const createAdminRequest: Controller = async (req, res) => {
             message: messageConstant.REQUEST_CREATED,
             data: { newRequest, documentUpload },
         });
-    } catch (error) {
-        throw error;
+    } catch (error: any) {
+        // If an error occurs, check if it's a SequelizeUniqueConstraintError
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            // Send a custom error message
+            return res.status(httpCode.CONFLICT).json({
+                status: httpCode.CONFLICT,
+                message: messageConstant.UNIQUE_CONSTRAINT,
+            });
+        } else {
+            // For other types of errors, send a generic error message
+            return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
+                status: httpCode.INTERNAL_SERVER_ERROR,
+                message: messageConstant.INTERNAL_SERVER_ERROR,
+            });
+        }
     }
 };
 

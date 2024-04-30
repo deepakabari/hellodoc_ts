@@ -25,8 +25,8 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: true,
             },
-            profession: {
-                type: Sequelize.STRING,
+            professionId: {
+                type: Sequelize.INTEGER,
                 allowNull: true,
             },
             faxNumber: {

@@ -4,7 +4,7 @@ import {
     BusinessAttributes,
     BusinessCreationAttributes,
 } from '../../interfaces';
-import { User } from './index';
+import { Profession, User } from './index';
 
 @Table({
     timestamps: true,
@@ -60,9 +60,9 @@ class Business extends Model<BusinessAttributes, BusinessCreationAttributes> {
 
     @Column({
         allowNull: true,
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
     })
-    profession: string;
+    professionId: number;
 
     @Column({
         allowNull: true,
@@ -78,6 +78,12 @@ class Business extends Model<BusinessAttributes, BusinessCreationAttributes> {
 
     @BelongsTo(() => User, { foreignKey: 'userId' })
     user: User;
+
+    @BelongsTo(() => Profession, {
+        foreignKey: 'professionId',
+        targetKey: 'id',
+    })
+    profession: Profession;
 }
 
 export default Business;

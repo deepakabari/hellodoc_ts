@@ -27,7 +27,7 @@ router.get(
 router.get('/professions', isAuth, partnerController.professions);
 
 router.get(
-    '/businessByProfession/:profession',
+    '/businessByProfession/:professionId',
     isAuth,
     partnerController.businessByProfession,
 );

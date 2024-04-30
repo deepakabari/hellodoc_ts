@@ -2,7 +2,7 @@
     "development": {
         "username": "root",
         "password": null,
-        "database": "test",
+        "database": "halloDoc_test",
         "host": "localhost",
         "dialect": "mysql"
     },

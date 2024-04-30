@@ -12,6 +12,7 @@ import RolePermissionMap from './rolepermissionmap.model';
 import EmailLog from './emaillog.model';
 import SMSLog from './smslog.model';
 import MedicalReport from './medicalreport.model';
+import Profession from './professions.model';
 
 export {
     Role,
@@ -28,4 +29,5 @@ export {
     EmailLog,
     SMSLog,
     MedicalReport,
+    Profession,
 };

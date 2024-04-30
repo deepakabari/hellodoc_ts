@@ -1,10 +1,9 @@
 import messageConstant from '../../../constants/message.constant';
 import httpCode from '../../../constants/http.constant';
-import { Business, OrderDetail } from '../../../db/models';
+import { Business, OrderDetail, Profession } from '../../../db/models';
 import { Controller } from '../../../interfaces';
 import { AccountType } from '../../../utils/enum.constant';
 import { Op } from 'sequelize';
-import { sequelize } from '../../../db/config/db.connection';
 
 /**
  * @function addBusiness
@@ -18,7 +17,7 @@ export const addBusiness: Controller = async (req, res) => {
         // Extract business information from request body
         const {
             businessName,
-            profession,
+            professionId,
             faxNumber,
             phoneNumber,
             email,
@@ -46,7 +45,7 @@ export const addBusiness: Controller = async (req, res) => {
             accountType: AccountType.Vendor,
             userId: req.user.id,
             businessName,
-            profession,
+            professionId,
             faxNumber,
             phoneNumber,
             email,
@@ -93,7 +92,6 @@ export const viewBusiness: Controller = async (req, res) => {
             attributes: [
                 'id',
                 'businessName',
-                'profession',
                 'faxNumber',
                 'phoneNumber',
                 'email',
@@ -102,6 +100,13 @@ export const viewBusiness: Controller = async (req, res) => {
                 'city',
                 'state',
                 'zipCode',
+            ],
+            include: [
+                {
+                    model: Profession,
+                    attributes: ['id', 'name'],
+                    required: false,
+                },
             ],
             where: { id },
         });
@@ -126,9 +131,9 @@ export const viewBusiness: Controller = async (req, res) => {
 export const professions: Controller = async (req, res) => {
     try {
         // Retrieve list of unique professions
-        const professions = await Business.findAll({
-            attributes: ['profession'],
-            group: ['profession'],
+        const professions = await Profession.findAll({
+            attributes: ['id', 'name'],
+            group: ['name'],
         });
 
         if (!professions) {
@@ -158,12 +163,12 @@ export const professions: Controller = async (req, res) => {
 export const businessByProfession: Controller = async (req, res) => {
     try {
         // Extract profession from request parameters
-        const { profession } = req.params;
+        const { professionId } = req.params;
 
         // Find businesses by profession
         const businessByProfession = await Business.findAll({
             attributes: ['id', 'businessName'],
-            where: { profession: profession },
+            where: { professionId },
         });
 
         if (!businessByProfession) {
@@ -267,12 +272,19 @@ export const viewVendor: Controller = async (req, res) => {
         const viewVendor = await Business.findAndCountAll({
             attributes: [
                 'id',
-                'profession',
+                'professionId',
                 'businessName',
                 'email',
                 'faxNumber',
                 'phoneNumber',
                 'businessContact',
+            ],
+            include: [
+                {
+                    model: Profession,
+                    attributes: ['id', 'name'],
+                    required: false,
+                },
             ],
             where: {
                 ...(search
@@ -304,7 +316,7 @@ export const updateBusiness: Controller = async (req, res) => {
         // Extract business details from request body
         const {
             businessName,
-            profession,
+            professionId,
             faxNumber,
             phoneNumber,
             email,
@@ -328,7 +340,7 @@ export const updateBusiness: Controller = async (req, res) => {
         await Business.update(
             {
                 businessName,
-                profession,
+                professionId,
                 faxNumber,
                 phoneNumber,
                 email,
