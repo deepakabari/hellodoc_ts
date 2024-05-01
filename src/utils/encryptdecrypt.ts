@@ -14,10 +14,14 @@ const generateToken = (id: string): string => {
 
 // Function to decrypt the ID
 const validateAndDecryptToken = (encryptedId: string): string => {
-    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
-    let decrypted = decipher.update(encryptedId, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');    
-    return decrypted;
+    try {
+        const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+        let decrypted = decipher.update(encryptedId, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');    
+        return decrypted;
+    } catch (error) {
+        return '';
+    }
 };
 
 export { generateToken, validateAndDecryptToken };
