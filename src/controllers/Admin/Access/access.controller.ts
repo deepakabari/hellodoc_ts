@@ -280,6 +280,9 @@ export const updateRole: Controller = async (req, res) => {
     try {
         // Extract the role ID from the request parameters.
         const { id } = req.params;
+        
+        // Extract the list of permission IDs from the request body.
+        const { roleName, accountType, permissionIds } = req.body;
 
         const existingRole = await Role.findByPk(id);
         if (!existingRole) {
@@ -290,10 +293,12 @@ export const updateRole: Controller = async (req, res) => {
             });
         }
 
-        // Extract the list of permission IDs from the request body.
-        const { roleName, accountType, permissionIds } = req.body;
+        // Check if role with the same name already exists
+        const existingName = await Role.findOne({ where: { Name: roleName } });
 
-        if(existingRole.Name === roleName) {
+        // If role already exists, return conflict response
+        if (existingName) {
+            await transaction.rollback();
             return res.status(httpCode.CONFLICT).json({
                 status: httpCode.CONFLICT,
                 message: messageConstant.ROLE_ALREADY_EXISTS,

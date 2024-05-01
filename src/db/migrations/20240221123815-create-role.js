@@ -12,6 +12,7 @@ module.exports = {
             Name: {
                 type: Sequelize.STRING,
                 allowNull: false,
+                unique: true,
             },
             accountType: {
                 type: Sequelize.STRING,

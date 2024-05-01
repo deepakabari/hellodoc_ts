@@ -343,7 +343,7 @@ export const updateBusiness: Controller = async (req, res) => {
         ) {
             return res.status(httpCode.CONFLICT).json({
                 status: httpCode.CONFLICT,
-                message: messageConstant.UNIQUE_CONSTRAINT,
+                message: messageConstant.EMAIL_NAME_EXISTS,
             });
         }
 

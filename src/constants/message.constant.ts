@@ -6,6 +6,7 @@ const messageConstant = {
     ERROR_VERIFY_PERMISSION: 'An error occurred while verifying permissions.',
     INTERNAL_SERVER_ERROR: 'Internal server error',
     UNIQUE_CONSTRAINT: 'Email or phone number already exists.',
+    EMAIL_NAME_EXISTS: 'Email or business name already exists.',
     USER_CREATED: 'User created successfully',
     USER_CREATION_FAILED: 'User creation failed',
     USER_DELETED: 'User deleted successfully.',
@@ -20,7 +21,7 @@ const messageConstant = {
     POST_NOT_FOUND: 'Post not found',
     BAD_REQUEST: 'Bad request',
     VALIDATION_FAILED: 'Validation failed',
-    EMAIL_IN_USED: 'Email already in used',
+    EMAIL_IN_USED: 'Email already in use',
     IMAGE_NOT_UPLOADED: 'Upload the image',
     FILE_NOT_UPLOADED:
         'Please Upload the file with valid extension(.pdf, .png, .jpg, .jpeg)',
