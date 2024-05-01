@@ -20,6 +20,7 @@ module.exports = {
             businessName: {
                 type: Sequelize.STRING,
                 allowNull: false,
+                unique: true,
             },
             businessWebsite: {
                 type: Sequelize.STRING,
@@ -40,6 +41,7 @@ module.exports = {
             email: {
                 type: Sequelize.STRING,
                 allowNull: false,
+                unique: true,
             },
             businessContact: {
                 type: Sequelize.STRING,

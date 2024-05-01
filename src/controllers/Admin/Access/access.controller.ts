@@ -293,6 +293,13 @@ export const updateRole: Controller = async (req, res) => {
         // Extract the list of permission IDs from the request body.
         const { roleName, accountType, permissionIds } = req.body;
 
+        if(existingRole.Name === roleName) {
+            return res.status(httpCode.CONFLICT).json({
+                status: httpCode.CONFLICT,
+                message: messageConstant.ROLE_ALREADY_EXISTS,
+            });
+        }
+
         await Role.update(
             {
                 Name: roleName,

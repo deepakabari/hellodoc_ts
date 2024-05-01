@@ -30,7 +30,7 @@ export const addBusiness: Controller = async (req, res) => {
 
         // Check if business with the same email already exists
         const business = await Business.findOne({
-            where: { email },
+            where: { email, businessName },
         });
 
         if (business) {
@@ -334,6 +334,16 @@ export const updateBusiness: Controller = async (req, res) => {
             return res.status(httpCode.BAD_REQUEST).json({
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.INVALID_INPUT,
+            });
+        }
+
+        if (
+            existingBusiness.email === email ||
+            existingBusiness.businessName === businessName
+        ) {
+            return res.status(httpCode.CONFLICT).json({
+                status: httpCode.CONFLICT,
+                message: messageConstant.UNIQUE_CONSTRAINT,
             });
         }
 
