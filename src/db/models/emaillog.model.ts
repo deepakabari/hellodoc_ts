@@ -53,13 +53,13 @@ class EmailLog extends Model<EmailLogAttributes, EmailLogCreationAttributes> {
     })
     sender: User;
 
-    @BelongsTo(() => Request, {
+    @BelongsTo(() => User, {
         foreignKey: 'receiverId',
         targetKey: 'id',
         as: 'receiver',
     })
-    receiver: Request;
-
+    receiver: User;
+    
     @BelongsTo(() => Role, {
         foreignKey: 'roleId',
         targetKey: 'id',

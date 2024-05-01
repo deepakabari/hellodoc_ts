@@ -6,9 +6,9 @@ import { PatientSchema } from '../../validations';
 
 const router = express.Router();
 
-router.patch('/acceptAgreement/:id', isAuth, patientDashboard.acceptAgreement);
+router.patch('/acceptAgreement/:id', patientDashboard.acceptAgreement);
 
-router.patch('/cancelAgreement/:id', isAuth, patientDashboard.cancelAgreement);
+router.patch('/cancelAgreement/:id', patientDashboard.cancelAgreement);
 
 router.get('/medicalHistory', isAuth, patientDashboard.medicalHistory);
 

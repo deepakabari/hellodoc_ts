@@ -50,12 +50,12 @@ class SMSLog extends Model<SMSLogAttributes, SMSLogCreationAttributes> {
     })
     sender: User;
 
-    @BelongsTo(() => Request, {
+    @BelongsTo(() => User, {
         foreignKey: 'receiverId',
         targetKey: 'id',
         as: 'receiver',
     })
-    receiver: Request;
+    receiver: User;
 
     @BelongsTo(() => Role, {
         foreignKey: 'roleId',

@@ -77,7 +77,6 @@ export const providerInformation: Controller = async (req, res) => {
                 attributes: [],
                 through: { attributes: [] },
                 where: regionWhereClause,
-                required: false,
             },
             distinct: true,
             order: sortByModel,

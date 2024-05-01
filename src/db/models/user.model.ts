@@ -193,11 +193,23 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     })
     userEmailLogs: EmailLog[];
 
+    @HasMany(() => EmailLog, {
+        foreignKey: 'receiverId',
+        as: 'receiverEmailLogs',
+    })
+    receiverEmailLogs: EmailLog[];
+
     @HasMany(() => SMSLog, {
         foreignKey: 'senderId',
         as: 'userSMSLogs',
     })
     userSMSLogs: SMSLog[];
+
+    @HasMany(() => SMSLog, {
+        foreignKey: 'receiverId',
+        as: 'receiverSMSLogs',
+    })
+    receiverSMSLogs: SMSLog[];
 
     @HasOne(() => Business, { foreignKey: 'userId' })
     business: Business;

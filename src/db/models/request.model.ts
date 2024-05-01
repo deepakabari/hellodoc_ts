@@ -287,18 +287,6 @@ class Request extends Model<RequestAttributes, RequestCreationAttributes> {
 
     @HasOne(() => MedicalReport, { foreignKey: 'requestId' })
     medicalReport: MedicalReport;
-
-    @HasMany(() => EmailLog, {
-        foreignKey: 'receiverId',
-        as: 'requestEmailLogs',
-    })
-    requestEmailLogs: EmailLog[];
-
-    @HasMany(() => SMSLog, {
-        foreignKey: 'receiverId',
-        as: 'requestSMSLogs',
-    })
-    requestSMSLogs: SMSLog[];
 }
 
 export default Request;

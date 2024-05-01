@@ -12,6 +12,7 @@ import { Controller } from '../../interfaces';
 import bcrypt from 'bcrypt';
 import {
     AccountType,
+    OnCallStatus,
     ProfileStatus,
     RequestStatus,
 } from '../../utils/enum.constant';
@@ -175,6 +176,7 @@ const createAccount: Controller = async (req, res) => {
                 roleId,
                 notes,
                 status: ProfileStatus.Active,
+                onCallStatus: OnCallStatus.UnScheduled,
                 createdBy: req.user.id,
                 createdAt: new Date(),
                 updatedAt: new Date(),

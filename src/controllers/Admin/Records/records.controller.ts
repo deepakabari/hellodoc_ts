@@ -203,7 +203,7 @@ export const patientRecord: Controller = async (req, res) => {
                     SELECT COUNT(*)
                     FROM RequestWiseFiles
                     WHERE
-                        RequestWiseFiles.requestId = Request.id
+                        RequestWiseFiles.requestId = Request.id AND RequestWiseFiles.deletedAt IS NULL
                 )`),
                     'filesCount',
                 ],
@@ -527,8 +527,8 @@ export const emailLog: Controller = async (req, res) => {
         const receiverWhereClause = receiverName
             ? {
                   [Op.or]: [
-                      { patientFirstName: { [Op.substring]: receiverName } },
-                      { patientLastName: { [Op.substring]: receiverName } },
+                      { firstName: { [Op.substring]: receiverName } },
+                      { lastName: { [Op.substring]: receiverName } },
                   ],
               }
             : {};
@@ -550,23 +550,15 @@ export const emailLog: Controller = async (req, res) => {
             ],
             include: [
                 {
-                    model: Request,
+                    model: User,
                     as: 'receiver',
-                    attributes: ['id', 'patientFirstName', 'patientLastName'],
+                    attributes: ['id', 'firstName', 'lastName', 'roleId'],
                     include: [
                         {
-                            model: User,
-                            as: 'user',
-                            attributes: ['id', 'roleId'],
-                            include: [
-                                {
-                                    model: Role,
-                                    attributes: ['id', 'Name'],
-                                    where: roleWhereClause,
-                                    required: roleName ? true : false,
-                                },
-                            ],
-                            required: true,
+                            model: Role,
+                            attributes: ['id', 'Name'],
+                            where: roleWhereClause,
+                            required: roleName ? true : false,
                         },
                     ],
                     where: receiverWhereClause,
@@ -643,8 +635,8 @@ export const smsLog: Controller = async (req, res) => {
         const receiverWhereClause = receiverName
             ? {
                   [Op.or]: [
-                      { patientFirstName: { [Op.substring]: receiverName } },
-                      { patientLastName: { [Op.substring]: receiverName } },
+                      { firstName: { [Op.substring]: receiverName } },
+                      { lastName: { [Op.substring]: receiverName } },
                   ],
               }
             : {};
@@ -666,23 +658,15 @@ export const smsLog: Controller = async (req, res) => {
             ],
             include: [
                 {
-                    model: Request,
+                    model: User,
                     as: 'receiver',
-                    attributes: ['id', 'patientFirstName', 'patientLastName'],
+                    attributes: ['id', 'firstName', 'lastName', 'roleId'],
                     include: [
                         {
-                            model: User,
-                            as: 'user',
-                            attributes: ['id', 'roleId'],
-                            include: [
-                                {
-                                    model: Role,
-                                    attributes: ['id', 'Name'],
-                                    where: roleWhereClause,
-                                    required: roleName ? true : false,
-                                },
-                            ],
-                            required: true,
+                            model: Role,
+                            attributes: ['id', 'Name'],
+                            where: roleWhereClause,
+                            required: roleName ? true : false,
                         },
                     ],
                     where: receiverWhereClause,
