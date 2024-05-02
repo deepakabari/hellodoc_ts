@@ -1,12 +1,15 @@
 import { Joi, Segments } from 'celebrate';
 
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
 export const ShiftSchema = {
     createShift: {
         [Segments.BODY]: Joi.object({
             accountType: Joi.string().valid('Admin', 'Physician').required(),
             region: Joi.string().required(),
             physicianId: Joi.optional().allow('', null),
-            shiftDate: Joi.date().required(),
+            shiftDate: Joi.date().required().min(today),
             startTime: Joi.string().required(),
             endTime: Joi.string().required(),
             isRepeat: Joi.boolean().optional().allow('', null),
@@ -32,7 +35,7 @@ export const ShiftSchema = {
 
     editShift: {
         [Segments.BODY]: Joi.object({
-            shiftDate: Joi.date(),
+            shiftDate: Joi.date().min(today),
             startTime: Joi.string(),
             endTime: Joi.string(),
         }),

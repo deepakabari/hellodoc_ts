@@ -171,7 +171,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
     @HasMany(() => Shift, {
         foreignKey: 'physicianId',
         sourceKey: 'id',
-        as: 'physicianShift',
+        as: 'physicianShifts',
     })
     physicianShifts: Shift[];
 

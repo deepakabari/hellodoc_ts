@@ -36,7 +36,7 @@ export const validation = (
         .map((i: any) => i.message.replace(/['"]+/g, ''))
         .join(',');
 
-    logger.info('Validation error', { message });
+    logger.error('Validation error', { message });
     return res.status(httpCode.BAD_REQUEST).json({
         statusCode: httpCode.BAD_REQUEST,
         error: messageConstant.BAD_REQUEST,

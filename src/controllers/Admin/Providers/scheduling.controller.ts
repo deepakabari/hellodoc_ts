@@ -17,21 +17,14 @@ dotenv.config();
 export const providerOnCall: Controller = async (req, res) => {
     try {
         const { regions } = req.query;
+        const currentDate = new Date();
+        const currentTime = currentDate.getTime();
 
         // Fetch providers with 'onCallStatus' of either 'OnCall' or 'UnAvailable'.
         const providers = await User.findAll({
-            attributes: [
-                'id',
-                'photo',
-                'firstName',
-                'lastName',
-                'onCallStatus',
-            ],
+            attributes: ['id', 'photo', 'firstName', 'lastName'],
             where: {
                 accountType: AccountType.Physician,
-                onCallStatus: {
-                    [Op.or]: [OnCallStatus.OnCall, OnCallStatus.UnAvailable],
-                },
             },
             include: [
                 {
@@ -40,15 +33,62 @@ export const providerOnCall: Controller = async (req, res) => {
                     through: { attributes: [] }, // This will exclude the join table attributes
                     where: { ...(regions ? { name: regions as string } : {}) },
                 },
+                {
+                    model: Shift,
+                    as: 'physicianShifts',
+                    attributes: ['shiftDate', 'startTime', 'endTime'],
+                    required: false,
+                },
             ],
-            order: ['onCallStatus'],
+            order: ['lastName', 'firstName'],
         });
+
+        // Process the providers to determine onCallStatus and update the User table
+        const processedProviders = await Promise.all(
+            providers.map(async (provider) => {
+                const onCallShift = provider.physicianShifts?.find((shift) => {
+                    const shiftDate = new Date(shift.shiftDate);
+                    const startTimeArray = shift.startTime
+                        .split(':')
+                        .map(Number);
+                    const endTimeArray = shift.endTime.split(':').map(Number);
+                    const startTime = new Date(shiftDate);
+                    startTime.setHours(
+                        startTimeArray[0],
+                        startTimeArray[1],
+                        0,
+                        0,
+                    );
+                    const endTime = new Date(shiftDate);
+                    endTime.setHours(endTimeArray[0], endTimeArray[1], 0, 0);
+
+                    return (
+                        shiftDate.toDateString() ===
+                            currentDate.toDateString() &&
+                        currentTime >= startTime.getTime() &&
+                        currentTime <= endTime.getTime()
+                    );
+                });
+
+                const onCallStatus = onCallShift
+                    ? OnCallStatus.OnCall
+                    : OnCallStatus.UnScheduled;
+
+                // Update the onCallStatus in the User table
+                await provider.update({ onCallStatus });
+
+                return {
+                    ...provider.get({ plain: true }),
+                    onCallStatus,
+                };
+            }),
+        );
 
         // Send the grouped providers data in the response.
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.PROVIDER_RETRIEVED,
-            data: providers,
+            data: processedProviders,
         });
     } catch (error) {
         // In case of an error, throw it to be handled by the error middleware.
@@ -88,7 +128,6 @@ export const addNewShift: Controller = async (req, res) => {
             physicianId = req.user.id;
         }
 
-        // Create a new shift record in the database.
         const newShift = await Shift.create({
             region,
             physicianId,
@@ -112,6 +151,47 @@ export const addNewShift: Controller = async (req, res) => {
                 status: httpCode.BAD_REQUEST,
                 message: messageConstant.SHIFT_CREATION_FAILED,
             });
+        }
+
+        if (isRepeat && repeatUpto) {
+            const repeatDays = [
+                sunday,
+                monday,
+                tuesday,
+                wednesday,
+                thursday,
+                friday,
+                saturday,
+            ];
+            let weeksToAdd = parseInt(repeatUpto, 10);
+            let currentDate = new Date(shiftDate);
+
+            for (let week = 0; week < weeksToAdd; week++) {
+                for (let i = 1; i <= 7; i++) {
+                    let nextShiftDate = new Date(currentDate);
+                    nextShiftDate.setDate(nextShiftDate.getDate() + i);
+
+                    if (repeatDays[nextShiftDate.getDay()]) {
+                        if (nextShiftDate >= currentDate) {
+                            await Shift.create({
+                                region,
+                                physicianId,
+                                shiftDate: nextShiftDate,
+                                startTime,
+                                endTime,
+                                sunday,
+                                monday,
+                                tuesday,
+                                wednesday,
+                                thursday,
+                                friday,
+                                saturday,
+                            });
+                        }
+                    }
+                }
+                currentDate.setDate(currentDate.getDate() + 7); // Move to the next week
+            }
         }
 
         // Send the newly created shift data in the response.
