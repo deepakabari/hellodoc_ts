@@ -128,6 +128,12 @@ const messageConstant = {
     FORM_NOT_FINALIZED: 'Encounter form not finalized',
     DATA_RETRIEVED: 'Data retrieved successfully.',
     INVALID_INPUT: 'Invalid id provided.',
+    PAYRATE_CREATED: 'Payrate created successfully.',
+    PAYRATE_CREATION_FAILED: 'Pay rate creation failed.',
+    PAYRATE_NOT_FOUND: 'Pay rate not found.',
+    PAYRATE_RETRIEVED: 'Payrate retrieved successfully.',
+    PAYRATE_ALREADY_EXISTS: 'Payrate already exists.',
+    PAYRATE_EDITED: 'Payrate edited successfully.',
 };
 
 export default messageConstant;

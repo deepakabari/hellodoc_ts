@@ -15,6 +15,7 @@ import {
     SMSLog,
     MedicalReport,
     Profession,
+    PayRate,
 } from '../models/index';
 import { logger } from '../../utils/logger';
 
@@ -48,6 +49,7 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
         SMSLog,
         MedicalReport,
         Profession,
+        PayRate,
     ],
     logging: (msg) => {
         if (msg === 'Executing (default): SELECT 1+1 AS result') {

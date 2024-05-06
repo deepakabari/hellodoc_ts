@@ -51,8 +51,8 @@ router.patch(
     isAuth,
     verifyRole(['Provider']),
     upload.fields([
-        { name: 'photo' },
-        { name: 'signature' },
+        { name: 'Photo' },
+        { name: 'Signature' },
         { name: 'independentContract' },
         { name: 'backgroundCheck' },
         { name: 'hipaaCompliance' },

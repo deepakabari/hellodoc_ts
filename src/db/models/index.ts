@@ -13,6 +13,7 @@ import EmailLog from './emaillog.model';
 import SMSLog from './smslog.model';
 import MedicalReport from './medicalreport.model';
 import Profession from './professions.model';
+import PayRate from './payrate.model';
 
 export {
     Role,
@@ -30,4 +31,5 @@ export {
     SMSLog,
     MedicalReport,
     Profession,
+    PayRate,
 };

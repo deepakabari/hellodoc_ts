@@ -8,7 +8,6 @@ import {
     Region,
     RequestWiseFiles,
     Role,
-    SMSLog,
     User,
     UserRegion,
 } from '../../../db/models/index';
@@ -139,7 +138,16 @@ export const contactProvider: Controller = async (req, res) => {
                     subject: linkConstant.contactSubject,
                     text: messageBody,
                 });
-                message = messageConstant.EMAIL_SENT
+                await EmailLog.create({
+                    email: user?.email as string,
+                    senderId: req.user.id,
+                    receiverId: user?.id,
+                    sentDate: new Date(),
+                    isEmailSent: true,
+                    sentTries: 1,
+                    action: 'Provider Contact',
+                });
+                message = messageConstant.EMAIL_SENT;
                 break;
             case 'both':
                 sendSMS(
@@ -154,19 +162,18 @@ export const contactProvider: Controller = async (req, res) => {
                     subject: linkConstant.contactSubject,
                     text: messageBody,
                 });
-                message = messageConstant.EMAIL_SMS_SENT
+                await EmailLog.create({
+                    email: user?.email as string,
+                    senderId: req.user.id,
+                    receiverId: user?.id,
+                    sentDate: new Date(),
+                    isEmailSent: true,
+                    sentTries: 1,
+                    action: 'Provider Contact',
+                });
+                message = messageConstant.EMAIL_SMS_SENT;
                 break;
         }
-
-        await EmailLog.create({
-            email: user?.email as string,
-            senderId: req.user.id,
-            receiverId: user?.id,
-            sentDate: new Date(),
-            isEmailSent: true,
-            sentTries: 1,
-            action: 'Provider Contact',
-        });
 
         // Return success response
         return res.status(httpCode.OK).json({
@@ -505,3 +512,5 @@ export const deleteAccount: Controller = async (req, res) => {
         throw error;
     }
 };
+
+
