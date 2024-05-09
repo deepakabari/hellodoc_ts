@@ -21,4 +21,18 @@ router.patch(
     adminInvoicing.editPayrate,
 );
 
+router.get(
+    '/viewTimesheet/:id',
+    isAuth,
+    celebrate(InvoicingSchema.timesheet),
+    adminInvoicing.viewTimeSheet,
+);
+
+router.patch(
+    '/approveTimesheet/:id',
+    isAuth,
+    celebrate(InvoicingSchema.timesheet),
+    adminInvoicing.approveTimesheet,
+);
+
 export default router;

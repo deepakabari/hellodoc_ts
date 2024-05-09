@@ -12,4 +12,5 @@ export * as providerDashboard from './Provider/Dashboard/dashboard.controller';
 export * as patientDashboard from './Patient/patient.controller';
 export * as providerProfile from './Provider/MyProfile/myProfile.controller';
 export * as providerSchedule from './Provider/Scheduling/scheduling.controller';
-export * as adminInvoicing from './Admin/Invoicing/invoicing.controller'
+export * as adminInvoicing from './Admin/Invoicing/invoicing.controller';
+export * as providerInvoicing from './Provider/Invoicing/invoicing.controller';

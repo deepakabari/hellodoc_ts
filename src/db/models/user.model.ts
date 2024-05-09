@@ -19,6 +19,7 @@ import {
     EmailLog,
     SMSLog,
     Business,
+    WeeklyTimesheet,
 } from './index';
 
 @Table({
@@ -213,5 +214,17 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
 
     @HasOne(() => Business, { foreignKey: 'userId' })
     business: Business;
+
+    @HasMany(() => WeeklyTimesheet, {
+        foreignKey: 'physicianId',
+        as: 'physicianWeeklySheets',
+    })
+    physicianWeeklySheets: WeeklyTimesheet[];
+
+    @HasMany(() => WeeklyTimesheet, {
+        foreignKey: 'adminId',
+        as: 'adminSheet',
+    })
+    adminSheet: WeeklyTimesheet[];
 }
 export default User;

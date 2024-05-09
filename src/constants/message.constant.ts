@@ -134,6 +134,11 @@ const messageConstant = {
     PAYRATE_RETRIEVED: 'Payrate retrieved successfully.',
     PAYRATE_ALREADY_EXISTS: 'Payrate already exists.',
     PAYRATE_EDITED: 'Payrate edited successfully.',
+    TIME_SHEET_CREATED: 'Timesheet created successfully.',
+    TIME_SHEET_FINALIZED: 'Timesheet Finalized successfully.',
+    TIME_SHEET_NOT_FOUND: 'Timesheet not found.',
+    TIME_SHEET_RETRIEVED: 'Timesheet retrieved successfully.',
+    TIME_SHEET_APPROVED: 'Timesheet approved successfully.',
 };
 
 export default messageConstant;

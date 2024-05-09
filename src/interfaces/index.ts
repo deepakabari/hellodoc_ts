@@ -19,3 +19,5 @@ export * from './emailLog.interface';
 export * from './smsLog.interface';
 export * from './medicalReport.interface';
 export * from './profession.interface';
+export * from './weeklyTimesheet.interface';
+export * from './timesheetDetail.interface';

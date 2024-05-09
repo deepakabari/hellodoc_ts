@@ -1,9 +1,10 @@
-import { Table, Column, Model } from 'sequelize-typescript';
+import { Table, Column, Model, HasOne } from 'sequelize-typescript';
 import { DataTypes } from 'sequelize';
 import {
     PayRateAttributes,
     PayRateCreationAttributes,
 } from '../../interfaces/payRate.interface';
+import WeeklyTimesheet from './weeklytimesheet.model';
 
 @Table({
     timestamps: true,
@@ -41,5 +42,10 @@ class PayRate extends Model<PayRateAttributes, PayRateCreationAttributes> {
 
     @Column({ type: DataTypes.INTEGER, allowNull: true })
     houseCall: number;
+
+    @HasOne(() => WeeklyTimesheet, {
+        foreignKey: 'payRateId',
+    })
+    payRate: WeeklyTimesheet;
 }
 export default PayRate;

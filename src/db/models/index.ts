@@ -14,6 +14,8 @@ import SMSLog from './smslog.model';
 import MedicalReport from './medicalreport.model';
 import Profession from './professions.model';
 import PayRate from './payrate.model';
+import WeeklyTimesheet from './weeklytimesheet.model';
+import TimesheetDetail from './timesheetdetail.model';
 
 export {
     Role,
@@ -32,4 +34,6 @@ export {
     MedicalReport,
     Profession,
     PayRate,
+    WeeklyTimesheet,
+    TimesheetDetail,
 };
