@@ -726,7 +726,7 @@ export const downloadEncounter = async (req: ExpressRequest, res: Response) => {
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader(
                 'Content-Disposition',
-                'attachment; filename=encounter_form.pdf',
+                `attachment; filename='${exists.firstName}_encounter_form.pdf'`,
             );
 
             // Send the PDF buffer as the response
