@@ -2,7 +2,7 @@ import multer, { StorageEngine } from 'multer';
 import { Request } from 'express';
 import { existsSync } from 'fs';
 
-const uploadDirectory = './src/public/images'
+const uploadDirectory = './src/public/images';
 export const fileStorage: StorageEngine = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, uploadDirectory);
@@ -10,11 +10,11 @@ export const fileStorage: StorageEngine = multer.diskStorage({
     filename: (req, file, cb) => {
         let fileName = file.originalname;
         const extension = fileName.split('.').pop();
-        const baseFileName = fileName.substring(0, fileName.lastIndexOf('.'))
+        const baseFileName = fileName.substring(0, fileName.lastIndexOf('.'));
 
         let counter = 1;
-        while(existsSync(`${uploadDirectory}/${fileName}`)) {
-            fileName = `${baseFileName} (${counter}).${extension}`
+        while (existsSync(`${uploadDirectory}/${fileName}`)) {
+            fileName = `${baseFileName} (${counter}).${extension}`;
             counter++;
         }
         cb(null, fileName);
